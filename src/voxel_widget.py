@@ -162,7 +162,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         glViewport(0,0,width,height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        self.perspective(45.0, float(width) / height, 4, 300)
+        self.perspective(45.0, float(width) / height, 0.1, 300)
         glMatrixMode(GL_MODELVIEW)
 
     # Render scene as colour ID's
