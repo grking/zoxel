@@ -63,6 +63,11 @@ class MainWindow(QtGui.QMainWindow):
         self.set_setting("display_floor_grid", self.display.floor_grid)
     
     @QtCore.Slot()
+    def on_action_wireframe_triggered(self):
+        self.display.wireframe = self.ui.action_wireframe.isChecked()
+        self.set_setting("display_wireframe", self.display.wireframe)
+
+    @QtCore.Slot()
     def on_action_save_triggered(self):
         # Bail if current focus doesn't support saving
         if not self.window_supports_save():

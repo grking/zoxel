@@ -33,6 +33,14 @@ class GLWidget(QtOpenGL.QGLWidget):
     def floor_grid(self, value):
         self._display_floor_grid = value
         self.updateGL()
+        
+    @property
+    def wireframe(self):
+        return self._display_wireframe
+    @wireframe.setter
+    def wireframe(self, value):
+        self._display_wireframe = value
+        self.updateGL()
 
     def __init__(self, parent=None):
         glformat = QtOpenGL.QGLFormat()
@@ -45,6 +53,7 @@ class GLWidget(QtOpenGL.QGLWidget):
             raise Exception("Requires OpenGL Version 1.1 or above.")
         # Default values
         self._background_colour = QtGui.QColor("silver")
+        self._display_wireframe = False
         # Mouse position
         self._mouse = QtCore.QPoint()
         # Rotation
@@ -95,6 +104,10 @@ class GLWidget(QtOpenGL.QGLWidget):
         glEnableClientState(GL_VERTEX_ARRAY)
         glEnableClientState(GL_COLOR_ARRAY)
         glEnableClientState(GL_NORMAL_ARRAY)
+        
+        # Wireframe?
+        if self.wireframe:
+            glPolygonMode( GL_FRONT, GL_LINE )
 
         # Describe our buffers
         glVertexPointer( 3, GL_FLOAT, 0, self._vertices);
@@ -111,7 +124,10 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Floor grid
         if self.floor_grid:
             self.paintGrid()
-        
+
+        # Default back to filled rendering
+        glPolygonMode( GL_FRONT, GL_FILL )
+
     # Window is resizing
     def resizeGL(self, width, height):
         self._width = width
@@ -124,11 +140,15 @@ class GLWidget(QtOpenGL.QGLWidget):
 
     # Render scene as colour ID's
     def paintID(self):
+        # Disable lighting
         glDisable(GL_LIGHTING)
 
         # Render with white background
         self.qglClearColor(QtGui.QColor.fromRgb(0xff, 0xff, 0xff))
         
+        # Ensure we fill our polygons
+        glPolygonMode( GL_FRONT, GL_FILL )
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
         glTranslatef(self._translate_x,self._translate_y, self._translate_z)
