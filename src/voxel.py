@@ -24,8 +24,6 @@
 # get_vertices() returns a list of vertices, along with normals and colours
 # which describes the current state of the voxel world.
 
-import random
-
 # World dimensions (in voxels)
 # We are an editor for "small" voxel models. So this needs to be small.
 # Dimensions are fundamentally limited by our encoding of face ID's into
@@ -109,7 +107,12 @@ class VoxelData(object):
         back = self.get(x, y, z+1) == EMPTY
         bottom = self.get(x, y-1, z) == EMPTY
 
-        colour = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
+        # Get our colour
+        c = self.get(x, y, z)
+        r = (c & 0xff000000)>>24
+        g = (c & 0xff0000)>>16
+        b = (c & 0xff00)>>8
+        colour = (r, g, b)
 
         # Encode our voxel space coordinates as colours, used for face selection
         # We use 7 bits per coordinate and the bottom 3 bits for face:

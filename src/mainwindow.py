@@ -21,6 +21,7 @@ from dialog_about import AboutDialog
 from ui_mainwindow import Ui_MainWindow
 from voxel_widget import GLWidget
 import json
+from palette_widget import PaletteWidget
 
 class MainWindow(QtGui.QMainWindow):
 
@@ -39,8 +40,6 @@ class MainWindow(QtGui.QMainWindow):
         self.state = {}
         # Load our state if possible
         self.load_state()
-        # Restore UI
-        self.ui.splitter.restoreState(self.settings.value('gui/splitter'))
         # Create our GL Widget
         try:
             widget = GLWidget(self.ui.glparent)
@@ -50,6 +49,10 @@ class MainWindow(QtGui.QMainWindow):
             QtGui.QMessageBox.warning(self, "Initialisation Failed",
                 str(E))
             exit(1)
+        # Create our palette widget
+        widget = PaletteWidget(self.ui.palette)
+        self.ui.palette.layout().addWidget(widget)
+        self.colour_palette = widget
         # More UI state
         value = self.get_setting("display_floor_grid")
         if value is not None:
@@ -58,6 +61,8 @@ class MainWindow(QtGui.QMainWindow):
         # Connect some signals
         if self.display:
             self.display.changed.connect(self.on_data_changed)
+        if self.colour_palette:
+            self.colour_palette.changed.connect(self.on_colour_changed)
 
     @QtCore.Slot()
     def on_action_about_triggered(self):
@@ -104,6 +109,10 @@ class MainWindow(QtGui.QMainWindow):
     # Voxel data changed signal handler
     def on_data_changed(self):
         self.update_caption()
+        
+    # Colour selection changed handler
+    def on_colour_changed(self):
+        self.display.voxel_colour = self.colour_palette.colour
 
     # Return a section of our internal config
     def get_setting(self, name):
@@ -116,7 +125,7 @@ class MainWindow(QtGui.QMainWindow):
         self.state[name] = value
 
     def closeEvent(self, event):
-        # Save splitter state
+        # Save state
         self.save_state()
         event.accept()
 
@@ -125,8 +134,6 @@ class MainWindow(QtGui.QMainWindow):
         try:
             state = json.dumps(self.state)
             self.settings.setValue("system/state", state)
-            # Save UI
-            self.settings.setValue("gui/splitter", self.ui.splitter.saveState())
         except Exception as E:
             # XXX Fail. Never displays because we're on our way out
             error = QtGui.QErrorMessage(self)
