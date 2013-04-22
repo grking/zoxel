@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="images">
+    <file>gfx/about_dialog_image.png</file>
+  </qresource>
+</RCC>
