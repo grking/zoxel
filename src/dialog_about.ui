@@ -13,22 +13,6 @@
   <property name="windowTitle">
    <string>About</string>
   </property>
-  <widget class="QPushButton" name="pushButton">
-   <property name="geometry">
-    <rect>
-     <x>360</x>
-     <y>380</y>
-     <width>87</width>
-     <height>27</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>OK</string>
-   </property>
-   <property name="flat">
-    <bool>false</bool>
-   </property>
-  </widget>
   <widget class="QLabel" name="label_6">
    <property name="geometry">
     <rect>
@@ -113,30 +97,40 @@
     <string>Version 0.0.1 (7th March 2013)</string>
    </property>
   </widget>
-  <zorder>label_6</zorder>
-  <zorder>pushButton</zorder>
-  <zorder>label_2</zorder>
-  <zorder>label_5</zorder>
-  <zorder>label_3</zorder>
-  <zorder>label_4</zorder>
+  <widget class="QPushButton" name="button">
+   <property name="geometry">
+    <rect>
+     <x>360</x>
+     <y>380</y>
+     <width>87</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>OK</string>
+   </property>
+   <property name="default">
+    <bool>true</bool>
+   </property>
+  </widget>
  </widget>
  <resources>
   <include location="resources.qrc"/>
  </resources>
  <connections>
   <connection>
-   <sender>pushButton</sender>
+   <sender>button</sender>
    <signal>clicked()</signal>
    <receiver>AboutDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>443</x>
-     <y>463</y>
+     <x>403</x>
+     <y>393</y>
     </hint>
     <hint type="destinationlabel">
-     <x>248</x>
-     <y>242</y>
+     <x>227</x>
+     <y>208</y>
     </hint>
    </hints>
   </connection>
