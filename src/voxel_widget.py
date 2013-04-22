@@ -72,7 +72,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         self._background_colour = QtGui.QColor("silver")
         self._display_wireframe = False
         self._edited = False
-        self._voxel_colour = QtGui.QColor.black
+        self._voxel_colour = QtGui.QColor.fromHsvF(0,1.0,1.0)
         # Mouse position
         self._mouse = QtCore.QPoint()
         # Rotation

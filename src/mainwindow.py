@@ -78,7 +78,7 @@ class MainWindow(QtGui.QMainWindow):
     @QtCore.Slot()
     def on_action_new_triggered(self):
         if self.display.edited:
-            responce = QtGui.QMessageBox.question(self,"Discard changes?", 
+            responce = QtGui.QMessageBox.question(self,"Save changes?", 
             "Save changes before discarding?", 
             buttons = (QtGui.QMessageBox.Save | QtGui.QMessageBox.Cancel
             | QtGui.QMessageBox.No))
