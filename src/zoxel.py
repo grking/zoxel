@@ -24,12 +24,12 @@ def main():
     app = QtGui.QApplication(sys.argv)
 
     # create mainWindow
-    mainWindow = MainWindow()
-    mainWindow.showMaximized()
-    
+    mainwindow = MainWindow()
+    mainwindow.showMaximized()
+
     # Remember our main window
-    app.mainwindow = mainWindow
-    
+    app.mainwindow = mainwindow
+
     # run main loop
     sys.exit(app.exec_())
 

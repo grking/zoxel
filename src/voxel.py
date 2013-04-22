@@ -16,14 +16,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # The VoxelData class presents a simple interface to a voxel world.  X, Y & Z
-# coordinates of voxels run from zero up the positive axis.  
+# coordinates of voxels run from zero up the positive axis.
 #
 # Voxel types can be set with a simple call to set(), passing in voxel
-# coordinates. 
+# coordinates.
 #
 # get_vertices() returns a list of vertices, along with normals and colours
 # which describes the current state of the voxel world.
-  
+
 import random
 
 # World dimensions (in voxels)
@@ -33,17 +33,17 @@ import random
 WORLD_WIDTH = 32
 WORLD_HEIGHT = 32
 WORLD_DEPTH = 32
-    
+
 # Types of voxel
 EMPTY = 0
 FULL = 1
 
 class VoxelData(object):
-    
+
     def __init__(self):
         # Our scene data
-        self._data = [[[0 for k in xrange(WORLD_DEPTH)] 
-            for j in xrange(WORLD_HEIGHT)] 
+        self._data = [[[0 for k in xrange(WORLD_DEPTH)]
+            for j in xrange(WORLD_HEIGHT)]
                 for i in xrange(WORLD_WIDTH)]
         # Our cache of non-empty voxels (coordinate groups)
         self._cache = []
@@ -70,8 +70,8 @@ class VoxelData(object):
 
     # Get the state of the given voxel
     def get(self, x, y, z):
-        if (x < 0 or x >= WORLD_WIDTH 
-            or y < 0 or y >= WORLD_HEIGHT 
+        if (x < 0 or x >= WORLD_WIDTH
+            or y < 0 or y >= WORLD_HEIGHT
             or z < 0 or z >= WORLD_DEPTH):
             return EMPTY
         return self._data[x][y][z]
@@ -97,16 +97,16 @@ class VoxelData(object):
         normals = []
         colour_ids = []
 
-        # Determine if we have filled voxels around us 
+        # Determine if we have filled voxels around us
         front = self.get(x, y, z-1) == EMPTY
         left = self.get(x-1, y, z) == EMPTY
         right = self.get(x+1, y, z) == EMPTY
         top = self.get(x, y+1, z) == EMPTY
         back = self.get(x, y, z+1) == EMPTY
         bottom = self.get(x, y-1, z) == EMPTY
-                
+
         colour = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
-        
+
         # Encode our voxel space coordinates as colours, used for face selection
         # We use 7 bits per coordinate and the bottom 3 bits for face:
         #   0 - front
@@ -115,7 +115,7 @@ class VoxelData(object):
         #   3 - right
         #   4 - back
         #   5 - bottom
-        voxel_id = (x & 0x7f)<<17 | (y & 0x7f)<<10 | (z & 0x7f)<<3  
+        voxel_id = (x & 0x7f)<<17 | (y & 0x7f)<<10 | (z & 0x7f)<<3
         id_r = (voxel_id & 0xff0000)>>16
         id_g = (voxel_id & 0xff00)>>8
         id_b = (voxel_id & 0xff)
@@ -206,7 +206,7 @@ class VoxelData(object):
             gx, gy, gz = self.voxel_to_world(x, 0, WORLD_DEPTH)
             grid += (gx, gy, gz)
         return grid
-        
+
     def scan(self):
         for x in range(WORLD_WIDTH):
             for z in range(WORLD_DEPTH):

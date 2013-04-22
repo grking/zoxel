@@ -21,7 +21,7 @@ from dialog_about import AboutDialog
 from ui_mainwindow import Ui_MainWindow
 from voxel_widget import GLWidget
 import json
-    
+
 class MainWindow(QtGui.QMainWindow):
 
     def __init__(self, parent=None):
@@ -50,7 +50,7 @@ class MainWindow(QtGui.QMainWindow):
         if value is not None:
             self.ui.action_floor_grid.setChecked(value)
             self.display.floor_grid = value
-        
+
     @QtCore.Slot()
     def on_action_about_triggered(self):
         dialog = AboutDialog(self)
@@ -61,7 +61,7 @@ class MainWindow(QtGui.QMainWindow):
     def on_action_floor_grid_triggered(self):
         self.display.floor_grid = self.ui.action_floor_grid.isChecked()
         self.set_setting("display_floor_grid", self.display.floor_grid)
-    
+
     @QtCore.Slot()
     def on_action_wireframe_triggered(self):
         self.display.wireframe = self.ui.action_wireframe.isChecked()
@@ -80,29 +80,29 @@ class MainWindow(QtGui.QMainWindow):
         if name in self.state:
             return self.state[name]
         return None
-        
+
     # Set some config.  Value should be a serialisable type
     def set_setting(self, name, value):
         self.state[name] = value
-   
+
     def closeEvent(self, event):
         # Save splitter state
         self.save_state()
         event.accept()
-            
+
     # Save our state
     def save_state(self):
         try:
             state = json.dumps(self.state)
             self.settings.setValue("system/state", state)
             # Save UI
-            self.settings.setValue("gui/splitter", self.ui.splitter.saveState())            
+            self.settings.setValue("gui/splitter", self.ui.splitter.saveState())
         except Exception as E:
             # XXX Fail. Never displays because we're on our way out
             error = QtGui.QErrorMessage(self)
             error.showMessage(str(E))
             print str(E)
-    
+
     # Load our state
     def load_state(self):
         try:

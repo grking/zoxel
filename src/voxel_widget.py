@@ -33,7 +33,7 @@ class GLWidget(QtOpenGL.QGLWidget):
     def floor_grid(self, value):
         self._display_floor_grid = value
         self.updateGL()
-        
+
     @property
     def wireframe(self):
         return self._display_wireframe
@@ -72,10 +72,10 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.voxels = voxel.VoxelData()
         # Generate some test data XXX
         self.build_world()
-    
-    # Initialise OpenGL            
+
+    # Initialise OpenGL
     def initializeGL(self):
-        # Set background colour        
+        # Set background colour
         self.qglClearColor(self._background_colour)
         # Our polygon winding order is clockwise
         glFrontFace(GL_CW);
@@ -90,21 +90,21 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.build_mesh()
         # Setup our lighting
         self.setup_lights()
-                
+
     # Render our scene
-    def paintGL(self):        
+    def paintGL(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
         glTranslatef(self._translate_x,self._translate_y, self._translate_z)
         glRotated(self._rotate_x, 1.0, 0.0, 0.0)
         glRotated(self._rotate_y, 0.0, 1.0, 0.0)
         glRotated(self._rotate_z, 0.0, 0.0, 1.0)
-        
+
         # Enable vertex buffers
         glEnableClientState(GL_VERTEX_ARRAY)
         glEnableClientState(GL_COLOR_ARRAY)
         glEnableClientState(GL_NORMAL_ARRAY)
-        
+
         # Wireframe?
         if self.wireframe:
             glPolygonMode( GL_FRONT, GL_LINE )
@@ -113,14 +113,14 @@ class GLWidget(QtOpenGL.QGLWidget):
         glVertexPointer( 3, GL_FLOAT, 0, self._vertices);
         glColorPointer(3, GL_UNSIGNED_BYTE, 0, self._colours);
         glNormalPointer(GL_FLOAT, 0, self._normals);
-        
+
         # Render the buffers
         glDrawArrays(GL_TRIANGLES, 0, self._num_vertices)
 
         glDisableClientState(GL_VERTEX_ARRAY)
         glDisableClientState(GL_COLOR_ARRAY)
         glDisableClientState(GL_NORMAL_ARRAY)
-        
+
         # Floor grid
         if self.floor_grid:
             self.paintGrid()
@@ -131,7 +131,7 @@ class GLWidget(QtOpenGL.QGLWidget):
     # Window is resizing
     def resizeGL(self, width, height):
         self._width = width
-        self._height = height 
+        self._height = height
         glViewport(0,0,width,height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
@@ -145,7 +145,7 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         # Render with white background
         self.qglClearColor(QtGui.QColor.fromRgb(0xff, 0xff, 0xff))
-        
+
         # Ensure we fill our polygons
         glPolygonMode( GL_FRONT, GL_FILL )
 
@@ -155,7 +155,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         glRotated(self._rotate_x, 1.0, 0.0, 0.0)
         glRotated(self._rotate_y, 0.0, 1.0, 0.0)
         glRotated(self._rotate_z, 0.0, 0.0, 1.0)
-        
+
         # Enable vertex buffers
         glEnableClientState(GL_VERTEX_ARRAY)
         glEnableClientState(GL_COLOR_ARRAY)
@@ -165,31 +165,31 @@ class GLWidget(QtOpenGL.QGLWidget):
         glVertexPointer( 3, GL_FLOAT, 0, self._vertices);
         glColorPointer(3, GL_UNSIGNED_BYTE, 0, self._colour_ids);
         glNormalPointer(GL_FLOAT, 0, self._normals);
-        
+
         # Render the buffers
         glDrawArrays(GL_TRIANGLES, 0, self._num_vertices)
 
         glDisableClientState(GL_VERTEX_ARRAY)
         glDisableClientState(GL_COLOR_ARRAY)
         glDisableClientState(GL_NORMAL_ARRAY)
-                
+
         # Set background colour back to original
         self.qglClearColor(self._background_colour)
-        
-        # Re-enable lighting        
+
+        # Re-enable lighting
         glEnable(GL_LIGHTING)
 
     # Render a grid
     def paintGrid(self):
         # Disable lighting
         glDisable(GL_LIGHTING)
-        
+
         # Enable vertex buffers
         glEnableClientState(GL_VERTEX_ARRAY)
 
         # Describe our buffers
         glVertexPointer( 3, GL_FLOAT, 0, self._grid);
-        
+
         # Render the buffers
         glDrawArrays(GL_LINES, 0, self._num_grid_vertices)
 
@@ -208,7 +208,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
         glEnable(GL_COLOR_MATERIAL)
-    
+
     # Build a mesh from our current voxel data
     def build_mesh(self):
         # Grab the voxel vertices
@@ -228,7 +228,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         grid = world.get_grid_vertices()
         self._grid = array.array("f", grid).tostring()
         self._num_grid_vertices = len(grid)//3
-        
+
         # Add some random voxels
         for i in range(250):
             x = random.randint(0,world.width-1)
@@ -247,7 +247,7 @@ class GLWidget(QtOpenGL.QGLWidget):
                 self.updateGL()
             elif x is not None:
                 # We clicked on the background
-                self.voxels.set(x, y, z, voxel.FULL)                
+                self.voxels.set(x, y, z, voxel.FULL)
                 self.build_mesh()
                 self.updateGL()
 
@@ -260,13 +260,13 @@ class GLWidget(QtOpenGL.QGLWidget):
             self._rotate_x = self._rotate_x + dy
             self._rotate_y = self._rotate_y + dx
             self.updateGL()
-            
+
         # Middle mouse button held down - translate
         if event.buttons() & QtCore.Qt.MiddleButton:
             self._translate_x = self._translate_x + (dx / 10.0)
-            self._translate_y = self._translate_y - (dy / 10.0) 
+            self._translate_y = self._translate_y - (dy / 10.0)
             self.updateGL()
-            
+
         self._mouse = QtCore.QPoint(event.pos())
 
     def wheelEvent(self, event):
