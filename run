@@ -1,0 +1,12 @@
+#!/bin/bash
+#pyside-rcc -o src/resources_rc.py src/resources.qrc
+src=.
+for file in $( find $src -name "*.ui")
+do
+  out=`basename $file .ui`
+  outdir=`dirname $file`
+  pyside-uic $file -o ${outdir}/ui_${out}.py
+done
+
+cd src
+python zoxel.py

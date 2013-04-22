@@ -1,0 +1,32 @@
+*.py[cod]
+*.py~
+
+# C extensions
+*.so
+
+# Packages
+*.egg
+*.egg-info
+dist/
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+# IDE
+*.e4p
+.ropeproject
+.eric4project
+.settings
+.project
+.pydevproject
+.externalToolBuilders
+
+# Log files
+*.log
+
+# UI stuff
+resources_rc.py
+ui_*.py
+
