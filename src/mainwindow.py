@@ -26,9 +26,14 @@ class MainWindow(QtGui.QMainWindow):
 
     def __init__(self, parent=None):
         # Initialise the UI
+        self.display = None
         super(MainWindow, self).__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        # Current file
+        self._filename = None
+        # Update our window caption
+        self.update_caption()
         # Our global state
         self.settings = QtCore.QSettings("Zoxel", "Zoxel")
         self.state = {}
@@ -50,6 +55,9 @@ class MainWindow(QtGui.QMainWindow):
         if value is not None:
             self.ui.action_floor_grid.setChecked(value)
             self.display.floor_grid = value
+        # Connect some signals
+        if self.display:
+            self.display.changed.connect(self.on_data_changed)
 
     @QtCore.Slot()
     def on_action_about_triggered(self):
@@ -63,17 +71,39 @@ class MainWindow(QtGui.QMainWindow):
         self.set_setting("display_floor_grid", self.display.floor_grid)
 
     @QtCore.Slot()
+    def on_action_new_triggered(self):
+        if self.display.edited:
+            responce = QtGui.QMessageBox.question(self,"Discard changes?", 
+            "Save changes before discarding?", 
+            buttons = (QtGui.QMessageBox.Save | QtGui.QMessageBox.Cancel
+            | QtGui.QMessageBox.No))
+            if responce == QtGui.QMessageBox.StandardButton.Save:
+                if not self.save():
+                    return
+            elif responce == QtGui.QMessageBox.StandardButton.Cancel:
+                return
+        # Clear our data
+        self._filename = ""               
+        self.display.clear()
+                
+    @QtCore.Slot()
     def on_action_wireframe_triggered(self):
         self.display.wireframe = self.ui.action_wireframe.isChecked()
         self.set_setting("display_wireframe", self.display.wireframe)
 
     @QtCore.Slot()
     def on_action_save_triggered(self):
-        # Bail if current focus doesn't support saving
-        if not self.window_supports_save():
-            return
-        # Send a save request
-        self.window_supports_save(True)
+        # Save
+        self.save()
+
+    @QtCore.Slot()
+    def on_action_saveas_triggered(self):
+        # Save
+        self.save(True)
+    
+    # Voxel data changed signal handler
+    def on_data_changed(self):
+        self.update_caption()
 
     # Return a section of our internal config
     def get_setting(self, name):
@@ -113,4 +143,34 @@ class MainWindow(QtGui.QMainWindow):
             error = QtGui.QErrorMessage(self)
             error.showMessage(str(E))
 
+    # Update the window caption to reflect the current state
+    def update_caption(self):
+        caption = "Zoxel"
+        if self._filename:
+            caption += " - [%s]" % self._filename
+        else:
+            caption += " - [Unsaved model]"
+        if self.display and self.display.edited:
+            caption += " *"
+        self.setWindowTitle(caption)
 
+    # Save the current data
+    def save(self, newfile = False):
+        saved = False
+        filename = self._filename
+        if newfile or not filename:
+            filename, filetype = QtGui.QFileDialog.getSaveFileName(self,
+                "Save As",
+                "model.zox",
+                "Zoxel Files (*.zox);;Sproxel Files (*.csv);;All Files (*)")
+        if filename:
+            # Try to save... FIXME Implement this
+            saved = True # FIXME
+            self._filename = filename
+        # If we saved, clear edited state
+        if saved:
+            self.display.edited = False
+            self.update_caption()
+        return saved
+
+        

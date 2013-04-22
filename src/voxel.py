@@ -76,6 +76,10 @@ class VoxelData(object):
             return EMPTY
         return self._data[x][y][z]
 
+    # Clear our voxel data
+    def clear(self):
+        self.__init__()
+
     # Return full vertex list
     def get_vertices(self):
         vertices = []

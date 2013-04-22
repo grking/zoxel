@@ -71,7 +71,10 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="action_new"/>
+    <addaction name="separator"/>
     <addaction name="action_save"/>
+    <addaction name="action_saveas"/>
     <addaction name="separator"/>
     <addaction name="action_exit"/>
    </widget>
@@ -152,6 +155,16 @@
    </property>
    <property name="text">
     <string>Wireframe</string>
+   </property>
+  </action>
+  <action name="action_new">
+   <property name="text">
+    <string>New</string>
+   </property>
+  </action>
+  <action name="action_saveas">
+   <property name="text">
+    <string>Save As...</string>
    </property>
   </action>
  </widget>

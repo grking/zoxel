@@ -41,6 +41,16 @@ class GLWidget(QtOpenGL.QGLWidget):
     def wireframe(self, value):
         self._display_wireframe = value
         self.updateGL()
+    
+    @property
+    def edited(self):
+        return self._edited
+    @edited.setter
+    def edited(self, value):
+        self._edited = value
+    
+    # Our signals
+    changed = QtCore.Signal()
 
     def __init__(self, parent=None):
         glformat = QtOpenGL.QGLFormat()
@@ -54,6 +64,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Default values
         self._background_colour = QtGui.QColor("silver")
         self._display_wireframe = False
+        self._edited = False
         # Mouse position
         self._mouse = QtCore.QPoint()
         # Rotation
@@ -72,6 +83,14 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.voxels = voxel.VoxelData()
         # Generate some test data XXX
         self.build_world()
+
+    # Reset the control and clear all data
+    def clear(self):
+        self.voxels.clear()
+        self._edited = False
+        self.build_mesh()
+        self.updateGL()
+        self.changed.emit()
 
     # Initialise OpenGL
     def initializeGL(self):
@@ -236,18 +255,24 @@ class GLWidget(QtOpenGL.QGLWidget):
             z = random.randint(0,world.depth-1)
             world.set(x, y, z, voxel.FULL)
 
+    # Set the state of a voxel
+    def set(self, x, y, z, voxel_type):
+        self.voxels.set(x, y, z, voxel_type)
+        self._edited = True
+        self.changed.emit()
+
     def mousePressEvent(self, event):
         self._mouse = QtCore.QPoint(event.pos())
         if event.buttons() & QtCore.Qt.LeftButton:
             x, y, z, face = self.window_to_voxel(event.x(), event.y())
             # If we actually clicked on a voxel
             if face is not None:
-                self.voxels.set(x, y, z, voxel.EMPTY)
+                self.set(x, y, z, voxel.EMPTY)
                 self.build_mesh()
                 self.updateGL()
             elif x is not None:
                 # We clicked on the background
-                self.voxels.set(x, y, z, voxel.FULL)
+                self.set(x, y, z, voxel.FULL)
                 self.build_mesh()
                 self.updateGL()
 
