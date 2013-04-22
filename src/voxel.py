@@ -59,6 +59,11 @@ class VoxelData(object):
 
     # Set a voxel to the given state
     def set(self, x, y, z, state):
+        # Check bounds
+        if (x < 0 or x >= self.width 
+            or y < 0 or y >= self.height 
+            or z < 0 or z >= self.depth):
+            return
         self._data[x][y][z] = state
         if state != EMPTY:
             self._cache.append((x,y,z))
