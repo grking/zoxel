@@ -43,7 +43,15 @@ class ZoxelFile(object):
         
         # Build data structure
         data = {'version': version, 'frames': 1}
-        data['frame1'] = voxels._data
+        frame = []
+        for y in range(voxels.height):
+            for z in range(voxels.depth):
+                for x in range(voxels.width):
+                    v = voxels.get(x, y, z)
+                    if v:
+                        frame.append((x,y,z,v))
+        
+        data['frame1'] = frame
         
         # Open our file
         f = open(filename,"wt")
@@ -72,4 +80,7 @@ class ZoxelFile(object):
             raise Exception("More recent version of Zoxel needed to open file.")
         
         # Load the data
-        voxels._data = data['frame1']
+        frame = data['frame1']
+
+        for x, y, z, v in frame:
+            voxels.set(x, y, z, v)
