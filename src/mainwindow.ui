@@ -14,8 +14,8 @@
    <string>Zoxel</string>
   </property>
   <property name="windowIcon">
-   <iconset>
-    <normaloff>:/gfx/gfx/system-run.png</normaloff>:/gfx/gfx/system-run.png</iconset>
+   <iconset resource="resources.qrc">
+    <normaloff>:/images/gfx/icons/block.png</normaloff>:/images/gfx/icons/block.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
