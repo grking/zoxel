@@ -253,3 +253,56 @@ class VoxelData(object):
                 for y in range(self.height):
                     if self._data[x][y][z] != EMPTY:
                         self._cache.append((x, y, z))
+
+    # Calculate the actual bounding box of the model in voxel space
+    def calculate_bounding_box(self):
+        minx = 999
+        miny = 999
+        minz = 999
+        maxx = -999
+        maxy = -999
+        maxz = -999
+        for x,y,z in self._cache:
+            print x,y,z
+            if x < minx:
+                minx = x
+            if x > maxx:
+                maxx = x
+            if y < miny:
+                miny = y
+            if y > maxy:
+                maxy = y
+            if z < minz:
+                minz = z
+            if z > maxz:
+                maxz = z
+        width = (maxx-minx)+1
+        height = (maxy-miny)+1
+        depth = (maxz-minz)+1
+        return minx, miny, minz, width, height, depth
+
+    # Resize the voxel space. If no dimensions given, adjust to bounding box
+    def resize(self, width = None, height = None, depth = None):
+        # No dimensions, use bounding box
+        # FIXME We just adjust to bounding box
+        mx, my, mz, width, height, depth = self.calculate_bounding_box()
+        # Create new data structure of the required size
+        data = [[[0 for k in xrange(depth)]
+            for j in xrange(height)]
+                for i in xrange(width)]
+        # Calculate translation
+        dx = 0-mx # XXX
+        dy = 0-my
+        dz = 0-mz
+        # Copy data over at new location
+        for x in xrange(mx, width):
+            for y in xrange(my, height):
+                for z in xrange(mz, depth):
+                    data[x-dx][y-dy][z-dz] = self._data[x][y][z]
+        # Set new dimensions
+        self._width = width
+        self._height = height
+        self._depth = depth
+        self._data = data
+        # Rebuild our cache
+        self.cache_rebuild()

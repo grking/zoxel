@@ -104,6 +104,7 @@ class GLWidget(QtOpenGL.QGLWidget):
     def refresh(self):
         self.voxels.cache_rebuild()
         self.build_mesh()
+        self.build_grid()
         self.updateGL()
 
     # Initialise OpenGL
@@ -253,7 +254,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         self._colour_ids = array.array("B", self._colour_ids).tostring()
         self._normals = array.array("f", self._normals).tostring()
 
-    # This is just a hack to put some demo data in the voxel world
+    # Build floor grid
     def build_grid(self):
         # Build a grid
         grid = self.voxels.get_grid_vertices()

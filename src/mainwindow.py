@@ -283,4 +283,5 @@ class MainWindow(QtGui.QMainWindow):
             str(Ex))
             
         self.update_caption()
+        self.display.voxels.resize()
         self.display.refresh()
