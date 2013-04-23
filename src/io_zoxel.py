@@ -76,7 +76,7 @@ class ZoxelFile(object):
         f.close()
         
         # Check we understand it
-        if int(data['version']) > self._file_version:
+        if data['version'] > self._file_version:
             raise Exception("More recent version of Zoxel needed to open file.")
         
         # Load the data

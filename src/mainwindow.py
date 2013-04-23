@@ -274,7 +274,13 @@ class MainWindow(QtGui.QMainWindow):
         
         # Load the file
         self.display.clear()
-        handler.load(filename)
-        self._filename = filename
+        self._filename = None
+        try:
+            handler.load(filename)
+            self._filename = filename
+        except Exception as Ex:
+            QtGui.QMessageBox.warning(self, "Could not load file",
+            str(Ex))
+            
         self.update_caption()
         self.display.refresh()
