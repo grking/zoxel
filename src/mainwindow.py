@@ -26,6 +26,7 @@ from io_sproxel import SproxelFile
 from io_zoxel import ZoxelFile
 from tool_draw import DrawingTool
 from tool_paint import PaintingTool
+from tool_erase import EraseTool
 
 class MainWindow(QtGui.QMainWindow):
 
@@ -80,6 +81,7 @@ class MainWindow(QtGui.QMainWindow):
         self._tools = []
         self.load_tool(DrawingTool(self))
         self.load_tool(PaintingTool(self))
+        self.load_tool(EraseTool(self))
         # Setup window
         self.update_caption()
 

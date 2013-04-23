@@ -96,7 +96,8 @@ class VoxelData(object):
         self._data[x][y][z] = state
         self.changed = True
         if state != EMPTY:
-            self._cache.append((x,y,z))
+            if (x,y,z) not in self._cache:
+                self._cache.append((x,y,z))
         else:
             if (x,y,z) in self._cache:
                 self._cache.remove((x,y,z))
