@@ -35,8 +35,8 @@ class MainWindow(QtGui.QMainWindow):
         # Current file
         self._filename = None
         self._last_save_handler = None
-        # Exporters
-        self._save_handlers = {}
+        # Importers / Exporters
+        self._file_handlers = []
         # Update our window caption
         self.update_caption()
         # Our global state
@@ -170,15 +170,20 @@ class MainWindow(QtGui.QMainWindow):
 
     # Save the current data
     def save(self, newfile = False):
+
+        # Find the handlers that support saving
+        handlers = [x for x in self._file_handlers if hasattr(x, 'save')]
+
         saved = False
         filename = self._filename
         handler = self._last_save_handler
+
         # Build list of available types
         choices = []
-        for desc in self._save_handlers:
-            choices.append( "%s (%s)" % (desc, self._save_handlers[desc][0]) )
+        for exporter in handlers:
+            choices.append( "%s (%s)" % (exporter.description, exporter.filetype))
         choices = ";;".join(choices)
-        
+
         # Get a filename if we need one
         if newfile or not filename:
             filename, filetype = QtGui.QFileDialog.getSaveFileName(self,
@@ -191,14 +196,14 @@ class MainWindow(QtGui.QMainWindow):
 
         # Find the handler if we need to
         if not handler:
-            for desc in self._save_handlers:
-                ourtype = "%s (%s)" % (desc, self._save_handlers[desc][0])
+            for exporter in handlers:
+                ourtype = "%s (%s)" % (exporter.description, exporter.filetype)
                 if filetype == ourtype:
-                    handler =  self._save_handlers[desc][1]
-                    
+                    handler =  exporter
+
         # Call the save handler
         try:
-            handler(filename)
+            handler.save(filename)
             saved = True
         except Exception as Ex:
             QtGui.QMessageBox.warning(self, "Save Failed",
@@ -213,8 +218,8 @@ class MainWindow(QtGui.QMainWindow):
         return saved
 
     # Registers an exporter with the system
-    def register_save_handler(self, description, filetype, handler):
-        self._save_handlers[description] = (filetype, handler)
+    def register_file_handler(self, handler):
+        self._file_handlers.append(handler)
 
     # Return the voxel data
     def get_voxel_data(self):

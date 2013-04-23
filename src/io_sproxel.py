@@ -17,11 +17,17 @@
 
 class SproxelFile(object):
 
+    # Description of file type
+    description = "Sproxel Files"
+    
+    # File type filter
+    filetype = "*.csv"
+
     # We are pasased the mainwindow as a parent on construction
     def __init__(self, parent):
         self.parent = parent
         # Register our exporter
-        self.parent.register_save_handler('Sproxel Files','*.csv',self.save)
+        self.parent.register_file_handler(self)
 
     # Called when we need to save. Should raise an exception if there is a
     # problem saving.
