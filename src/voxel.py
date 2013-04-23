@@ -223,12 +223,6 @@ class VoxelData(object):
             grid += (gx, gy, gz)
         return grid
 
-    def scan(self):
-        for x in range(self.width):
-            for z in range(self.depth):
-                for y in range(self.height):
-                    x = self.get(x, y, z)
-
     # Convert voxel space coordinates to world space
     def voxel_to_world(self, x, y, z):
         x = (x - self.width//2)-0.5
@@ -246,7 +240,7 @@ class VoxelData(object):
         return x, y, z
 
     # Rebuild our cache
-    def cache_rebuild(self):
+    def _cache_rebuild(self):
         self._cache = []
         for x in range(self.width):
             for z in range(self.depth):
@@ -305,4 +299,4 @@ class VoxelData(object):
         self._depth = depth
         self._data = data
         # Rebuild our cache
-        self.cache_rebuild()
+        self._cache_rebuild()

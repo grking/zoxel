@@ -96,13 +96,11 @@ class GLWidget(QtOpenGL.QGLWidget):
     def clear(self):
         self.voxels.clear()
         self._edited = False
-        self.build_mesh()
-        self.updateGL()
         self.changed.emit()
+        self.refresh()
         
     # Force an update of our internal data
     def refresh(self):
-        self.voxels.cache_rebuild()
         self.build_mesh()
         self.build_grid()
         self.updateGL()
@@ -279,13 +277,11 @@ class GLWidget(QtOpenGL.QGLWidget):
             # If we actually clicked on a voxel
             if face is not None:
                 self.set(x, y, z, voxel.EMPTY)
-                self.build_mesh()
-                self.updateGL()
+                self.refresh()
             elif x is not None:
                 # We clicked on the background
                 self.set(x, y, z, self.voxel_colour)
-                self.build_mesh()
-                self.updateGL()
+                self.refresh()
 
     def mouseMoveEvent(self, event):
         dx = event.x() - self._mouse.x()
