@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import json
+from constants import ZOXEL_VERSION
 
 class ZoxelFile(object):
     
@@ -42,7 +43,8 @@ class ZoxelFile(object):
         version = self._file_version
         
         # Build data structure
-        data = {'version': version, 'frames': 1}
+        data = {'version': version, 'frames': 1, 
+                "creator": "Zoxel Version "+ZOXEL_VERSION}
         frame = []
         for y in range(voxels.height):
             for z in range(voxels.depth):
