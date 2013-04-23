@@ -22,6 +22,7 @@ from ui_mainwindow import Ui_MainWindow
 from voxel_widget import GLWidget
 import json
 from palette_widget import PaletteWidget
+from io_sproxel import SproxelFile
 
 class MainWindow(QtGui.QMainWindow):
 
@@ -33,6 +34,9 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.setupUi(self)
         # Current file
         self._filename = None
+        self._last_save_handler = None
+        # Exporters
+        self._save_handlers = {}
         # Update our window caption
         self.update_caption()
         # Our global state
@@ -63,6 +67,9 @@ class MainWindow(QtGui.QMainWindow):
             self.display.changed.connect(self.on_data_changed)
         if self.colour_palette:
             self.colour_palette.changed.connect(self.on_colour_changed)
+        # Load file handlers
+        self._io = []
+        self._io.append( SproxelFile(self) )
 
     @QtCore.Slot()
     def on_action_about_triggered(self):
@@ -165,19 +172,50 @@ class MainWindow(QtGui.QMainWindow):
     def save(self, newfile = False):
         saved = False
         filename = self._filename
+        handler = self._last_save_handler
+        # Build list of available types
+        choices = []
+        for desc in self._save_handlers:
+            choices.append( "%s (%s)" % (desc, self._save_handlers[desc][0]) )
+        choices = ";;".join(choices)
+        
+        # Get a filename if we need one
         if newfile or not filename:
             filename, filetype = QtGui.QFileDialog.getSaveFileName(self,
                 "Save As",
-                "model.zox",
-                "Zoxel Files (*.zox);;Sproxel Files (*.csv);;All Files (*)")
-        if filename:
-            # Try to save... FIXME Implement this
-            saved = True # FIXME
-            self._filename = filename
+                "model",
+                choices)
+            if not filename:
+                return
+            handler = None
+
+        # Find the handler if we need to
+        if not handler:
+            for desc in self._save_handlers:
+                ourtype = "%s (%s)" % (desc, self._save_handlers[desc][0])
+                if filetype == ourtype:
+                    handler =  self._save_handlers[desc][1]
+                    
+        # Call the save handler
+        try:
+            handler(filename)
+            saved = True
+        except Exception as Ex:
+            QtGui.QMessageBox.warning(self, "Save Failed",
+            str(Ex))
+                    
         # If we saved, clear edited state
         if saved:
+            self._filename = filename
+            self._last_save_handler = handler
             self.display.edited = False
             self.update_caption()
         return saved
 
-        
+    # Registers an exporter with the system
+    def register_save_handler(self, description, filetype, handler):
+        self._save_handlers[description] = (filetype, handler)
+
+    # Return the voxel data
+    def get_voxel_data(self):
+        return self.display.voxels
