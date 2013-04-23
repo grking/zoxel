@@ -57,3 +57,36 @@ class SproxelFile(object):
 
         # Tidy up
         f.close()
+
+    # Load a Sproxel file
+    def load(self, filename):
+        # grab the voxel data
+        voxels = self.parent.get_voxel_data()
+
+        # Open our file
+        f = open(filename,"rt")
+        size = f.readline().strip()
+        x,y,z = size.split(",")
+        x = int(x)
+        y = int(y)
+        z = int(z)
+        # Parse the file
+        for fy in xrange(y-1,-1,-1):
+            for fz in xrange(z-1,-1,-1):
+                line = f.readline().strip().split(",")
+                for fx in xrange(0, x):
+                    if line[fx] == "#00000000":
+                        continue
+                    colour = line[fx][1:]
+                    r = colour[:2]
+                    g = colour[2:4]
+                    b = colour[4:6]
+                    r = int(r, 16)
+                    g = int(g, 16)
+                    b = int(b, 16)
+                    a = 0xff
+                    v = r<<24 | g<<16 | b<<8 | a
+                    voxels.set(fx, fy, fz, v)
+
+            f.readline() # discard empty line
+        f.close()
