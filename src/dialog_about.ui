@@ -6,34 +6,43 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>497</width>
-    <height>486</height>
+    <width>456</width>
+    <height>417</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>About</string>
   </property>
-  <widget class="QLabel" name="label">
+  <widget class="QLabel" name="label_6">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>500</width>
-     <height>489</height>
+     <width>461</width>
+     <height>421</height>
     </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <property name="text">
     <string/>
    </property>
    <property name="pixmap">
-    <pixmap>:/images/gfx/flow.png</pixmap>
+    <pixmap resource="resources.qrc">:/images/gfx/about_dialog_image.png</pixmap>
+   </property>
+   <property name="textInteractionFlags">
+    <set>Qt::NoTextInteraction</set>
    </property>
   </widget>
   <widget class="QLabel" name="label_2">
    <property name="geometry">
     <rect>
-     <x>50</x>
-     <y>290</y>
+     <x>20</x>
+     <y>310</y>
      <width>91</width>
      <height>41</height>
     </rect>
@@ -49,37 +58,11 @@
     <string>Zoxel</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_3">
-   <property name="geometry">
-    <rect>
-     <x>50</x>
-     <y>320</y>
-     <width>131</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Voxel Editor</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_4">
-   <property name="geometry">
-    <rect>
-     <x>50</x>
-     <y>370</y>
-     <width>211</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Version 0.0.1 (7th March 2013)</string>
-   </property>
-  </widget>
   <widget class="QLabel" name="label_5">
    <property name="geometry">
     <rect>
-     <x>50</x>
-     <y>340</y>
+     <x>20</x>
+     <y>360</y>
      <width>301</width>
      <height>16</height>
     </rect>
@@ -88,11 +71,37 @@
     <string>Copyright (c) 2013, Graham R King</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QLabel" name="label_3">
    <property name="geometry">
     <rect>
-     <x>400</x>
-     <y>450</y>
+     <x>20</x>
+     <y>340</y>
+     <width>131</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Voxel Editor</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="ver_label">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>390</y>
+     <width>211</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Version 0.0.1 (7th March 2013)</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="button">
+   <property name="geometry">
+    <rect>
+     <x>360</x>
+     <y>380</y>
      <width>87</width>
      <height>27</height>
     </rect>
@@ -100,26 +109,28 @@
    <property name="text">
     <string>OK</string>
    </property>
-   <property name="flat">
-    <bool>false</bool>
+   <property name="default">
+    <bool>true</bool>
    </property>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections>
   <connection>
-   <sender>pushButton</sender>
+   <sender>button</sender>
    <signal>clicked()</signal>
    <receiver>AboutDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>443</x>
-     <y>463</y>
+     <x>403</x>
+     <y>393</y>
     </hint>
     <hint type="destinationlabel">
-     <x>248</x>
-     <y>242</y>
+     <x>227</x>
+     <y>208</y>
     </hint>
    </hints>
   </connection>

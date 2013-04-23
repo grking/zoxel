@@ -6,54 +6,22 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1027</width>
-    <height>668</height>
+    <width>1024</width>
+    <height>679</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Zoxel</string>
   </property>
   <property name="windowIcon">
-   <iconset>
-    <normaloff>:/gfx/gfx/system-run.png</normaloff>:/gfx/gfx/system-run.png</iconset>
+   <iconset resource="resources.qrc">
+    <normaloff>:/images/gfx/icons/block.png</normaloff>:/images/gfx/icons/block.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <widget class="QSplitter" name="splitter">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <widget class="QTabWidget" name="tabWidget">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>220</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="currentIndex">
-        <number>0</number>
-       </property>
-       <widget class="QWidget" name="tab_3">
-        <attribute name="title">
-         <string>Tab 1</string>
-        </attribute>
-       </widget>
-       <widget class="QWidget" name="tab_4">
-        <attribute name="title">
-         <string>Tab 2</string>
-        </attribute>
-       </widget>
-      </widget>
-      <widget class="QWidget" name="glparent" native="true">
-       <layout class="QGridLayout" name="gridLayout_2"/>
-      </widget>
+     <widget class="QWidget" name="glparent" native="true">
+      <layout class="QGridLayout" name="gridLayout_2"/>
      </widget>
     </item>
    </layout>
@@ -63,7 +31,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1027</width>
+     <width>1024</width>
      <height>25</height>
     </rect>
    </property>
@@ -71,7 +39,11 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="action_new"/>
+    <addaction name="action_open"/>
+    <addaction name="separator"/>
     <addaction name="action_save"/>
+    <addaction name="action_saveas"/>
     <addaction name="separator"/>
     <addaction name="action_exit"/>
    </widget>
@@ -103,7 +75,40 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="action_new"/>
+   <addaction name="action_open"/>
    <addaction name="action_save"/>
+   <addaction name="separator"/>
+   <addaction name="action_floor_grid"/>
+   <addaction name="action_wireframe"/>
+  </widget>
+  <widget class="QToolBar" name="toolbar_drawing">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>LeftToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QDockWidget" name="dock">
+   <property name="windowTitle">
+    <string>Palette</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="palette">
+    <property name="minimumSize">
+     <size>
+      <width>140</width>
+      <height>0</height>
+     </size>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_3"/>
+   </widget>
   </widget>
   <action name="action_exit">
    <property name="icon">
@@ -128,8 +133,8 @@
   </action>
   <action name="action_save">
    <property name="icon">
-    <iconset>
-     <normaloff>:/16x16/icons/document-save-5.png</normaloff>:/16x16/icons/document-save-5.png</iconset>
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/disk-return-black.png</normaloff>:/images/gfx/icons/disk-return-black.png</iconset>
    </property>
    <property name="text">
     <string>Save</string>
@@ -142,6 +147,10 @@
    <property name="checked">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/grid.png</normaloff>:/images/gfx/icons/grid.png</iconset>
+   </property>
    <property name="text">
     <string>Floor Grid</string>
    </property>
@@ -150,12 +159,45 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/layers-ungroup.png</normaloff>:/images/gfx/icons/layers-ungroup.png</iconset>
+   </property>
    <property name="text">
     <string>Wireframe</string>
    </property>
   </action>
+  <action name="action_new">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/document.png</normaloff>:/images/gfx/icons/document.png</iconset>
+   </property>
+   <property name="text">
+    <string>New</string>
+   </property>
+  </action>
+  <action name="action_saveas">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/disk-return-black.png</normaloff>:/images/gfx/icons/disk-return-black.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save As...</string>
+   </property>
+  </action>
+  <action name="action_open">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/folder-horizontal-open.png</normaloff>:/images/gfx/icons/folder-horizontal-open.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open...</string>
+   </property>
+  </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>action_exit</sender>

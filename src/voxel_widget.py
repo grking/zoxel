@@ -1,4 +1,4 @@
-# glwidget.py
+# voxel_widget.py
 # A 3D OpenGL QT Widget
 # Copyright (c) 2013, Graham R King
 #
@@ -23,6 +23,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import gluUnProject
 import voxel
 from euclid import LineSegment3, Plane, Point3
+from tool import Target, Face
 
 class GLWidget(QtOpenGL.QGLWidget):
 
@@ -41,6 +42,16 @@ class GLWidget(QtOpenGL.QGLWidget):
     def wireframe(self, value):
         self._display_wireframe = value
         self.updateGL()
+    
+    @property
+    def voxel_colour(self):
+        return self._voxel_colour
+    @voxel_colour.setter
+    def voxel_colour(self, value):
+        self._voxel_colour = value
+    
+    # Our signals
+    tool_activated = QtCore.Signal()
 
     def __init__(self, parent=None):
         glformat = QtOpenGL.QGLFormat()
@@ -54,6 +65,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Default values
         self._background_colour = QtGui.QColor("silver")
         self._display_wireframe = False
+        self._voxel_colour = QtGui.QColor.fromHsvF(0,1.0,1.0)
         # Mouse position
         self._mouse = QtCore.QPoint()
         # Rotation
@@ -70,8 +82,19 @@ class GLWidget(QtOpenGL.QGLWidget):
         self._display_floor_grid = True
         # Our voxel scene
         self.voxels = voxel.VoxelData()
-        # Generate some test data XXX
-        self.build_world()
+        # Build our grid
+        self.build_grid()
+
+    # Reset the control and clear all data
+    def clear(self):
+        self.voxels.clear()
+        self.refresh()
+        
+    # Force an update of our internal data
+    def refresh(self):
+        self.build_mesh()
+        self.build_grid()
+        self.updateGL()
 
     # Initialise OpenGL
     def initializeGL(self):
@@ -135,7 +158,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         glViewport(0,0,width,height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
-        self.perspective(45.0, float(width) / height, 4, 300)
+        self.perspective(45.0, float(width) / height, 0.1, 300)
         glMatrixMode(GL_MODELVIEW)
 
     # Render scene as colour ID's
@@ -220,36 +243,19 @@ class GLWidget(QtOpenGL.QGLWidget):
         self._colour_ids = array.array("B", self._colour_ids).tostring()
         self._normals = array.array("f", self._normals).tostring()
 
-    # This is just a hack to put some demo data in the voxel world
-    def build_world(self):
-        world = self.voxels
-
+    # Build floor grid
+    def build_grid(self):
         # Build a grid
-        grid = world.get_grid_vertices()
+        grid = self.voxels.get_grid_vertices()
         self._grid = array.array("f", grid).tostring()
         self._num_grid_vertices = len(grid)//3
-
-        # Add some random voxels
-        for i in range(250):
-            x = random.randint(0,world.width-1)
-            y = random.randint(0,world.height-1)
-            z = random.randint(0,world.depth-1)
-            world.set(x, y, z, voxel.FULL)
 
     def mousePressEvent(self, event):
         self._mouse = QtCore.QPoint(event.pos())
         if event.buttons() & QtCore.Qt.LeftButton:
             x, y, z, face = self.window_to_voxel(event.x(), event.y())
-            # If we actually clicked on a voxel
-            if face is not None:
-                self.voxels.set(x, y, z, voxel.EMPTY)
-                self.build_mesh()
-                self.updateGL()
-            elif x is not None:
-                # We clicked on the background
-                self.voxels.set(x, y, z, voxel.FULL)
-                self.build_mesh()
-                self.updateGL()
+            self.activate_tool(x, y, z, face)
+            self.refresh()
 
     def mouseMoveEvent(self, event):
         dx = event.x() - self._mouse.x()
@@ -278,7 +284,7 @@ class GLWidget(QtOpenGL.QGLWidget):
 
     # Return voxel space x,y,z coordinates given x, y window coordinates
     # Also return an identifier which indicates which face was clicked on.
-    # If the background was click on rather than a voxel, calculate and return
+    # If the background was clicked on rather than a voxel, calculate and return
     # the location on the floor grid.
     def window_to_voxel(self, x, y):
         # We must invert y coordinates
@@ -325,3 +331,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Adjust to voxel space coordinates
         x, y, z = self.voxels.world_to_voxel(intersect.x, intersect.y, intersect.z)
         return int(x), int(y), int(z)
+
+    def activate_tool(self, x, y, z, face):
+        self.target = Target(self.voxels, x, y, z, face)
+        self.tool_activated.emit()

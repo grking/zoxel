@@ -25,7 +25,7 @@ def main():
 
     # create mainWindow
     mainwindow = MainWindow()
-    mainwindow.showMaximized()
+    mainwindow.show()
 
     # Remember our main window
     app.mainwindow = mainwindow
