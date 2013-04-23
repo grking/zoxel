@@ -24,13 +24,13 @@
 # get_vertices() returns a list of vertices, along with normals and colours
 # which describes the current state of the voxel world.
 
-# World dimensions (in voxels)
+# Default world dimensions (in voxels)
 # We are an editor for "small" voxel models. So this needs to be small.
 # Dimensions are fundamentally limited by our encoding of face ID's into
-# colours (for picking) to 127x127x127.
-WORLD_WIDTH = 32
-WORLD_HEIGHT = 32
-WORLD_DEPTH = 32
+# colours (for picking) to 127x127x126.
+_WORLD_WIDTH = 32
+_WORLD_HEIGHT = 32
+_WORLD_DEPTH = 32
 
 # Types of voxel
 EMPTY = 0
@@ -39,23 +39,27 @@ FULL = 1
 class VoxelData(object):
 
     def __init__(self):
+        # Default size
+        self._width = _WORLD_WIDTH
+        self._height = _WORLD_HEIGHT
+        self._depth = _WORLD_DEPTH
         # Our scene data
-        self._data = [[[0 for k in xrange(WORLD_DEPTH)]
-            for j in xrange(WORLD_HEIGHT)]
-                for i in xrange(WORLD_WIDTH)]
+        self._data = [[[0 for k in xrange(self.depth)]
+            for j in xrange(self.height)]
+                for i in xrange(self.width)]
         # Our cache of non-empty voxels (coordinate groups)
         self._cache = []
 
     # World dimension properties
     @property
     def width(self):
-        return WORLD_WIDTH
+        return self._width
     @property
     def height(self):
-        return WORLD_HEIGHT
+        return self._height
     @property
     def depth(self):
-        return WORLD_DEPTH
+        return self._depth
 
     # Set a voxel to the given state
     def set(self, x, y, z, state):
@@ -73,9 +77,9 @@ class VoxelData(object):
 
     # Get the state of the given voxel
     def get(self, x, y, z):
-        if (x < 0 or x >= WORLD_WIDTH
-            or y < 0 or y >= WORLD_HEIGHT
-            or z < 0 or z >= WORLD_DEPTH):
+        if (x < 0 or x >= self.width
+            or y < 0 or y >= self.height
+            or z < 0 or z >= self.depth):
             return EMPTY
         return self._data[x][y][z]
 
@@ -207,45 +211,45 @@ class VoxelData(object):
     # Return vertices for a floor grid
     def get_grid_vertices(self):
         grid = []
-        for z in xrange(WORLD_DEPTH+1):
+        for z in xrange(self.depth+1):
             gx, gy, gz = self.voxel_to_world(0, 0, z)
             grid += (gx, gy, gz)
-            gx, gy, gz = self.voxel_to_world(WORLD_WIDTH, 0, z)
+            gx, gy, gz = self.voxel_to_world(self.width, 0, z)
             grid += (gx, gy, gz)
-        for x in xrange(WORLD_WIDTH+1):
+        for x in xrange(self.width+1):
             gx, gy, gz = self.voxel_to_world(x, 0, 0)
             grid += (gx, gy, gz)
-            gx, gy, gz = self.voxel_to_world(x, 0, WORLD_DEPTH)
+            gx, gy, gz = self.voxel_to_world(x, 0, self.depth)
             grid += (gx, gy, gz)
         return grid
 
     def scan(self):
-        for x in range(WORLD_WIDTH):
-            for z in range(WORLD_DEPTH):
-                for y in range(WORLD_HEIGHT):
+        for x in range(self.width):
+            for z in range(self.depth):
+                for y in range(self.height):
                     x = self.get(x, y, z)
 
     # Convert voxel space coordinates to world space
     def voxel_to_world(self, x, y, z):
-        x = (x - WORLD_WIDTH//2)-0.5
-        y = (y - WORLD_HEIGHT//2)-0.5
-        z = (z - WORLD_DEPTH//2)-0.5
+        x = (x - self.width//2)-0.5
+        y = (y - self.height//2)-0.5
+        z = (z - self.depth//2)-0.5
         z = -z
         return x, y, z
 
     # Convert world space coordinates to voxel space
     def world_to_voxel(self, x, y, z):
-        x = (x + WORLD_WIDTH//2)+0.5
-        y = (y + WORLD_HEIGHT//2)+0.5
-        z = (z - WORLD_DEPTH//2)-0.5
+        x = (x + self.width//2)+0.5
+        y = (y + self.height//2)+0.5
+        z = (z - self.depth//2)-0.5
         z = -z
         return x, y, z
 
     # Rebuild our cache
     def cache_rebuild(self):
         self._cache = []
-        for x in range(WORLD_WIDTH):
-            for z in range(WORLD_DEPTH):
-                for y in range(WORLD_HEIGHT):
+        for x in range(self.width):
+            for z in range(self.depth):
+                for y in range(self.height):
                     if self._data[x][y][z] != EMPTY:
                         self._cache.append((x, y, z))
