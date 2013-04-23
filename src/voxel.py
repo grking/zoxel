@@ -240,3 +240,12 @@ class VoxelData(object):
         z = (z - WORLD_DEPTH//2)-0.5
         z = -z
         return x, y, z
+
+    # Rebuild our cache
+    def cache_rebuild(self):
+        self._cache = []
+        for x in range(WORLD_WIDTH):
+            for z in range(WORLD_DEPTH):
+                for y in range(WORLD_HEIGHT):
+                    if self._data[x][y][z] != EMPTY:
+                        self._cache.append((x, y, z))

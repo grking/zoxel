@@ -23,6 +23,7 @@ from voxel_widget import GLWidget
 import json
 from palette_widget import PaletteWidget
 from io_sproxel import SproxelFile
+from io_zoxel import ZoxelFile
 
 class MainWindow(QtGui.QMainWindow):
 
@@ -34,7 +35,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.setupUi(self)
         # Current file
         self._filename = None
-        self._last_save_handler = None
+        self._last_file_handler = None
         # Importers / Exporters
         self._file_handlers = []
         # Update our window caption
@@ -70,6 +71,7 @@ class MainWindow(QtGui.QMainWindow):
         # Load file handlers
         self._io = []
         self._io.append( SproxelFile(self) )
+        self._io.append( ZoxelFile(self) )
 
     @QtCore.Slot()
     def on_action_about_triggered(self):
@@ -85,14 +87,7 @@ class MainWindow(QtGui.QMainWindow):
     @QtCore.Slot()
     def on_action_new_triggered(self):
         if self.display.edited:
-            responce = QtGui.QMessageBox.question(self,"Save changes?", 
-            "Save changes before discarding?", 
-            buttons = (QtGui.QMessageBox.Save | QtGui.QMessageBox.Cancel
-            | QtGui.QMessageBox.No))
-            if responce == QtGui.QMessageBox.StandardButton.Save:
-                if not self.save():
-                    return
-            elif responce == QtGui.QMessageBox.StandardButton.Cancel:
+            if not self.confirm_save():
                 return
         # Clear our data
         self._filename = ""               
@@ -113,6 +108,25 @@ class MainWindow(QtGui.QMainWindow):
         # Save
         self.save(True)
     
+    @QtCore.Slot()
+    def on_action_open_triggered(self):
+        # Load
+        self.load()
+
+    # Confirm if user wants to save before doing something drastic.
+    # returns True if we should continue
+    def confirm_save(self):
+        responce = QtGui.QMessageBox.question(self,"Save changes?", 
+            "Save changes before discarding?", 
+            buttons = (QtGui.QMessageBox.Save | QtGui.QMessageBox.Cancel
+            | QtGui.QMessageBox.No))
+        if responce == QtGui.QMessageBox.StandardButton.Save:
+            if not self.save():
+                return False
+        elif responce == QtGui.QMessageBox.StandardButton.Cancel:
+            return False
+        return True
+
     # Voxel data changed signal handler
     def on_data_changed(self):
         self.update_caption()
@@ -176,7 +190,9 @@ class MainWindow(QtGui.QMainWindow):
 
         saved = False
         filename = self._filename
-        handler = self._last_save_handler
+        handler = self._last_file_handler
+        if handler:
+            filetype = handler.filetype
 
         # Build list of available types
         choices = []
@@ -212,15 +228,53 @@ class MainWindow(QtGui.QMainWindow):
         # If we saved, clear edited state
         if saved:
             self._filename = filename
-            self._last_save_handler = handler
+            self._last_file_handler = handler
             self.display.edited = False
             self.update_caption()
         return saved
 
-    # Registers an exporter with the system
+    # Registers an file handler (importer/exporter) with the system
     def register_file_handler(self, handler):
         self._file_handlers.append(handler)
 
     # Return the voxel data
     def get_voxel_data(self):
         return self.display.voxels
+
+    # load a file
+    def load(self):
+        # If we have changes, perhaps we should save?
+        if self.display.edited:
+            if not self.confirm_save():
+                return
+
+        # Find the handlers that support loading
+        handler = None
+        handlers = [x for x in self._file_handlers if hasattr(x, 'load')]
+
+        # Build list of types we can load
+        choices = []
+        for importer in handlers:
+            choices.append( "%s (%s)" % (importer.description, importer.filetype))
+        choices = ";;".join(choices)
+
+        # Get a filename
+        filename, filetype = QtGui.QFileDialog.getOpenFileName(self,
+                caption="Open file",
+                filter=choices)
+        if not filename:
+            return
+
+        # Find the handler
+        for importer in handlers:
+            ourtype = "%s (%s)" % (importer.description, importer.filetype)
+            if filetype == ourtype:
+                handler =  importer
+                self._last_file_handler = handler
+        
+        # Load the file
+        self.display.clear()
+        handler.load(filename)
+        self._filename = filename
+        self.update_caption()
+        self.display.refresh()

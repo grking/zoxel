@@ -1,5 +1,6 @@
 *.py[cod]
 *.py~
+*.zox
 
 # C extensions
 *.so

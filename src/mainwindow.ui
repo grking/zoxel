@@ -40,6 +40,7 @@
      <string>File</string>
     </property>
     <addaction name="action_new"/>
+    <addaction name="action_open"/>
     <addaction name="separator"/>
     <addaction name="action_save"/>
     <addaction name="action_saveas"/>
@@ -162,6 +163,11 @@
   <action name="action_saveas">
    <property name="text">
     <string>Save As...</string>
+   </property>
+  </action>
+  <action name="action_open">
+   <property name="text">
+    <string>Open...</string>
    </property>
   </action>
  </widget>

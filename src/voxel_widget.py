@@ -99,6 +99,12 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.build_mesh()
         self.updateGL()
         self.changed.emit()
+        
+    # Force an update of our internal data
+    def refresh(self):
+        self.voxels.cache_rebuild()
+        self.build_mesh()
+        self.updateGL()
 
     # Initialise OpenGL
     def initializeGL(self):
