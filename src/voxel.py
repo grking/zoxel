@@ -63,6 +63,11 @@ class VoxelData(object):
 
     # Set a voxel to the given state
     def set(self, x, y, z, state):
+        # If this looks like a QT Color instance, convert it
+        if hasattr(state, "getRgb"):
+            c = state.getRgb()
+            state = c[0]<<24 | c[1]<<16 | c[2]<<8 | 0xff
+
         # Check bounds
         if (x < 0 or x >= self.width 
             or y < 0 or y >= self.height 
@@ -257,7 +262,6 @@ class VoxelData(object):
         maxy = -999
         maxz = -999
         for x,y,z in self._cache:
-            print x,y,z
             if x < minx:
                 minx = x
             if x > maxx:
@@ -289,10 +293,10 @@ class VoxelData(object):
         dy = 0-my
         dz = 0-mz
         # Copy data over at new location
-        for x in xrange(mx, width):
-            for y in xrange(my, height):
-                for z in xrange(mz, depth):
-                    data[x-dx][y-dy][z-dz] = self._data[x][y][z]
+        for x in xrange(mx, mx+width):
+            for y in xrange(my, my+height):
+                for z in xrange(mz, mz+depth):
+                    data[x+dx][y+dy][z+dz] = self._data[x][y][z]
         # Set new dimensions
         self._width = width
         self._height = height

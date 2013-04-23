@@ -24,6 +24,8 @@ import json
 from palette_widget import PaletteWidget
 from io_sproxel import SproxelFile
 from io_zoxel import ZoxelFile
+from tool_draw import DrawingTool
+from tool_paint import PaintingTool
 
 class MainWindow(QtGui.QMainWindow):
 
@@ -66,12 +68,18 @@ class MainWindow(QtGui.QMainWindow):
         # Connect some signals
         if self.display:
             self.display.changed.connect(self.on_data_changed)
+            self.display.tool_activated.connect(self.on_tool_activated)
         if self.colour_palette:
             self.colour_palette.changed.connect(self.on_colour_changed)
         # Load file handlers
         self._io = []
         self._io.append( SproxelFile(self) )
         self._io.append( ZoxelFile(self) )
+        # Initialise our tools
+        self._tool_group = QtGui.QActionGroup(self.ui.toolbar_drawing)
+        self._tools = []
+        self.load_tool(DrawingTool(self))
+        self.load_tool(PaintingTool(self))
 
     @QtCore.Slot()
     def on_action_about_triggered(self):
@@ -112,6 +120,9 @@ class MainWindow(QtGui.QMainWindow):
     def on_action_open_triggered(self):
         # Load
         self.load()
+        
+    def on_tool_activated(self):
+        self.activate_tool(self.display.target)
 
     # Confirm if user wants to save before doing something drastic.
     # returns True if we should continue
@@ -285,3 +296,18 @@ class MainWindow(QtGui.QMainWindow):
         self.update_caption()
         self.display.voxels.resize()
         self.display.refresh()
+
+    def load_tool(self, tool):
+        self._tools.append(tool)
+        self._tool_group.addAction(tool.get_action())
+        self.ui.toolbar_drawing.addAction(tool.get_action())
+    
+    def activate_tool(self, target):
+        action = self._tool_group.checkedAction()
+        if not action:
+            return
+        # Find who owns this action and activate
+        for tool in self._tools:
+            if tool.get_action() is action:
+                tool.on_activate(target)
+                return

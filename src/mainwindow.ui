@@ -92,7 +92,6 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="action_exit"/>
   </widget>
   <widget class="QDockWidget" name="dock">
    <property name="windowTitle">

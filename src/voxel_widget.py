@@ -23,6 +23,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import gluUnProject
 import voxel
 from euclid import LineSegment3, Plane, Point3
+from tool import Target, Face
 
 class GLWidget(QtOpenGL.QGLWidget):
 
@@ -58,6 +59,7 @@ class GLWidget(QtOpenGL.QGLWidget):
     
     # Our signals
     changed = QtCore.Signal()
+    tool_activated = QtCore.Signal()
 
     def __init__(self, parent=None):
         glformat = QtOpenGL.QGLFormat()
@@ -259,29 +261,12 @@ class GLWidget(QtOpenGL.QGLWidget):
         self._grid = array.array("f", grid).tostring()
         self._num_grid_vertices = len(grid)//3
 
-    # Set the state of a voxel
-    def set(self, x, y, z, colour):
-        if colour != voxel.EMPTY:
-            c = colour.getRgb()
-            voxel_type = c[0]<<24 | c[1]<<16 | c[2]<<8 | c[3]
-        else:
-            voxel_type = colour
-        self.voxels.set(x, y, z, voxel_type)
-        self._edited = True
-        self.changed.emit()
-
     def mousePressEvent(self, event):
         self._mouse = QtCore.QPoint(event.pos())
         if event.buttons() & QtCore.Qt.LeftButton:
             x, y, z, face = self.window_to_voxel(event.x(), event.y())
-            # If we actually clicked on a voxel
-            if face is not None:
-                self.set(x, y, z, voxel.EMPTY)
-                self.refresh()
-            elif x is not None:
-                # We clicked on the background
-                self.set(x, y, z, self.voxel_colour)
-                self.refresh()
+            self.activate_tool(x, y, z, face)
+            self.refresh()
 
     def mouseMoveEvent(self, event):
         dx = event.x() - self._mouse.x()
@@ -357,3 +342,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Adjust to voxel space coordinates
         x, y, z = self.voxels.world_to_voxel(intersect.x, intersect.y, intersect.z)
         return int(x), int(y), int(z)
+
+    def activate_tool(self, x, y, z, face):
+        self.target = Target(self.voxels, x, y, z, face)
+        self.tool_activated.emit()
