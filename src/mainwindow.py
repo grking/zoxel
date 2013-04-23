@@ -41,7 +41,7 @@ class MainWindow(QtGui.QMainWindow):
         # Importers / Exporters
         self._file_handlers = []
         # Update our window caption
-        self.update_caption()
+        self._caption = "Zoxel"
         # Our global state
         self.settings = QtCore.QSettings("Zoxel", "Zoxel")
         self.state = {}
@@ -67,7 +67,7 @@ class MainWindow(QtGui.QMainWindow):
             self.display.floor_grid = value
         # Connect some signals
         if self.display:
-            self.display.changed.connect(self.on_data_changed)
+            self.display.voxels.notify = self.on_data_changed
             self.display.tool_activated.connect(self.on_tool_activated)
         if self.colour_palette:
             self.colour_palette.changed.connect(self.on_colour_changed)
@@ -80,6 +80,8 @@ class MainWindow(QtGui.QMainWindow):
         self._tools = []
         self.load_tool(DrawingTool(self))
         self.load_tool(PaintingTool(self))
+        # Setup window
+        self.update_caption()
 
     @QtCore.Slot()
     def on_action_about_triggered(self):
@@ -94,12 +96,14 @@ class MainWindow(QtGui.QMainWindow):
 
     @QtCore.Slot()
     def on_action_new_triggered(self):
-        if self.display.edited:
+        if self.display.voxels.changed:
             if not self.confirm_save():
                 return
         # Clear our data
-        self._filename = ""               
+        self._filename = ""
         self.display.clear()
+        self.display.voxels.saved()
+        self.update_caption()
                 
     @QtCore.Slot()
     def on_action_wireframe_triggered(self):
@@ -189,9 +193,11 @@ class MainWindow(QtGui.QMainWindow):
             caption += " - [%s]" % self._filename
         else:
             caption += " - [Unsaved model]"
-        if self.display and self.display.edited:
+        if self.display and self.display.voxels.changed:
             caption += " *"
-        self.setWindowTitle(caption)
+        if caption != self._caption:
+            self.setWindowTitle(caption)
+        self._caption = caption
 
     # Save the current data
     def save(self, newfile = False):
@@ -240,7 +246,7 @@ class MainWindow(QtGui.QMainWindow):
         if saved:
             self._filename = filename
             self._last_file_handler = handler
-            self.display.edited = False
+            self.display.voxels.saved()
             self.update_caption()
         return saved
 
@@ -255,7 +261,7 @@ class MainWindow(QtGui.QMainWindow):
     # load a file
     def load(self):
         # If we have changes, perhaps we should save?
-        if self.display.edited:
+        if self.display.voxels.changed:
             if not self.confirm_save():
                 return
 
@@ -293,8 +299,9 @@ class MainWindow(QtGui.QMainWindow):
             QtGui.QMessageBox.warning(self, "Could not load file",
             str(Ex))
             
-        self.update_caption()
         self.display.voxels.resize()
+        self.display.voxels.saved()
+        self.update_caption()
         self.display.refresh()
 
     def load_tool(self, tool):

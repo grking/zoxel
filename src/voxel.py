@@ -38,18 +38,6 @@ FULL = 1
 
 class VoxelData(object):
 
-    def __init__(self):
-        # Default size
-        self._width = _WORLD_WIDTH
-        self._height = _WORLD_HEIGHT
-        self._depth = _WORLD_DEPTH
-        # Our scene data
-        self._data = [[[0 for k in xrange(self.depth)]
-            for j in xrange(self.height)]
-                for i in xrange(self.width)]
-        # Our cache of non-empty voxels (coordinate groups)
-        self._cache = []
-
     # World dimension properties
     @property
     def width(self):
@@ -60,6 +48,38 @@ class VoxelData(object):
     @property
     def depth(self):
         return self._depth
+    
+    @property
+    def changed(self):
+        return self._changed
+    @changed.setter
+    def changed(self, value):
+        if value and not self._changed:
+            # Let whoever is watching us know about the change
+            self._changed = value
+            if self.notify:
+                self.notify()
+        self._changed = value
+
+    def __init__(self):
+        # Default size
+        self._width = _WORLD_WIDTH
+        self._height = _WORLD_HEIGHT
+        self._depth = _WORLD_DEPTH
+        self._initialise_data()
+        # Callback when our data changes 
+        self.notify = None
+
+    # Initialise our data
+    def _initialise_data(self):
+        # Our scene data
+        self._data = [[[0 for k in xrange(self.depth)]
+            for j in xrange(self.height)]
+                for i in xrange(self.width)]
+        # Our cache of non-empty voxels (coordinate groups)
+        self._cache = []
+        # Flag indicating if our data has changed
+        self._changed = False
 
     # Set a voxel to the given state
     def set(self, x, y, z, state):
@@ -74,6 +94,7 @@ class VoxelData(object):
             or z < 0 or z >= self.depth):
             return
         self._data[x][y][z] = state
+        self.changed = True
         if state != EMPTY:
             self._cache.append((x,y,z))
         else:
@@ -90,7 +111,7 @@ class VoxelData(object):
 
     # Clear our voxel data
     def clear(self):
-        self.__init__()
+        self._initialise_data()
 
     # Return full vertex list
     def get_vertices(self):
@@ -105,6 +126,11 @@ class VoxelData(object):
             normals += n
             colour_ids += id
         return (vertices, colours, normals, colour_ids)
+
+    # Called to notify us that our data has been saved. i.e. we can set 
+    # our "changed" status back to False.
+    def saved(self):
+        self.changed = False
 
     # Return the verticies for the given voxel. We center our vertices at the origin
     def _get_voxel_vertices(self, x, y, z):
@@ -198,7 +224,7 @@ class VoxelData(object):
             vertices += (x, y+1, z-1)
             colours += colour * 6
             normals += (0, 0, -1) * 6
-            colour_ids += (id_r, id_g, id_b | 2) * 6
+            colour_ids += (id_r, id_g, id_b | 4) * 6
         # Bottom face
         if bottom:
             vertices += (x, y, z-1)
@@ -209,7 +235,7 @@ class VoxelData(object):
             vertices += (x+1, y, z)
             colours += colour * 6
             normals += (0, -1, 0) * 6
-            colour_ids += (id_r, id_g, id_b | 1) * 6
+            colour_ids += (id_r, id_g, id_b | 5) * 6
 
         return (vertices, colours, normals, colour_ids)
 
@@ -304,3 +330,4 @@ class VoxelData(object):
         self._data = data
         # Rebuild our cache
         self._cache_rebuild()
+        self.changed = True

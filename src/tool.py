@@ -57,7 +57,7 @@ class Target(object):
     # Returns the coordinates of the voxel next to the selected face.
     # Or None if there is not one.    
     def get_neighbour(self):
-        if not self.face:
+        if self.face is None:
             return None
         x = self.x
         y = self.y

@@ -44,13 +44,6 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.updateGL()
     
     @property
-    def edited(self):
-        return self._edited
-    @edited.setter
-    def edited(self, value):
-        self._edited = value
-
-    @property
     def voxel_colour(self):
         return self._voxel_colour
     @voxel_colour.setter
@@ -58,7 +51,6 @@ class GLWidget(QtOpenGL.QGLWidget):
         self._voxel_colour = value
     
     # Our signals
-    changed = QtCore.Signal()
     tool_activated = QtCore.Signal()
 
     def __init__(self, parent=None):
@@ -73,7 +65,6 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Default values
         self._background_colour = QtGui.QColor("silver")
         self._display_wireframe = False
-        self._edited = False
         self._voxel_colour = QtGui.QColor.fromHsvF(0,1.0,1.0)
         # Mouse position
         self._mouse = QtCore.QPoint()
@@ -97,8 +88,6 @@ class GLWidget(QtOpenGL.QGLWidget):
     # Reset the control and clear all data
     def clear(self):
         self.voxels.clear()
-        self._edited = False
-        self.changed.emit()
         self.refresh()
         
     # Force an update of our internal data
