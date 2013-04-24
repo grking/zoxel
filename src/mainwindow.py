@@ -18,6 +18,7 @@
 from PySide import QtCore
 from PySide import QtGui
 from dialog_about import AboutDialog
+from dialog_resize import ResizeDialog
 from ui_mainwindow import Ui_MainWindow
 from voxel_widget import GLWidget
 import json
@@ -118,6 +119,20 @@ class MainWindow(QtGui.QMainWindow):
         # Load
         self.load()
         
+    @QtCore.Slot()
+    def on_action_resize_triggered(self):
+        # Resize model dimensions
+        dialog = ResizeDialog(self)
+        dialog.ui.width.setValue(self.display.voxels.width)
+        dialog.ui.height.setValue(self.display.voxels.height)
+        dialog.ui.depth.setValue(self.display.voxels.depth)
+        if dialog.exec_():
+            width = dialog.ui.width.value()
+            height = dialog.ui.height.value()
+            depth = dialog.ui.depth.value()
+            self.display.voxels.resize(width, height, depth)
+            self.display.refresh()
+
     @QtCore.Slot()
     def on_action_background_triggered(self):
         # Choose a background colour

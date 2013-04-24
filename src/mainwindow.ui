@@ -83,6 +83,7 @@
    <addaction name="action_wireframe"/>
    <addaction name="separator"/>
    <addaction name="action_background"/>
+   <addaction name="action_resize"/>
   </widget>
   <widget class="QToolBar" name="toolbar_drawing">
    <property name="windowTitle">
@@ -206,6 +207,18 @@
    </property>
    <property name="toolTip">
     <string>Choose background colour</string>
+   </property>
+  </action>
+  <action name="action_resize">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/pencil-ruler.png</normaloff>:/images/gfx/icons/pencil-ruler.png</iconset>
+   </property>
+   <property name="text">
+    <string>Resize</string>
+   </property>
+   <property name="toolTip">
+    <string>Set model dimensions</string>
    </property>
   </action>
  </widget>
