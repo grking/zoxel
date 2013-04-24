@@ -81,6 +81,8 @@
    <addaction name="separator"/>
    <addaction name="action_floor_grid"/>
    <addaction name="action_wireframe"/>
+   <addaction name="separator"/>
+   <addaction name="action_background"/>
   </widget>
   <widget class="QToolBar" name="toolbar_drawing">
    <property name="windowTitle">
@@ -192,6 +194,18 @@
    </property>
    <property name="text">
     <string>Open...</string>
+   </property>
+  </action>
+  <action name="action_background">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/palette.png</normaloff>:/images/gfx/icons/palette.png</iconset>
+   </property>
+   <property name="text">
+    <string>Background</string>
+   </property>
+   <property name="toolTip">
+    <string>Choose background colour</string>
    </property>
   </action>
  </widget>

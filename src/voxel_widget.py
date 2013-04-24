@@ -49,7 +49,15 @@ class GLWidget(QtOpenGL.QGLWidget):
     @voxel_colour.setter
     def voxel_colour(self, value):
         self._voxel_colour = value
-    
+        
+    @property
+    def background(self):
+        return self._background_colour
+    @background.setter
+    def background(self, value):
+        self._background_colour = value
+        self.updateGL()
+
     # Our signals
     tool_activated = QtCore.Signal()
 
@@ -116,6 +124,7 @@ class GLWidget(QtOpenGL.QGLWidget):
 
     # Render our scene
     def paintGL(self):
+        self.qglClearColor(self._background_colour)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
         glTranslatef(self._translate_x,self._translate_y, self._translate_z)

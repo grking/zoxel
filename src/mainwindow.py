@@ -61,6 +61,9 @@ class MainWindow(QtGui.QMainWindow):
         if value is not None:
             self.ui.action_floor_grid.setChecked(value)
             self.display.floor_grid = value
+        value = self.get_setting("background_colour")
+        if value is not None:
+            self.display.background = QtGui.QColor.fromRgb(*value)
         # Connect some signals
         if self.display:
             self.display.voxels.notify = self.on_data_changed
@@ -114,6 +117,15 @@ class MainWindow(QtGui.QMainWindow):
     def on_action_open_triggered(self):
         # Load
         self.load()
+        
+    @QtCore.Slot()
+    def on_action_background_triggered(self):
+        # Choose a background colour
+        colour = QtGui.QColorDialog.getColor()
+        if colour.isValid():
+            self.display.background = colour
+            colour = (colour.red(), colour.green(), colour.blue())
+            self.set_setting("background_colour", colour)        
         
     def on_tool_activated(self):
         self.activate_tool(self.display.target)
