@@ -22,7 +22,6 @@ from ui_mainwindow import Ui_MainWindow
 from voxel_widget import GLWidget
 import json
 from palette_widget import PaletteWidget
-from plugin_api import PluginAPI
 
 class MainWindow(QtGui.QMainWindow):
 
@@ -308,4 +307,3 @@ class MainWindow(QtGui.QMainWindow):
     
     def load_plugins(self):
         import plugin_loader
-        self._plugins = PluginAPI()
