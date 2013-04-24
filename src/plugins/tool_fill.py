@@ -25,7 +25,7 @@ class FillTool(Tool):
         # Create our action / icon
         self.action = QtGui.QAction(
             QtGui.QPixmap(":/images/gfx/icons/paint-can.png"), 
-            "Draw", None)
+            "Fill", None)
         self.action.setStatusTip("Flood fill with colour")
         self.action.setCheckable(True)
         # Register the tool

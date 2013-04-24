@@ -51,6 +51,11 @@ class PluginAPI(object):
     def get_config(self, name):
         return self.api.mainwindow.get_setting(name)
 
+    # Changee the GUI palette to the given colour.
+    # Accepts QColors and 32bit integer RGBA
+    def set_palette(self, colour):
+        self.mainwindow.colour_palette.colour = colour        
+
 # Plugin registration
 # Plugins call this function to register with the system.  A plugin
 # should pass the class which will be instaniated by the application, 
