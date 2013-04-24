@@ -24,6 +24,9 @@ from OpenGL.GLU import gluUnProject
 import voxel
 from euclid import LineSegment3, Plane, Point3
 from tool import Target, Face
+import platform
+if platform.system() == "Windows":
+    import OpenGL.platform.win32
 
 class GLWidget(QtOpenGL.QGLWidget):
 
