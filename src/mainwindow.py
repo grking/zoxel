@@ -307,9 +307,5 @@ class MainWindow(QtGui.QMainWindow):
                 return
     
     def load_plugins(self):
-        import plugins.tool_draw
-        import plugins.tool_paint
-        import plugins.tool_erase
-        import plugins.io_zoxel
-        import plugins.io_sproxel
+        import plugin_loader
         self._plugins = PluginAPI()
