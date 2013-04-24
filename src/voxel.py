@@ -281,7 +281,7 @@ class VoxelData(object):
                         self._cache.append((x, y, z))
 
     # Calculate the actual bounding box of the model in voxel space
-    def calculate_bounding_box(self):
+    def get_bounding_box(self):
         minx = 999
         miny = 999
         minz = 999
@@ -309,7 +309,7 @@ class VoxelData(object):
     # Resize the voxel space. If no dimensions given, adjust to bounding box
     def resize(self, width = None, height = None, depth = None):
         # No dimensions, use bounding box
-        mx, my, mz, cwidth, cheight, cdepth = self.calculate_bounding_box()
+        mx, my, mz, cwidth, cheight, cdepth = self.get_bounding_box()
         if not width:
             width, height, depth = cwidth, cheight, cdepth
         # Create new data structure of the required size

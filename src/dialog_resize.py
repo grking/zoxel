@@ -23,3 +23,10 @@ class ResizeDialog(QtGui.QDialog):
         super(ResizeDialog, self).__init__(parent)
         self.ui = Ui_ResizeDialog()
         self.ui.setupUi(self)
+        self.ui.button_auto.clicked.connect(self.on_button_auto_clicked)
+
+    def on_button_auto_clicked(self):
+        _,_,_,x,y,z = self.parent().display.voxels.get_bounding_box()
+        self.ui.width.setValue(x)
+        self.ui.height.setValue(y)
+        self.ui.depth.setValue(z)
