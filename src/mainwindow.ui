@@ -81,6 +81,7 @@
    <addaction name="separator"/>
    <addaction name="action_floor_grid"/>
    <addaction name="action_wireframe"/>
+   <addaction name="action_autoresize"/>
    <addaction name="separator"/>
    <addaction name="action_background"/>
    <addaction name="action_resize"/>
@@ -219,6 +220,21 @@
    </property>
    <property name="toolTip">
     <string>Set model dimensions</string>
+   </property>
+  </action>
+  <action name="action_autoresize">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/ruler-triangle.png</normaloff>:/images/gfx/icons/ruler-triangle.png</iconset>
+   </property>
+   <property name="text">
+    <string>Autoresize</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle auto model resizing</string>
    </property>
   </action>
  </widget>

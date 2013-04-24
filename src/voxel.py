@@ -309,20 +309,25 @@ class VoxelData(object):
     # Resize the voxel space. If no dimensions given, adjust to bounding box
     def resize(self, width = None, height = None, depth = None):
         # No dimensions, use bounding box
-        # FIXME We just adjust to bounding box
-        mx, my, mz, width, height, depth = self.calculate_bounding_box()
+        mx, my, mz, cwidth, cheight, cdepth = self.calculate_bounding_box()
+        if not width:
+            width, height, depth = cwidth, cheight, cdepth
         # Create new data structure of the required size
         data = [[[0 for k in xrange(depth)]
             for j in xrange(height)]
                 for i in xrange(width)]
+        # Adjust ranges
+        movewidth = min(width, cwidth)
+        moveheight = min(height, cheight)
+        movedepth = min(depth, cdepth)
         # Calculate translation
-        dx = 0-mx # XXX
+        dx = 0-mx
         dy = 0-my
         dz = 0-mz
         # Copy data over at new location
-        for x in xrange(mx, mx+width):
-            for y in xrange(my, my+height):
-                for z in xrange(mz, mz+depth):
+        for x in xrange(mx, mx+movewidth):
+            for y in xrange(my, my+moveheight):
+                for z in xrange(mz, mz+movedepth):
                     data[x+dx][y+dy][z+dz] = self._data[x][y][z]
         # Set new dimensions
         self._width = width
