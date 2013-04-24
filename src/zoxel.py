@@ -30,6 +30,9 @@ def main():
     # Remember our main window
     app.mainwindow = mainwindow
 
+    # Load system plugins
+    mainwindow.load_plugins()
+
     # run main loop
     sys.exit(app.exec_())
 

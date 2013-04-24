@@ -22,11 +22,7 @@ from ui_mainwindow import Ui_MainWindow
 from voxel_widget import GLWidget
 import json
 from palette_widget import PaletteWidget
-from io_sproxel import SproxelFile
-from io_zoxel import ZoxelFile
-from tool_draw import DrawingTool
-from tool_paint import PaintingTool
-from tool_erase import EraseTool
+from plugin_api import PluginAPI
 
 class MainWindow(QtGui.QMainWindow):
 
@@ -72,16 +68,9 @@ class MainWindow(QtGui.QMainWindow):
             self.display.tool_activated.connect(self.on_tool_activated)
         if self.colour_palette:
             self.colour_palette.changed.connect(self.on_colour_changed)
-        # Load file handlers
-        self._io = []
-        self._io.append( SproxelFile(self) )
-        self._io.append( ZoxelFile(self) )
         # Initialise our tools
         self._tool_group = QtGui.QActionGroup(self.ui.toolbar_drawing)
         self._tools = []
-        self.load_tool(DrawingTool(self))
-        self.load_tool(PaintingTool(self))
-        self.load_tool(EraseTool(self))
         # Setup window
         self.update_caption()
 
@@ -256,10 +245,6 @@ class MainWindow(QtGui.QMainWindow):
     def register_file_handler(self, handler):
         self._file_handlers.append(handler)
 
-    # Return the voxel data
-    def get_voxel_data(self):
-        return self.display.voxels
-
     # load a file
     def load(self):
         # If we have changes, perhaps we should save?
@@ -310,7 +295,7 @@ class MainWindow(QtGui.QMainWindow):
         self._tools.append(tool)
         self._tool_group.addAction(tool.get_action())
         self.ui.toolbar_drawing.addAction(tool.get_action())
-    
+
     def activate_tool(self, target):
         action = self._tool_group.checkedAction()
         if not action:
@@ -320,3 +305,11 @@ class MainWindow(QtGui.QMainWindow):
             if tool.get_action() is action:
                 tool.on_activate(target)
                 return
+    
+    def load_plugins(self):
+        import plugins.tool_draw
+        import plugins.tool_paint
+        import plugins.tool_erase
+        import plugins.io_zoxel
+        import plugins.io_sproxel
+        self._plugins = PluginAPI()

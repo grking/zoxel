@@ -15,18 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from PySide import QtGui
-from tool import Tool, Target, Face
+from tool import Tool
+from plugin_api import register_plugin
 
 class PaintingTool(Tool):
     
-    def __init__(self, parent):
-        super(PaintingTool, self).__init__(parent)
+    def __init__(self, api):
+        super(PaintingTool, self).__init__(api)
         # Create our action / icon
         self.action = QtGui.QAction(
             QtGui.QPixmap(":/images/gfx/icons/paint-brush.png"), 
             "Paint", None)
         self.action.setStatusTip("Colour Voxels")
         self.action.setCheckable(True)
+        # Register the tool
+        self.api.register_tool(self)
     
     # Colour the targeted voxel
     def on_activate(self, target):
@@ -35,3 +38,4 @@ class PaintingTool(Tool):
         if voxel:    
             target.voxels.set(target.x, target.y, target.z, self.colour)
 
+register_plugin(PaintingTool, "Painting Tool", "1.0")
