@@ -24,9 +24,6 @@ from OpenGL.GLU import gluUnProject
 import voxel
 from euclid import LineSegment3, Plane, Point3
 from tool import Target, Face
-import platform
-if platform.system() == "Windows":
-    import OpenGL.platform.win32
 
 class GLWidget(QtOpenGL.QGLWidget):
 
@@ -296,8 +293,14 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.paintID()
         # Grab the colour / ID at the coordinates
         c = glReadPixels( x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE)
-        # Grab the colour (ID) which was clicked on
-        voxelid = ord(c[0])<<16 | ord(c[1])<<8 | ord(c[2])
+        if type(c) is str:
+            # This is what MESA on Linux seems to return
+            # Grab the colour (ID) which was clicked on
+            voxelid = ord(c[0])<<16 | ord(c[1])<<8 | ord(c[2])
+        else:
+            # Windows seems to return an array
+            voxelid = c[0][0][0]<<16 | c[1][0][0]<<8 | c[2][0][0]
+           
         # Perhaps we clicked on the background?
         if voxelid == 0xffffff:
             x, y, z = self.floor_intersection(x, y)
