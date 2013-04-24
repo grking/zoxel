@@ -44,6 +44,13 @@ class PluginAPI(object):
     def get_voxel_data(self):
         return self.mainwindow.display.voxels
 
+    # Get and set persistent config values. value can be any serialisable type.
+    # name should be a hashable type, like a simple string.
+    def set_config(self, name, value):
+        self.api.mainwindow.set_setting(name, value)
+    def get_config(self, name):
+        return self.api.mainwindow.get_setting(name)
+
 # Plugin registration
 # Plugins call this function to register with the system.  A plugin
 # should pass the class which will be instaniated by the application, 
