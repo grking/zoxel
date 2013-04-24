@@ -153,6 +153,10 @@ class MainWindow(QtGui.QMainWindow):
     def closeEvent(self, event):
         # Save state
         self.save_state()
+        if self.display.voxels.changed:
+            if not self.confirm_save():
+                event.ignore()
+                return
         event.accept()
 
     # Save our state
