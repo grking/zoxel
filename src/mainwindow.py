@@ -294,11 +294,13 @@ class MainWindow(QtGui.QMainWindow):
         self.update_caption()
         self.display.refresh()
 
-    def load_tool(self, tool):
+    # Registers a tool in the drawing toolbar
+    def register_tool(self, tool):
         self._tools.append(tool)
         self._tool_group.addAction(tool.get_action())
         self.ui.toolbar_drawing.addAction(tool.get_action())
 
+    # Send an activation event to the currently selected drawing tool
     def activate_tool(self, target):
         action = self._tool_group.checkedAction()
         if not action:
@@ -309,5 +311,6 @@ class MainWindow(QtGui.QMainWindow):
                 tool.on_activate(target)
                 return
     
+    # Load and initialise all plugins
     def load_plugins(self):
         import plugin_loader

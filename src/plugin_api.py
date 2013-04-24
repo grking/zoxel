@@ -30,7 +30,7 @@ class PluginAPI(object):
     # Register a drawing tool with the system
     def register_tool(self, tool):
         # Create an instance
-        self.mainwindow.load_tool(tool)
+        self.mainwindow.register_tool(tool)
         
     # Register an importer/exporter with the system
     def register_file_handler(self, handler):
