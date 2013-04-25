@@ -1,4 +1,6 @@
 # Load these plugins
+# This could (should) be replaced by dynamic module loading, but we do it
+# this way to support cx-freeze on Windows.
 import plugins.tool_draw
 import plugins.tool_paint
 import plugins.tool_erase
