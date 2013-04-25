@@ -150,7 +150,7 @@ class PaletteWidget(QtGui.QWidget):
 
     # Set the current colour
     def _set_colour(self, c):
-        h, s, v, a = c.getHsvF()
+        h, s, v, _ = c.getHsvF()
         self._hue = h
         self._saturation = s
         self._value = v

@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import random
 import math
 import array
 from PySide import QtCore, QtGui, QtOpenGL
@@ -23,7 +22,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import gluUnProject
 import voxel
 from euclid import LineSegment3, Plane, Point3
-from tool import Target, Face
+from tool import Target
 
 class GLWidget(QtOpenGL.QGLWidget):
 

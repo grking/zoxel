@@ -47,7 +47,7 @@ class PluginAPI(object):
     # Returns the current voxel model mesh data
     # vertices, colours, normals
     def get_voxel_mesh(self):
-        vert, col, norm, id = self.mainwindow.display.voxels.get_vertices() 
+        vert, col, norm, _ = self.mainwindow.display.voxels.get_vertices() 
         return (vert, col, norm)
 
     # Get and set persistent config values. value can be any serialisable type.

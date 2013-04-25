@@ -96,9 +96,9 @@ class VoxelData(object):
     # Initialise our data
     def _initialise_data(self):
         # Our scene data
-        self._data = [[[0 for k in xrange(self.depth)]
-            for j in xrange(self.height)]
-                for i in xrange(self.width)]
+        self._data = [[[0 for _ in xrange(self.depth)]
+            for _ in xrange(self.height)]
+                for _ in xrange(self.width)]
         # Our cache of non-empty voxels (coordinate groups)
         self._cache = []
         # Flag indicating if our data has changed
@@ -147,11 +147,11 @@ class VoxelData(object):
         colour_ids = []
         normals = []
         for x,y,z in self._cache:
-            v, c, n, id = self._get_voxel_vertices(x, y, z)
+            v, c, n, cid = self._get_voxel_vertices(x, y, z)
             vertices += v
             colours += c
             normals += n
-            colour_ids += id
+            colour_ids += cid
         return (vertices, colours, normals, colour_ids)
 
     # Called to notify us that our data has been saved. i.e. we can set 
@@ -191,7 +191,6 @@ class VoxelData(object):
         g = (c & 0xff0000)>>16
         b = (c & 0xff00)>>8
         # Calculate shades for our 4 occlusion levels
-        colour = (r, g, b)
         shades = []
         for c in range(5):
             shades.append((
@@ -539,9 +538,9 @@ class VoxelData(object):
         if not width:
             width, height, depth = cwidth, cheight, cdepth
         # Create new data structure of the required size
-        data = [[[0 for k in xrange(depth)]
-            for j in xrange(height)]
-                for i in xrange(width)]
+        data = [[[0 for _ in xrange(depth)]
+            for _ in xrange(height)]
+                for _ in xrange(width)]
         # Adjust ranges
         movewidth = min(width, cwidth)
         moveheight = min(height, cheight)
