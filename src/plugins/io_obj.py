@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import json
+import os
 from plugin_api import register_plugin
 
 class ObjFile(object):
@@ -39,21 +40,57 @@ class ObjFile(object):
         # Open our file
         f = open(filename,"wt")
 
+        # Use materials
+        name, _ = os.path.splitext(filename)
+        mat_filename = os.path.basename(name)+".mtl"
+        f.write("mtllib %s\r\n" % mat_filename)
+
         # Export vertices
         i = 0
         while i < len(vertices):
             f.write("v %f %f %f\r\n" % 
                 (vertices[i], vertices[i+1], vertices[i+2]))
             i += 3
+        
+        # Build a list of unique colours we use so we can assign materials
+        mats = {}
+        i = 0
+        while i < len(colours):
+            r = colours[i]
+            g = colours[i+1]
+            b = colours[i+2]
+            colour = r<<24 | g<<16 | b<<8
+            if colour not in mats:
+                mats[colour] = "material_%i" % len(mats)
+            i += 3
             
         # Export faces
         faces = (len(vertices)//(3*3))//2
         for i in xrange(faces):
             n = 1+(i * 6)
+            r = colours[(i*18)]
+            g = colours[(i*18)+1]
+            b = colours[(i*18)+2]
+            colour = r<<24 | g<<16 | b<<8
+            f.write("usemtl %s\r\n" % mats[colour])
             f.write("f %i %i %i\r\n" % (n, n+2, n+1))
             f.write("f %i %i %i\r\n" % (n+5, n+4, n+3))
 
         # Tidy up
+        f.close()
+        
+        # Create our material file
+        f = open(mat_filename,"wt")
+        for colour, material in mats.items():
+            f.write("newmtl %s\r\n" % material)
+            r = (colour & 0xff000000) >> 24
+            g = (colour & 0xff0000) >> 16
+            b = (colour & 0xff00) >> 8
+            r = r / 255.0
+            g = g / 255.0
+            b = b / 255.0
+            f.write("Ka %f %f %f\r\n" % (r, g, b))
+            f.write("Kd %f %f %f\r\n" % (r, g, b))
         f.close()
 
 
