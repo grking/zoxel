@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from plugin_api import register_plugin
 
 class SproxelFile(object):
 
@@ -23,17 +24,16 @@ class SproxelFile(object):
     # File type filter
     filetype = "*.csv"
 
-    # We are pasased the mainwindow as a parent on construction
-    def __init__(self, parent):
-        self.parent = parent
+    def __init__(self, api):
+        self.api = api
         # Register our exporter
-        self.parent.register_file_handler(self)
+        self.api.register_file_handler(self)
 
     # Called when we need to save. Should raise an exception if there is a
     # problem saving.
     def save(self, filename):
         # grab the voxel data
-        voxels = self.parent.get_voxel_data()
+        voxels = self.api.get_voxel_data()
 
         # Open our file
         f = open(filename,"wt")
@@ -61,7 +61,7 @@ class SproxelFile(object):
     # Load a Sproxel file
     def load(self, filename):
         # grab the voxel data
-        voxels = self.parent.get_voxel_data()
+        voxels = self.api.get_voxel_data()
 
         # Open our file
         f = open(filename,"rt")
@@ -90,3 +90,5 @@ class SproxelFile(object):
 
             f.readline() # discard empty line
         f.close()
+
+register_plugin(SproxelFile, "Sproxel file format IO", "1.0")

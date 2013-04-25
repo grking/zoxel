@@ -24,6 +24,8 @@
 # get_vertices() returns a list of vertices, along with normals and colours
 # which describes the current state of the voxel world.
 
+import math
+
 # Default world dimensions (in voxels)
 # We are an editor for "small" voxel models. So this needs to be small.
 # Dimensions are fundamentally limited by our encoding of face ID's into
@@ -35,6 +37,9 @@ _WORLD_DEPTH = 32
 # Types of voxel
 EMPTY = 0
 FULL = 1
+
+# Occlusion factor
+OCCLUSION = 0.7
 
 class VoxelData(object):
 
@@ -57,9 +62,23 @@ class VoxelData(object):
         if value and not self._changed:
             # Let whoever is watching us know about the change
             self._changed = value
-            if self.notify:
-                self.notify()
+            if self.notify_changed:
+                self.notify_changed()
         self._changed = value
+
+    @property
+    def autoresize(self):
+        return self._autoresize
+    @autoresize.setter
+    def autoresize(self, value):
+        self._autoresize = value
+        
+    @property
+    def occlusion(self):
+        return self._occlusion
+    @occlusion.setter
+    def occlusion(self, value):
+        self._occlusion = value
 
     def __init__(self):
         # Default size
@@ -68,14 +87,18 @@ class VoxelData(object):
         self._depth = _WORLD_DEPTH
         self._initialise_data()
         # Callback when our data changes 
-        self.notify = None
+        self.notify_changed = None
+        # Autoresize when setting voxels out of bounds?
+        self._autoresize = False
+        # Ambient occlusion type effect
+        self._occlusion = True
 
     # Initialise our data
     def _initialise_data(self):
         # Our scene data
-        self._data = [[[0 for k in xrange(self.depth)]
-            for j in xrange(self.height)]
-                for i in xrange(self.width)]
+        self._data = [[[0 for _ in xrange(self.depth)]
+            for _ in xrange(self.height)]
+                for _ in xrange(self.width)]
         # Our cache of non-empty voxels (coordinate groups)
         self._cache = []
         # Flag indicating if our data has changed
@@ -92,7 +115,10 @@ class VoxelData(object):
         if (x < 0 or x >= self.width 
             or y < 0 or y >= self.height 
             or z < 0 or z >= self.depth):
-            return
+            # If we are auto resizing, handle it
+            if not self._autoresize:
+                return
+            x, y, z = self._resize_to_include(x,y,z)
         self._data[x][y][z] = state
         self.changed = True
         if state != EMPTY:
@@ -121,11 +147,11 @@ class VoxelData(object):
         colour_ids = []
         normals = []
         for x,y,z in self._cache:
-            v, c, n, id = self._get_voxel_vertices(x, y, z)
+            v, c, n, cid = self._get_voxel_vertices(x, y, z)
             vertices += v
             colours += c
             normals += n
-            colour_ids += id
+            colour_ids += cid
         return (vertices, colours, normals, colour_ids)
 
     # Called to notify us that our data has been saved. i.e. we can set 
@@ -133,12 +159,23 @@ class VoxelData(object):
     def saved(self):
         self.changed = False
 
+    # Count the number of non-empty voxels from the list of coordinates
+    def _count_voxels(self, coordinates):
+        count = 0
+        for x,y,z in coordinates:
+            if self.get(x, y, z) != EMPTY:
+                count += 1
+        return count
+
     # Return the verticies for the given voxel. We center our vertices at the origin
     def _get_voxel_vertices(self, x, y, z):
         vertices = []
         colours = []
         normals = []
         colour_ids = []
+
+        # Remember voxel coordinates
+        vx, vy, vz = x,y,z
 
         # Determine if we have filled voxels around us
         front = self.get(x, y, z-1) == EMPTY
@@ -153,7 +190,13 @@ class VoxelData(object):
         r = (c & 0xff000000)>>24
         g = (c & 0xff0000)>>16
         b = (c & 0xff00)>>8
-        colour = (r, g, b)
+        # Calculate shades for our 4 occlusion levels
+        shades = []
+        for c in range(5):
+            shades.append((
+                int(r*math.pow(OCCLUSION,c)),
+                int(g*math.pow(OCCLUSION,c)),
+                int(b*math.pow(OCCLUSION,c))))
 
         # Encode our voxel space coordinates as colours, used for face selection
         # We use 7 bits per coordinate and the bottom 3 bits for face:
@@ -173,68 +216,248 @@ class VoxelData(object):
 
         # Front face
         if front:
+            occ1 = 0
+            occ2 = 0
+            occ3 = 0
+            occ4 = 0
+            if self._occlusion:
+                if self.get(vx,vy+1,vz-1) != EMPTY:
+                    occ2 += 1 
+                    occ4 += 1
+                if self.get(vx-1,vy,vz-1) != EMPTY:
+                    occ1 += 1
+                    occ2 += 1
+                if self.get(vx+1,vy,vz-1) != EMPTY:
+                    occ3 += 1
+                    occ4 += 1
+                if self.get(vx,vy-1,vz-1) != EMPTY:
+                    occ1 += 1
+                    occ3 += 1
+                if self.get(vx-1,vy-1,vz-1) != EMPTY:
+                    occ1 += 1
+                if self.get(vx-1,vy+1,vz-1) != EMPTY:
+                    occ2 += 1
+                if self.get(vx+1,vy-1,vz-1) != EMPTY:
+                    occ3 += 1
+                if self.get(vx+1,vy+1,vz-1) != EMPTY:
+                    occ4 += 1
             vertices += (x,   y,   z)
+            colours += shades[occ1]
             vertices += (x,   y+1, z)
+            colours += shades[occ2]
             vertices += (x+1, y,   z)
+            colours += shades[occ3]
             vertices += (x+1, y,   z)
+            colours += shades[occ3]
             vertices += (x,   y+1, z)
+            colours += shades[occ2]
             vertices += (x+1, y+1, z)
-            colours += colour * 6
+            colours += shades[occ4]
             normals += (0, 0, 1) * 6
             colour_ids += (id_r, id_g, id_b) * 6
         # Top face
         if top:
+            occ1 = 0
+            occ2 = 0
+            occ3 = 0
+            occ4 = 0
+            if self._occlusion:
+                if self.get(vx,vy+1,vz+1) != EMPTY:
+                    occ2 += 1 
+                    occ4 += 1
+                if self.get(vx-1,vy+1,vz) != EMPTY:
+                    occ1 += 1
+                    occ2 += 1
+                if self.get(vx+1,vy+1,vz) != EMPTY:
+                    occ3 += 1
+                    occ4 += 1
+                if self.get(vx,vy+1,vz-1) != EMPTY:
+                    occ1 += 1
+                    occ3 += 1
+                if self.get(vx-1,vy+1,vz-1) != EMPTY:
+                    occ1 += 1
+                if self.get(vx+1,vy+1,vz-1) != EMPTY:
+                    occ3 += 1
+                if self.get(vx+1,vy+1,vz+1) != EMPTY:
+                    occ4 += 1
+                if self.get(vx-1,vy+1,vz+1) != EMPTY:
+                    occ2 += 1
             vertices += (x,   y+1, z)
+            colours += shades[occ1]
             vertices += (x,   y+1, z-1)
+            colours += shades[occ2]
             vertices += (x+1, y+1, z)
+            colours += shades[occ3]
             vertices += (x+1, y+1, z)
+            colours += shades[occ3]
             vertices += (x,   y+1, z-1)
+            colours += shades[occ2]
             vertices += (x+1, y+1, z-1)
-            colours += colour * 6
+            colours += shades[occ4]
             normals += (0, 1, 0) * 6
             colour_ids += (id_r, id_g, id_b | 1) * 6
         # Right face
         if right:
+            occ1 = 0
+            occ2 = 0
+            occ3 = 0
+            occ4 = 0
+            if self._occlusion:
+                if self.get(vx+1,vy+1,vz) != EMPTY:
+                    occ2 += 1 
+                    occ4 += 1
+                if self.get(vx+1,vy,vz-1) != EMPTY:
+                    occ1 += 1
+                    occ2 += 1
+                if self.get(vx+1,vy,vz+1) != EMPTY:
+                    occ3 += 1
+                    occ4 += 1
+                if self.get(vx+1,vy-1,vz) != EMPTY:
+                    occ1 += 1
+                    occ3 += 1
+                if self.get(vx+1,vy-1,vz-1) != EMPTY:
+                    occ1 += 1
+                if self.get(vx+1,vy+1,vz-1) != EMPTY:
+                    occ2 += 1
+                if self.get(vx+1,vy-1,vz+1) != EMPTY:
+                    occ3 += 1
+                if self.get(vx+1,vy+1,vz+1) != EMPTY:
+                    occ4 += 1
             vertices += (x+1, y, z)
+            colours += shades[occ1]
             vertices += (x+1, y+1, z)
+            colours += shades[occ2]
             vertices += (x+1, y, z-1)
+            colours += shades[occ3]
             vertices += (x+1, y, z-1)
+            colours += shades[occ3]
             vertices += (x+1, y+1, z)
+            colours += shades[occ2]
             vertices += (x+1, y+1, z-1)
-            colours += colour * 6
+            colours += shades[occ4]
             normals += (1, 0, 0) * 6
             colour_ids += (id_r, id_g, id_b | 3) * 6
         # Left face
         if left:
+            occ1 = 0
+            occ2 = 0
+            occ3 = 0
+            occ4 = 0
+            if self._occlusion:
+                if self.get(vx-1,vy+1,vz) != EMPTY:
+                    occ2 += 1 
+                    occ4 += 1
+                if self.get(vx-1,vy,vz+1) != EMPTY:
+                    occ1 += 1
+                    occ2 += 1
+                if self.get(vx-1,vy,vz-1) != EMPTY:
+                    occ3 += 1
+                    occ4 += 1
+                if self.get(vx-1,vy-1,vz) != EMPTY:
+                    occ1 += 1
+                    occ3 += 1
+                if self.get(vx-1,vy-1,vz+1) != EMPTY:
+                    occ1 += 1
+                if self.get(vx-1,vy+1,vz+1) != EMPTY:
+                    occ2 += 1
+                if self.get(vx-1,vy-1,vz-1) != EMPTY:
+                    occ3 += 1
+                if self.get(vx-1,vy+1,vz-1) != EMPTY:
+                    occ4 += 1
             vertices += (x, y, z-1)
+            colours += shades[occ1]
             vertices += (x, y+1, z-1)
+            colours += shades[occ2]
             vertices += (x, y, z)
+            colours += shades[occ3]
             vertices += (x, y, z)
+            colours += shades[occ3]
             vertices += (x, y+1, z-1)
+            colours += shades[occ2]
             vertices += (x, y+1, z)
-            colours += colour * 6
+            colours += shades[occ4]
             normals += (-1, 0, 0) * 6
             colour_ids += (id_r, id_g, id_b | 2) * 6
         # Back face
         if back:
+            occ1 = 0
+            occ2 = 0
+            occ3 = 0
+            occ4 = 0
+            if self._occlusion:
+                if self.get(vx,vy+1,vz+1) != EMPTY:
+                    occ2 += 1 
+                    occ4 += 1
+                if self.get(vx+1,vy,vz+1) != EMPTY:
+                    occ1 += 1
+                    occ2 += 1
+                if self.get(vx-1,vy,vz+1) != EMPTY:
+                    occ3 += 1
+                    occ4 += 1
+                if self.get(vx,vy-1,vz+1) != EMPTY:
+                    occ1 += 1
+                    occ3 += 1
+                if self.get(vx+1,vy-1,vz+1) != EMPTY:
+                    occ1 += 1
+                if self.get(vx+1,vy+1,vz+1) != EMPTY:
+                    occ2 += 1
+                if self.get(vx-1,vy-1,vz+1) != EMPTY:
+                    occ3 += 1
+                if self.get(vx-1,vy+1,vz+1) != EMPTY:
+                    occ4 += 1
             vertices += (x+1, y, z-1)
+            colours += shades[occ1]
             vertices += (x+1, y+1, z-1)
+            colours += shades[occ2]
             vertices += (x, y, z-1)
+            colours += shades[occ3]
             vertices += (x, y, z-1)
+            colours += shades[occ3]
             vertices += (x+1, y+1, z-1)
+            colours += shades[occ2]
             vertices += (x, y+1, z-1)
-            colours += colour * 6
+            colours += shades[occ4]
             normals += (0, 0, -1) * 6
             colour_ids += (id_r, id_g, id_b | 4) * 6
         # Bottom face
         if bottom:
+            occ1 = 0
+            occ2 = 0
+            occ3 = 0
+            occ4 = 0
+            if self._occlusion:
+                if self.get(vx,vy-1,vz-1) != EMPTY:
+                    occ2 += 1 
+                    occ4 += 1
+                if self.get(vx-1,vy-1,vz) != EMPTY:
+                    occ1 += 1
+                    occ2 += 1
+                if self.get(vx+1,vy-1,vz) != EMPTY:
+                    occ3 += 1
+                    occ4 += 1
+                if self.get(vx,vy-1,vz+1) != EMPTY:
+                    occ1 += 1
+                    occ3 += 1
+                if self.get(vx-1,vy-1,vz+1) != EMPTY:
+                    occ1 += 1
+                if self.get(vx-1,vy-1,vz-1) != EMPTY:
+                    occ2 += 1
+                if self.get(vx+1,vy-1,vz+1) != EMPTY:
+                    occ3 += 1
+                if self.get(vx+1,vy-1,vz-1) != EMPTY:
+                    occ4 += 1
             vertices += (x, y, z-1)
+            colours += shades[occ1]
             vertices += (x, y, z)
+            colours += shades[occ2]
             vertices += (x+1, y, z-1)
+            colours += shades[occ3]
             vertices += (x+1, y, z-1)
+            colours += shades[occ3]
             vertices += (x, y, z)
+            colours += shades[occ2]
             vertices += (x+1, y, z)
-            colours += colour * 6
+            colours += shades[occ4]
             normals += (0, -1, 0) * 6
             colour_ids += (id_r, id_g, id_b | 5) * 6
 
@@ -281,7 +504,7 @@ class VoxelData(object):
                         self._cache.append((x, y, z))
 
     # Calculate the actual bounding box of the model in voxel space
-    def calculate_bounding_box(self):
+    def get_bounding_box(self):
         minx = 999
         miny = 999
         minz = 999
@@ -306,23 +529,30 @@ class VoxelData(object):
         depth = (maxz-minz)+1
         return minx, miny, minz, width, height, depth
 
-    # Resize the voxel space. If no dimensions given, adjust to bounding box
-    def resize(self, width = None, height = None, depth = None):
+    # Resize the voxel space. If no dimensions given, adjust to bounding box.
+    # If shift is an integer, we offset all voxels on all axis by the given
+    # amount.
+    def resize(self, width = None, height = None, depth = None, shift = 0):
         # No dimensions, use bounding box
-        # FIXME We just adjust to bounding box
-        mx, my, mz, width, height, depth = self.calculate_bounding_box()
+        mx, my, mz, cwidth, cheight, cdepth = self.get_bounding_box()
+        if not width:
+            width, height, depth = cwidth, cheight, cdepth
         # Create new data structure of the required size
-        data = [[[0 for k in xrange(depth)]
-            for j in xrange(height)]
-                for i in xrange(width)]
+        data = [[[0 for _ in xrange(depth)]
+            for _ in xrange(height)]
+                for _ in xrange(width)]
+        # Adjust ranges
+        movewidth = min(width, cwidth)
+        moveheight = min(height, cheight)
+        movedepth = min(depth, cdepth)
         # Calculate translation
-        dx = 0-mx # XXX
-        dy = 0-my
-        dz = 0-mz
+        dx = (0-mx)+shift
+        dy = (0-my)+shift
+        dz = (0-mz)+shift
         # Copy data over at new location
-        for x in xrange(mx, mx+width):
-            for y in xrange(my, my+height):
-                for z in xrange(mz, mz+depth):
+        for x in xrange(mx, mx+movewidth):
+            for y in xrange(my, my+moveheight):
+                for z in xrange(mz, mz+movedepth):
                     data[x+dx][y+dy][z+dz] = self._data[x][y][z]
         # Set new dimensions
         self._width = width
@@ -332,3 +562,18 @@ class VoxelData(object):
         # Rebuild our cache
         self._cache_rebuild()
         self.changed = True
+
+    # Resize our voxel space so that the out-of-bounds coordinate given
+    # becomes in-bounds.  We return adjusted coordinates which take into
+    # account that our voxel data will be relocated in voxel space.
+    def _resize_to_include(self, x, y, z):
+        # We expand all axis in both directions, this keeps our model
+        # centered.  It doesn't matter that this probably makes the space
+        # too large, because it's trivial to shrink it. 
+        new_width = self.width+2
+        new_height = self.height+2
+        new_depth = self.depth+2
+        self.resize(new_width, new_height, new_depth, 1)
+        # Return adjusted coordinates
+        return x+1, y+1, z+1
+

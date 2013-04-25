@@ -27,6 +27,12 @@ class PaletteWidget(QtGui.QWidget):
         return QtGui.QColor.fromHsvF(self._hue, self._saturation, self._value)
     @colour.setter
     def colour(self, value):
+        # If this is an integer, assume is RGBA
+        if type(value) is int:
+            r = (value & 0xff000000) >> 24
+            g = (value & 0xff0000) >> 16
+            b = (value & 0xff00) >> 8
+            value = QtGui.QColor.fromRgb(r,g,b)
         self._set_colour(value)
 
     def __init__(self, parent = None):
@@ -144,7 +150,7 @@ class PaletteWidget(QtGui.QWidget):
 
     # Set the current colour
     def _set_colour(self, c):
-        h, s, v, a = c.getHsvF()
+        h, s, v, _ = c.getHsvF()
         self._hue = h
         self._saturation = s
         self._value = v

@@ -1,5 +1,5 @@
-# tool_erase.py
-# Simple voxel removal tool
+# tool_colourpick.py
+# Simple colour picking tool.
 # Copyright (c) 2013, Graham R King
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,18 +16,26 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from PySide import QtGui
 from tool import Tool
+from plugin_api import register_plugin
 
-class EraseTool(Tool):
-
-    def __init__(self, parent):
-        super(EraseTool, self).__init__(parent)
+class ColourPickTool(Tool):
+    
+    def __init__(self, api):
+        super(ColourPickTool, self).__init__(api)
         # Create our action / icon
         self.action = QtGui.QAction(
-            QtGui.QPixmap(":/images/gfx/icons/shovel.png"), 
-            "Erase", None)
-        self.action.setStatusTip("Erase voxels")
+            QtGui.QPixmap(":/images/gfx/icons/pipette.png"), 
+            "Colour Pick", None)
+        self.action.setStatusTip("Choose a colour from an existing voxel.")
         self.action.setCheckable(True)
-
-    # Clear the targeted voxel
+        # Register the tool
+        self.api.register_tool(self)
+    
+    # Grab the colour of the selected voxel
     def on_activate(self, target):
-        target.voxels.set(target.x, target.y, target.z, 0)
+        # If we have a voxel at the target, colour it
+        voxel = target.voxels.get(target.x, target.y, target.z)
+        if voxel:    
+            self.api.set_palette(voxel)
+
+register_plugin(ColourPickTool, "Colour Picking Tool", "1.0")

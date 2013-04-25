@@ -81,10 +81,10 @@ class Tool(object):
     @property
     # Returns the currently selected colour
     def colour(self):
-        return self.parent.display.voxel_colour
+        return self.api.get_palette_colour()
 
-    def __init__(self, parent):
-        self.parent = parent
+    def __init__(self, api):
+        self.api = api
         # Create default action
         self.action = QtGui.QAction(
             QtGui.QPixmap(":/gfx/icons/wrench.png"), 

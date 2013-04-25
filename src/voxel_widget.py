@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import random
 import math
 import array
 from PySide import QtCore, QtGui, QtOpenGL
@@ -23,7 +22,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import gluUnProject
 import voxel
 from euclid import LineSegment3, Plane, Point3
-from tool import Target, Face
+from tool import Target
 
 class GLWidget(QtOpenGL.QGLWidget):
 
@@ -49,6 +48,21 @@ class GLWidget(QtOpenGL.QGLWidget):
     @voxel_colour.setter
     def voxel_colour(self, value):
         self._voxel_colour = value
+        
+    @property
+    def background(self):
+        return self._background_colour
+    @background.setter
+    def background(self, value):
+        self._background_colour = value
+        self.updateGL()
+
+    @property
+    def autoresize(self):
+        return self.voxels.autoresize
+    @autoresize.setter
+    def autoresize(self, value):
+        self.voxels.autoresize = value
     
     # Our signals
     tool_activated = QtCore.Signal()
@@ -116,6 +130,7 @@ class GLWidget(QtOpenGL.QGLWidget):
 
     # Render our scene
     def paintGL(self):
+        self.qglClearColor(self._background_colour)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
         glTranslatef(self._translate_x,self._translate_y, self._translate_z)
@@ -207,6 +222,9 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Disable lighting
         glDisable(GL_LIGHTING)
 
+        # Grid colour
+        glColor3f(1.0,1.0,1.0)
+
         # Enable vertex buffers
         glEnableClientState(GL_VERTEX_ARRAY)
 
@@ -293,8 +311,14 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.paintID()
         # Grab the colour / ID at the coordinates
         c = glReadPixels( x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE)
-        # Grab the colour (ID) which was clicked on
-        voxelid = ord(c[0])<<16 | ord(c[1])<<8 | ord(c[2])
+        if type(c) is str:
+            # This is what MESA on Linux seems to return
+            # Grab the colour (ID) which was clicked on
+            voxelid = ord(c[0])<<16 | ord(c[1])<<8 | ord(c[2])
+        else:
+            # Windows seems to return an array
+            voxelid = c[0][0][0]<<16 | c[1][0][0]<<8 | c[2][0][0]
+           
         # Perhaps we clicked on the background?
         if voxelid == 0xffffff:
             x, y, z = self.floor_intersection(x, y)

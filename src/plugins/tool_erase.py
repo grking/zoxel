@@ -1,5 +1,5 @@
-# mainwindow.py
-# Zoxel - A Voxel Editor
+# tool_erase.py
+# Simple voxel removal tool
 # Copyright (c) 2013, Graham R King
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,28 +14,25 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-import sys
 from PySide import QtGui
-from mainwindow import MainWindow
+from tool import Tool
+from plugin_api import register_plugin
 
-def main():
-    # create application
-    app = QtGui.QApplication(sys.argv)
+class EraseTool(Tool):
 
-    # create mainWindow
-    mainwindow = MainWindow()
-    mainwindow.show()
+    def __init__(self, api):
+        super(EraseTool, self).__init__(api)
+        # Create our action / icon
+        self.action = QtGui.QAction(
+            QtGui.QPixmap(":/images/gfx/icons/shovel.png"), 
+            "Erase", None)
+        self.action.setStatusTip("Erase voxels")
+        self.action.setCheckable(True)
+        # Register the tool
+        self.api.register_tool(self)
 
-    # Remember our main window
-    app.mainwindow = mainwindow
+    # Clear the targeted voxel
+    def on_activate(self, target):
+        target.voxels.set(target.x, target.y, target.z, 0)
 
-    # Load system plugins
-    mainwindow.load_plugins()
-
-    # run main loop
-    sys.exit(app.exec_())
-
-# call main function
-if __name__ == '__main__':
-    main()
+register_plugin(EraseTool, "Erasing Tool", "1.0")

@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import json
+from plugin_api import register_plugin
 from constants import ZOXEL_VERSION
 
 class ZoxelFile(object):
@@ -25,11 +26,10 @@ class ZoxelFile(object):
     # File type filter
     filetype = "*.zox"
 
-    # We are pasased the mainwindow as a parent on construction
-    def __init__(self, parent):
-        self.parent = parent
+    def __init__(self, api):
+        self.api = api
         # Register our exporter
-        self.parent.register_file_handler(self)
+        self.api.register_file_handler(self)
         # File version format we support
         self._file_version = 1
 
@@ -37,7 +37,7 @@ class ZoxelFile(object):
     # problem saving.
     def save(self, filename):
         # grab the voxel data
-        voxels = self.parent.get_voxel_data()
+        voxels = self.api.get_voxel_data()
 
         # File version
         version = self._file_version
@@ -67,7 +67,7 @@ class ZoxelFile(object):
     # is a problem.
     def load(self, filename):
         # grab the voxel data
-        voxels = self.parent.get_voxel_data()
+        voxels = self.api.get_voxel_data()
 
         # Load the file data
         f = open(filename, "rt")
@@ -86,3 +86,5 @@ class ZoxelFile(object):
 
         for x, y, z, v in frame:
             voxels.set(x, y, z, v)
+
+register_plugin(ZoxelFile, "Zoxel file format IO", "1.0")

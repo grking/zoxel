@@ -81,6 +81,11 @@
    <addaction name="separator"/>
    <addaction name="action_floor_grid"/>
    <addaction name="action_wireframe"/>
+   <addaction name="action_autoresize"/>
+   <addaction name="action_occlusion"/>
+   <addaction name="separator"/>
+   <addaction name="action_background"/>
+   <addaction name="action_resize"/>
   </widget>
   <widget class="QToolBar" name="toolbar_drawing">
    <property name="windowTitle">
@@ -161,7 +166,7 @@
    </property>
    <property name="icon">
     <iconset resource="resources.qrc">
-     <normaloff>:/images/gfx/icons/layers-ungroup.png</normaloff>:/images/gfx/icons/layers-ungroup.png</iconset>
+     <normaloff>:/images/gfx/icons/border.png</normaloff>:/images/gfx/icons/border.png</iconset>
    </property>
    <property name="text">
     <string>Wireframe</string>
@@ -192,6 +197,60 @@
    </property>
    <property name="text">
     <string>Open...</string>
+   </property>
+  </action>
+  <action name="action_background">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/palette.png</normaloff>:/images/gfx/icons/palette.png</iconset>
+   </property>
+   <property name="text">
+    <string>Background</string>
+   </property>
+   <property name="toolTip">
+    <string>Choose background colour</string>
+   </property>
+  </action>
+  <action name="action_resize">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/pencil-ruler.png</normaloff>:/images/gfx/icons/pencil-ruler.png</iconset>
+   </property>
+   <property name="text">
+    <string>Resize</string>
+   </property>
+   <property name="toolTip">
+    <string>Set dimensions</string>
+   </property>
+  </action>
+  <action name="action_autoresize">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/layer-resize.png</normaloff>:/images/gfx/icons/layer-resize.png</iconset>
+   </property>
+   <property name="text">
+    <string>Auto-expand</string>
+   </property>
+   <property name="toolTip">
+    <string>Auto expand space</string>
+   </property>
+  </action>
+  <action name="action_occlusion">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/eye.png</normaloff>:/images/gfx/icons/eye.png</iconset>
+   </property>
+   <property name="text">
+    <string>Occlusion</string>
+   </property>
+   <property name="toolTip">
+    <string>Render with ambient occlusion</string>
    </property>
   </action>
  </widget>
