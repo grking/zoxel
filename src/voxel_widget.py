@@ -223,6 +223,9 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Disable lighting
         glDisable(GL_LIGHTING)
 
+        # Grid colour
+        glColor3f(1.0,1.0,1.0)
+
         # Enable vertex buffers
         glEnableClientState(GL_VERTEX_ARRAY)
 
