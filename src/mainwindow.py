@@ -69,6 +69,11 @@ class MainWindow(QtGui.QMainWindow):
         if value is not None:
             self.display.autoresize = value
             self.ui.action_autoresize.setChecked(value)
+        value = self.get_setting("occlusion")
+        if not value:
+            value = True
+        self.display.voxels.occlusion = value
+        self.ui.action_occlusion.setChecked(value)
         # Connect some signals
         if self.display:
             self.display.voxels.notify = self.on_data_changed
@@ -142,6 +147,12 @@ class MainWindow(QtGui.QMainWindow):
         self.display.autoresize = self.ui.action_autoresize.isChecked()
         self.set_setting("autoresize", self.display.autoresize)
 
+    @QtCore.Slot()
+    def on_action_occlusion_triggered(self):
+        self.display.voxels.occlusion = self.ui.action_occlusion.isChecked()
+        self.set_setting("occlusion", self.display.voxels.occlusion)
+        self.display.refresh()
+    
     @QtCore.Slot()
     def on_action_background_triggered(self):
         # Choose a background colour

@@ -82,6 +82,7 @@
    <addaction name="action_floor_grid"/>
    <addaction name="action_wireframe"/>
    <addaction name="action_autoresize"/>
+   <addaction name="action_occlusion"/>
    <addaction name="separator"/>
    <addaction name="action_background"/>
    <addaction name="action_resize"/>
@@ -235,6 +236,21 @@
    </property>
    <property name="toolTip">
     <string>Auto-resize model.</string>
+   </property>
+  </action>
+  <action name="action_occlusion">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/eye.png</normaloff>:/images/gfx/icons/eye.png</iconset>
+   </property>
+   <property name="text">
+    <string>Occlusion</string>
+   </property>
+   <property name="toolTip">
+    <string>Render with ambient occlusion</string>
    </property>
   </action>
  </widget>

@@ -24,6 +24,8 @@
 # get_vertices() returns a list of vertices, along with normals and colours
 # which describes the current state of the voxel world.
 
+import math
+
 # Default world dimensions (in voxels)
 # We are an editor for "small" voxel models. So this needs to be small.
 # Dimensions are fundamentally limited by our encoding of face ID's into
@@ -35,6 +37,9 @@ _WORLD_DEPTH = 32
 # Types of voxel
 EMPTY = 0
 FULL = 1
+
+# Occlusion factor
+OCCLUSION = 0.7
 
 class VoxelData(object):
 
@@ -67,6 +72,13 @@ class VoxelData(object):
     @autoresize.setter
     def autoresize(self, value):
         self._autoresize = value
+        
+    @property
+    def occlusion(self):
+        return self._occlusion
+    @occlusion.setter
+    def occlusion(self, value):
+        self._occlusion = value
 
     def __init__(self):
         # Default size
@@ -78,6 +90,8 @@ class VoxelData(object):
         self.notify_changed = None
         # Autoresize when setting voxels out of bounds?
         self._autoresize = False
+        # Ambient occlusion type effect
+        self._occlusion = True
 
     # Initialise our data
     def _initialise_data(self):
@@ -145,12 +159,23 @@ class VoxelData(object):
     def saved(self):
         self.changed = False
 
+    # Count the number of non-empty voxels from the list of coordinates
+    def _count_voxels(self, coordinates):
+        count = 0
+        for x,y,z in coordinates:
+            if self.get(x, y, z) != EMPTY:
+                count += 1
+        return count
+
     # Return the verticies for the given voxel. We center our vertices at the origin
     def _get_voxel_vertices(self, x, y, z):
         vertices = []
         colours = []
         normals = []
         colour_ids = []
+
+        # Remember voxel coordinates
+        vx, vy, vz = x,y,z
 
         # Determine if we have filled voxels around us
         front = self.get(x, y, z-1) == EMPTY
@@ -165,7 +190,14 @@ class VoxelData(object):
         r = (c & 0xff000000)>>24
         g = (c & 0xff0000)>>16
         b = (c & 0xff00)>>8
+        # Calculate shades for our 4 occlusion levels
         colour = (r, g, b)
+        shades = []
+        for c in range(5):
+            shades.append((
+                int(r*math.pow(OCCLUSION,c)),
+                int(g*math.pow(OCCLUSION,c)),
+                int(b*math.pow(OCCLUSION,c))))
 
         # Encode our voxel space coordinates as colours, used for face selection
         # We use 7 bits per coordinate and the bottom 3 bits for face:
@@ -185,68 +217,248 @@ class VoxelData(object):
 
         # Front face
         if front:
+            occ1 = 0
+            occ2 = 0
+            occ3 = 0
+            occ4 = 0
+            if self._occlusion:
+                if self.get(vx,vy+1,vz-1) != EMPTY:
+                    occ2 += 1 
+                    occ4 += 1
+                if self.get(vx-1,vy,vz-1) != EMPTY:
+                    occ1 += 1
+                    occ2 += 1
+                if self.get(vx+1,vy,vz-1) != EMPTY:
+                    occ3 += 1
+                    occ4 += 1
+                if self.get(vx,vy-1,vz-1) != EMPTY:
+                    occ1 += 1
+                    occ3 += 1
+                if self.get(vx-1,vy-1,vz-1) != EMPTY:
+                    occ1 += 1
+                if self.get(vx-1,vy+1,vz-1) != EMPTY:
+                    occ2 += 1
+                if self.get(vx+1,vy-1,vz-1) != EMPTY:
+                    occ3 += 1
+                if self.get(vx+1,vy+1,vz-1) != EMPTY:
+                    occ4 += 1
             vertices += (x,   y,   z)
+            colours += shades[occ1]
             vertices += (x,   y+1, z)
+            colours += shades[occ2]
             vertices += (x+1, y,   z)
+            colours += shades[occ3]
             vertices += (x+1, y,   z)
+            colours += shades[occ3]
             vertices += (x,   y+1, z)
+            colours += shades[occ2]
             vertices += (x+1, y+1, z)
-            colours += colour * 6
+            colours += shades[occ4]
             normals += (0, 0, 1) * 6
             colour_ids += (id_r, id_g, id_b) * 6
         # Top face
         if top:
+            occ1 = 0
+            occ2 = 0
+            occ3 = 0
+            occ4 = 0
+            if self._occlusion:
+                if self.get(vx,vy+1,vz+1) != EMPTY:
+                    occ2 += 1 
+                    occ4 += 1
+                if self.get(vx-1,vy+1,vz) != EMPTY:
+                    occ1 += 1
+                    occ2 += 1
+                if self.get(vx+1,vy+1,vz) != EMPTY:
+                    occ3 += 1
+                    occ4 += 1
+                if self.get(vx,vy+1,vz-1) != EMPTY:
+                    occ1 += 1
+                    occ3 += 1
+                if self.get(vx-1,vy+1,vz-1) != EMPTY:
+                    occ1 += 1
+                if self.get(vx+1,vy+1,vz-1) != EMPTY:
+                    occ3 += 1
+                if self.get(vx+1,vy+1,vz+1) != EMPTY:
+                    occ4 += 1
+                if self.get(vx-1,vy+1,vz+1) != EMPTY:
+                    occ2 += 1
             vertices += (x,   y+1, z)
+            colours += shades[occ1]
             vertices += (x,   y+1, z-1)
+            colours += shades[occ2]
             vertices += (x+1, y+1, z)
+            colours += shades[occ3]
             vertices += (x+1, y+1, z)
+            colours += shades[occ3]
             vertices += (x,   y+1, z-1)
+            colours += shades[occ2]
             vertices += (x+1, y+1, z-1)
-            colours += colour * 6
+            colours += shades[occ4]
             normals += (0, 1, 0) * 6
             colour_ids += (id_r, id_g, id_b | 1) * 6
         # Right face
         if right:
+            occ1 = 0
+            occ2 = 0
+            occ3 = 0
+            occ4 = 0
+            if self._occlusion:
+                if self.get(vx+1,vy+1,vz) != EMPTY:
+                    occ2 += 1 
+                    occ4 += 1
+                if self.get(vx+1,vy,vz-1) != EMPTY:
+                    occ1 += 1
+                    occ2 += 1
+                if self.get(vx+1,vy,vz+1) != EMPTY:
+                    occ3 += 1
+                    occ4 += 1
+                if self.get(vx+1,vy-1,vz) != EMPTY:
+                    occ1 += 1
+                    occ3 += 1
+                if self.get(vx+1,vy-1,vz-1) != EMPTY:
+                    occ1 += 1
+                if self.get(vx+1,vy+1,vz-1) != EMPTY:
+                    occ2 += 1
+                if self.get(vx+1,vy-1,vz+1) != EMPTY:
+                    occ3 += 1
+                if self.get(vx+1,vy+1,vz+1) != EMPTY:
+                    occ4 += 1
             vertices += (x+1, y, z)
+            colours += shades[occ1]
             vertices += (x+1, y+1, z)
+            colours += shades[occ2]
             vertices += (x+1, y, z-1)
+            colours += shades[occ3]
             vertices += (x+1, y, z-1)
+            colours += shades[occ3]
             vertices += (x+1, y+1, z)
+            colours += shades[occ2]
             vertices += (x+1, y+1, z-1)
-            colours += colour * 6
+            colours += shades[occ4]
             normals += (1, 0, 0) * 6
             colour_ids += (id_r, id_g, id_b | 3) * 6
         # Left face
         if left:
+            occ1 = 0
+            occ2 = 0
+            occ3 = 0
+            occ4 = 0
+            if self._occlusion:
+                if self.get(vx-1,vy+1,vz) != EMPTY:
+                    occ2 += 1 
+                    occ4 += 1
+                if self.get(vx-1,vy,vz+1) != EMPTY:
+                    occ1 += 1
+                    occ2 += 1
+                if self.get(vx-1,vy,vz-1) != EMPTY:
+                    occ3 += 1
+                    occ4 += 1
+                if self.get(vx-1,vy-1,vz) != EMPTY:
+                    occ1 += 1
+                    occ3 += 1
+                if self.get(vx-1,vy-1,vz+1) != EMPTY:
+                    occ1 += 1
+                if self.get(vx-1,vy+1,vz+1) != EMPTY:
+                    occ2 += 1
+                if self.get(vx-1,vy-1,vz-1) != EMPTY:
+                    occ3 += 1
+                if self.get(vx-1,vy+1,vz-1) != EMPTY:
+                    occ4 += 1
             vertices += (x, y, z-1)
+            colours += shades[occ1]
             vertices += (x, y+1, z-1)
+            colours += shades[occ2]
             vertices += (x, y, z)
+            colours += shades[occ3]
             vertices += (x, y, z)
+            colours += shades[occ3]
             vertices += (x, y+1, z-1)
+            colours += shades[occ2]
             vertices += (x, y+1, z)
-            colours += colour * 6
+            colours += shades[occ4]
             normals += (-1, 0, 0) * 6
             colour_ids += (id_r, id_g, id_b | 2) * 6
         # Back face
         if back:
+            occ1 = 0
+            occ2 = 0
+            occ3 = 0
+            occ4 = 0
+            if self._occlusion:
+                if self.get(vx,vy+1,vz+1) != EMPTY:
+                    occ2 += 1 
+                    occ4 += 1
+                if self.get(vx+1,vy,vz+1) != EMPTY:
+                    occ1 += 1
+                    occ2 += 1
+                if self.get(vx-1,vy,vz+1) != EMPTY:
+                    occ3 += 1
+                    occ4 += 1
+                if self.get(vx,vy-1,vz+1) != EMPTY:
+                    occ1 += 1
+                    occ3 += 1
+                if self.get(vx+1,vy-1,vz+1) != EMPTY:
+                    occ1 += 1
+                if self.get(vx+1,vy+1,vz+1) != EMPTY:
+                    occ2 += 1
+                if self.get(vx-1,vy-1,vz+1) != EMPTY:
+                    occ3 += 1
+                if self.get(vx-1,vy+1,vz+1) != EMPTY:
+                    occ4 += 1
             vertices += (x+1, y, z-1)
+            colours += shades[occ1]
             vertices += (x+1, y+1, z-1)
+            colours += shades[occ2]
             vertices += (x, y, z-1)
+            colours += shades[occ3]
             vertices += (x, y, z-1)
+            colours += shades[occ3]
             vertices += (x+1, y+1, z-1)
+            colours += shades[occ2]
             vertices += (x, y+1, z-1)
-            colours += colour * 6
+            colours += shades[occ4]
             normals += (0, 0, -1) * 6
             colour_ids += (id_r, id_g, id_b | 4) * 6
         # Bottom face
         if bottom:
+            occ1 = 0
+            occ2 = 0
+            occ3 = 0
+            occ4 = 0
+            if self._occlusion:
+                if self.get(vx,vy-1,vz-1) != EMPTY:
+                    occ2 += 1 
+                    occ4 += 1
+                if self.get(vx-1,vy-1,vz) != EMPTY:
+                    occ1 += 1
+                    occ2 += 1
+                if self.get(vx+1,vy-1,vz) != EMPTY:
+                    occ3 += 1
+                    occ4 += 1
+                if self.get(vx,vy-1,vz+1) != EMPTY:
+                    occ1 += 1
+                    occ3 += 1
+                if self.get(vx-1,vy-1,vz+1) != EMPTY:
+                    occ1 += 1
+                if self.get(vx-1,vy-1,vz-1) != EMPTY:
+                    occ2 += 1
+                if self.get(vx+1,vy-1,vz+1) != EMPTY:
+                    occ3 += 1
+                if self.get(vx+1,vy-1,vz-1) != EMPTY:
+                    occ4 += 1
             vertices += (x, y, z-1)
+            colours += shades[occ1]
             vertices += (x, y, z)
+            colours += shades[occ2]
             vertices += (x+1, y, z-1)
+            colours += shades[occ3]
             vertices += (x+1, y, z-1)
+            colours += shades[occ3]
             vertices += (x, y, z)
+            colours += shades[occ2]
             vertices += (x+1, y, z)
-            colours += colour * 6
+            colours += shades[occ4]
             normals += (0, -1, 0) * 6
             colour_ids += (id_r, id_g, id_b | 5) * 6
 
