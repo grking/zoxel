@@ -58,6 +58,13 @@ class GLWidget(QtOpenGL.QGLWidget):
         self._background_colour = value
         self.updateGL()
 
+    @property
+    def autoresize(self):
+        return self.voxels.autoresize
+    @autoresize.setter
+    def autoresize(self, value):
+        self.voxels.autoresize = value
+    
     # Our signals
     tool_activated = QtCore.Signal()
 

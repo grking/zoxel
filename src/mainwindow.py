@@ -65,6 +65,10 @@ class MainWindow(QtGui.QMainWindow):
         value = self.get_setting("background_colour")
         if value is not None:
             self.display.background = QtGui.QColor.fromRgb(*value)
+        value = self.get_setting("autoresize")
+        if value is not None:
+            self.display.autoresize = value
+            self.ui.action_autoresize.setChecked(value)
         # Connect some signals
         if self.display:
             self.display.voxels.notify = self.on_data_changed
@@ -132,6 +136,11 @@ class MainWindow(QtGui.QMainWindow):
             depth = dialog.ui.depth.value()
             self.display.voxels.resize(width, height, depth)
             self.display.refresh()
+
+    @QtCore.Slot()
+    def on_action_autoresize_triggered(self):
+        self.display.autoresize = self.ui.action_autoresize.isChecked()
+        self.set_setting("autoresize", self.display.autoresize)
 
     @QtCore.Slot()
     def on_action_background_triggered(self):

@@ -57,9 +57,16 @@ class VoxelData(object):
         if value and not self._changed:
             # Let whoever is watching us know about the change
             self._changed = value
-            if self.notify:
-                self.notify()
+            if self.notify_changed:
+                self.notify_changed()
         self._changed = value
+
+    @property
+    def autoresize(self):
+        return self._autoresize
+    @autoresize.setter
+    def autoresize(self, value):
+        self._autoresize = value
 
     def __init__(self):
         # Default size
@@ -68,7 +75,9 @@ class VoxelData(object):
         self._depth = _WORLD_DEPTH
         self._initialise_data()
         # Callback when our data changes 
-        self.notify = None
+        self.notify_changed = None
+        # Autoresize when setting voxels out of bounds?
+        self._autoresize = False
 
     # Initialise our data
     def _initialise_data(self):
@@ -92,7 +101,10 @@ class VoxelData(object):
         if (x < 0 or x >= self.width 
             or y < 0 or y >= self.height 
             or z < 0 or z >= self.depth):
-            return
+            # If we are auto resizing, handle it
+            if not self._autoresize:
+                return
+            x, y, z = self._resize_to_include(x,y,z)
         self._data[x][y][z] = state
         self.changed = True
         if state != EMPTY:
@@ -306,8 +318,10 @@ class VoxelData(object):
         depth = (maxz-minz)+1
         return minx, miny, minz, width, height, depth
 
-    # Resize the voxel space. If no dimensions given, adjust to bounding box
-    def resize(self, width = None, height = None, depth = None):
+    # Resize the voxel space. If no dimensions given, adjust to bounding box.
+    # If shift is an integer, we offset all voxels on all axis by the given
+    # amount.
+    def resize(self, width = None, height = None, depth = None, shift = 0):
         # No dimensions, use bounding box
         mx, my, mz, cwidth, cheight, cdepth = self.get_bounding_box()
         if not width:
@@ -321,9 +335,9 @@ class VoxelData(object):
         moveheight = min(height, cheight)
         movedepth = min(depth, cdepth)
         # Calculate translation
-        dx = 0-mx
-        dy = 0-my
-        dz = 0-mz
+        dx = (0-mx)+shift
+        dy = (0-my)+shift
+        dz = (0-mz)+shift
         # Copy data over at new location
         for x in xrange(mx, mx+movewidth):
             for y in xrange(my, my+moveheight):
@@ -337,3 +351,18 @@ class VoxelData(object):
         # Rebuild our cache
         self._cache_rebuild()
         self.changed = True
+
+    # Resize our voxel space so that the out-of-bounds coordinate given
+    # becomes in-bounds.  We return adjusted coordinates which take into
+    # account that our voxel data will be relocated in voxel space.
+    def _resize_to_include(self, x, y, z):
+        # We expand all axis in both directions, this keeps our model
+        # centered.  It doesn't matter that this probably makes the space
+        # too large, because it's trivial to shrink it. 
+        new_width = self.width+2
+        new_height = self.height+2
+        new_depth = self.depth+2
+        self.resize(new_width, new_height, new_depth, 1)
+        # Return adjusted coordinates
+        return x+1, y+1, z+1
+

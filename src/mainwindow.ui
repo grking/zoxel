@@ -234,7 +234,7 @@
     <string>Autoresize</string>
    </property>
    <property name="toolTip">
-    <string>Toggle auto model resizing</string>
+    <string>Auto-resize model.</string>
    </property>
   </action>
  </widget>
