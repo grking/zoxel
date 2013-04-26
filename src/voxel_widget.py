@@ -110,6 +110,16 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.build_grid()
         self.updateGL()
 
+    # Reset camera position to defaults
+    def reset_camera(self):
+        self._translate_x = 0
+        self._translate_y = 0
+        self._translate_z = -60
+        self._rotate_x = 0
+        self._rotate_y = 0
+        self._rotate_z = 0
+        self.updateGL()
+
     # Initialise OpenGL
     def initializeGL(self):
         # Set background colour

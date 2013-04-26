@@ -143,6 +143,10 @@ class MainWindow(QtGui.QMainWindow):
             self.display.refresh()
 
     @QtCore.Slot()
+    def on_action_reset_camera_triggered(self):
+        self.display.reset_camera()
+
+    @QtCore.Slot()
     def on_action_autoresize_triggered(self):
         self.display.autoresize = self.ui.action_autoresize.isChecked()
         self.set_setting("autoresize", self.display.autoresize)

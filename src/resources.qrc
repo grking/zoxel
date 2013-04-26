@@ -1,6 +1,5 @@
 <RCC>
   <qresource prefix="images">
-    <file>gfx/icons/folder-horizontal-open.png</file>
     <file>gfx/icons/application-block.png</file>
     <file>gfx/icons/application-resize-actual.png</file>
     <file>gfx/icons/application-resize-full.png</file>
@@ -31,6 +30,7 @@
     <file>gfx/icons/document-export.png</file>
     <file>gfx/icons/document.png</file>
     <file>gfx/icons/eye.png</file>
+    <file>gfx/icons/folder-horizontal-open.png</file>
     <file>gfx/icons/grid-dot.png</file>
     <file>gfx/icons/grid.png</file>
     <file>gfx/icons/guide.png</file>
@@ -50,6 +50,8 @@
     <file>gfx/icons/mouse-select-wheel.png</file>
     <file>gfx/icons/mouse-select.png</file>
     <file>gfx/icons/mouse.png</file>
+    <file>gfx/icons/object-rotate-left-3.png</file>
+    <file>gfx/icons/object-rotate-right-3.png</file>
     <file>gfx/icons/paint-brush.png</file>
     <file>gfx/icons/paint-can.png</file>
     <file>gfx/icons/paint-tube.png</file>
@@ -62,10 +64,12 @@
     <file>gfx/icons/ruler.png</file>
     <file>gfx/icons/shovel.png</file>
     <file>gfx/icons/spectrum.png</file>
+    <file>gfx/icons/transform-scale-2.png</file>
     <file>gfx/icons/wand.png</file>
     <file>gfx/icons/water.png</file>
+    <file>gfx/icons/weather-clear-2.png</file>
     <file>gfx/icons/wrench-screwdriver.png</file>
     <file>gfx/icons/wrench.png</file>
-    <file>gfx/about_dialog_image.png</file>
+    <file>gfx/icons/zoom-original-4.png</file>
   </qresource>
 </RCC>
