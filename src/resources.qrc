@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="images">
+    <file>gfx/about_dialog_image.png</file>
     <file>gfx/icons/application-block.png</file>
     <file>gfx/icons/application-resize-actual.png</file>
     <file>gfx/icons/application-resize-full.png</file>
