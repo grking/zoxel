@@ -40,6 +40,11 @@ class PluginAPI(object):
     def get_palette_colour(self):
         return self.mainwindow.display.voxel_colour
 
+    # Changee the GUI palette to the given colour.
+    # Accepts QColors and 32bit integer RGBA
+    def set_palette_colour(self, colour):
+        self.mainwindow.colour_palette.colour = colour        
+
     # Returns the current voxel data
     def get_voxel_data(self):
         return self.mainwindow.display.voxels
@@ -56,11 +61,6 @@ class PluginAPI(object):
         self.api.mainwindow.set_setting(name, value)
     def get_config(self, name):
         return self.api.mainwindow.get_setting(name)
-
-    # Changee the GUI palette to the given colour.
-    # Accepts QColors and 32bit integer RGBA
-    def set_palette(self, colour):
-        self.mainwindow.colour_palette.colour = colour        
 
 # Plugin registration
 # Plugins call this function to register with the system.  A plugin

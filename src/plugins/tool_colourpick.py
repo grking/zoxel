@@ -36,6 +36,6 @@ class ColourPickTool(Tool):
         # If we have a voxel at the target, colour it
         voxel = target.voxels.get(target.x, target.y, target.z)
         if voxel:    
-            self.api.set_palette(voxel)
+            self.api.set_palette_colour(voxel)
 
 register_plugin(ColourPickTool, "Colour Picking Tool", "1.0")
