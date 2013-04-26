@@ -83,7 +83,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Mouse position
         self._mouse = QtCore.QPoint()
         # Default camera
-        self.reset_camera()
+        self.reset_camera(False)
         # zoom
         self._zoom_speed = 0.1
         # Render floor grid?
@@ -105,14 +105,15 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.updateGL()
 
     # Reset camera position to defaults
-    def reset_camera(self):
+    def reset_camera(self, update = True):
         self._translate_x = 0
         self._translate_y = 0
         self._translate_z = -60
         self._rotate_x = 0
         self._rotate_y = 0
         self._rotate_z = 0
-        self.updateGL()
+        if update:
+            self.updateGL()
 
     # Initialise OpenGL
     def initializeGL(self):
