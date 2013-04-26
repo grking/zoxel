@@ -82,14 +82,8 @@ class GLWidget(QtOpenGL.QGLWidget):
         self._voxel_colour = QtGui.QColor.fromHsvF(0,1.0,1.0)
         # Mouse position
         self._mouse = QtCore.QPoint()
-        # Rotation
-        self._rotate_x = 0
-        self._rotate_y = 0
-        self._rotate_z = 0
-        # Translation
-        self._translate_x = 0
-        self._translate_y = 0
-        self._translate_z = -60
+        # Default camera
+        self.reset_camera()
         # zoom
         self._zoom_speed = 0.1
         # Render floor grid?
