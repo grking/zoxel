@@ -14,7 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import json
 import os
 from plugin_api import register_plugin
 
@@ -35,7 +34,7 @@ class ObjFile(object):
     # problem saving.
     def save(self, filename):
         # grab the voxel data
-        vertices, colours, normals = self.api.get_voxel_mesh()
+        vertices, colours, _ = self.api.get_voxel_mesh()
 
         # Open our file
         f = open(filename,"wt")
