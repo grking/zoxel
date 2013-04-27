@@ -267,7 +267,8 @@ class MainWindow(QtGui.QMainWindow):
             filename, filetype = QtGui.QFileDialog.getSaveFileName(self,
                 "Save As",
                 "model",
-                choices)
+                choices,
+                selectedFilter="Zoxel Files (*.zox)")
             if not filename:
                 return
             handler = None
@@ -319,7 +320,8 @@ class MainWindow(QtGui.QMainWindow):
         # Get a filename
         filename, filetype = QtGui.QFileDialog.getOpenFileName(self,
                 caption="Open file",
-                filter=choices)
+                filter=choices,
+                selectedFilter="Zoxel Files (*.zox)")
         if not filename:
             return
 
