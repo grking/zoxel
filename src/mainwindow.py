@@ -336,7 +336,8 @@ class MainWindow(QtGui.QMainWindow):
                 self._last_file_handler = handler
         
         # Force auto-resizing
-        if not self.display.autoresize: 
+        autoresize = self.display.autoresize
+        if not autoresize: 
             self.display.autoresize = True
         
         # Load the file
@@ -348,6 +349,9 @@ class MainWindow(QtGui.QMainWindow):
         except Exception as Ex:
             QtGui.QMessageBox.warning(self, "Could not load file",
             str(Ex))
+
+        # Put auto resize setting back to how it was
+        self.display.autoresize = autoresize
             
         self.display.voxels.resize()
         self.display.voxels.saved()
