@@ -19,7 +19,7 @@ import math
 import array
 from PySide import QtCore, QtGui, QtOpenGL
 from OpenGL.GL import *
-from OpenGL.GLU import gluUnProject
+from OpenGL.GLU import gluUnProject, gluProject
 import voxel
 from euclid import LineSegment3, Plane, Point3
 from tool import Target
@@ -92,6 +92,8 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.voxels = voxel.VoxelData()
         # Build our grid
         self.build_grid()
+        # Used to track the z component of various mouse activity
+        self._depth_focus = 1
 
     # Reset the control and clear all data
     def clear(self):
@@ -279,6 +281,13 @@ class GLWidget(QtOpenGL.QGLWidget):
             x, y, z, face = self.window_to_voxel(event.x(), event.y())
             self.activate_tool(x, y, z, face)
             self.refresh()
+            
+        # Remember the 3d coordinates of this click
+        mx, my, mz, d = self.window_to_world(event.x(), event.y())
+        mxd, myd, _, _ = self.window_to_world(event.x()+1, event.y()+1, d)
+        self._x_weight = abs(mxd - mx)
+        self._y_weight = -abs(myd - my)
+        self._depth_focus = d 
 
     def mouseMoveEvent(self, event):
         dx = event.x() - self._mouse.x()
@@ -292,8 +301,12 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         # Middle mouse button held down - translate
         if event.buttons() & QtCore.Qt.MiddleButton:
-            self._translate_x = self._translate_x + (dx / 10.0)
-            self._translate_y = self._translate_y - (dy / 10.0)
+            x,y,z,_ = self.window_to_world(event.x(), event.y(), self._depth_focus)
+            # Work out the translation in 3d space
+            dx = dx * self._x_weight
+            dy = dy * self._y_weight
+            self._translate_x = self._translate_x + dx
+            self._translate_y = self._translate_y + dy
             self.updateGL()
 
         self._mouse = QtCore.QPoint(event.pos())
@@ -360,6 +373,22 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Adjust to voxel space coordinates
         x, y, z = self.voxels.world_to_voxel(intersect.x, intersect.y, intersect.z)
         return int(x), int(y), int(z)
+
+    # Convert window x,y coordinates into x,y,z world coordinates, also return
+    # the depth
+    def window_to_world(self, x, y, z = None):
+        # Find depth
+        y = self._height - y
+        if z is None:
+            z = glReadPixels( x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT)[0][0]
+        fx,fy,fz = gluUnProject(x, y, z)
+        return fx,fy,fz,z
+    
+    # Convert x,y,z world coorindates to x,y window coordinates
+    def world_to_window(self, x, y, z): 
+        x,y,z = gluProject(x, y, z)
+        y = self._height - y
+        return x,y
 
     def activate_tool(self, x, y, z, face):
         self.target = Target(self.voxels, x, y, z, face)
