@@ -89,7 +89,7 @@ class VoxelData(object):
         # Callback when our data changes 
         self.notify_changed = None
         # Autoresize when setting voxels out of bounds?
-        self._autoresize = False
+        self._autoresize = True
         # Ambient occlusion type effect
         self._occlusion = True
 

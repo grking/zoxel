@@ -69,6 +69,9 @@ class MainWindow(QtGui.QMainWindow):
         if value is not None:
             self.display.autoresize = value
             self.ui.action_autoresize.setChecked(value)
+        else:
+            self.display.autoresize = True
+            self.ui.action_autoresize.setChecked(True)
         value = self.get_setting("occlusion")
         if not value:
             value = True
@@ -331,6 +334,10 @@ class MainWindow(QtGui.QMainWindow):
             if filetype == ourtype:
                 handler =  importer
                 self._last_file_handler = handler
+        
+        # Force auto-resizing
+        if not self.display.autoresize: 
+            self.display.autoresize = True
         
         # Load the file
         self.display.clear()
