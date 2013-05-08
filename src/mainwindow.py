@@ -69,6 +69,9 @@ class MainWindow(QtGui.QMainWindow):
         if value is not None:
             self.display.autoresize = value
             self.ui.action_autoresize.setChecked(value)
+        else:
+            self.display.autoresize = True
+            self.ui.action_autoresize.setChecked(True)
         value = self.get_setting("occlusion")
         if not value:
             value = True
@@ -141,6 +144,10 @@ class MainWindow(QtGui.QMainWindow):
             depth = dialog.ui.depth.value()
             self.display.voxels.resize(width, height, depth)
             self.display.refresh()
+
+    @QtCore.Slot()
+    def on_action_reset_camera_triggered(self):
+        self.display.reset_camera()
 
     @QtCore.Slot()
     def on_action_autoresize_triggered(self):
@@ -263,7 +270,8 @@ class MainWindow(QtGui.QMainWindow):
             filename, filetype = QtGui.QFileDialog.getSaveFileName(self,
                 "Save As",
                 "model",
-                choices)
+                choices,
+                selectedFilter="Zoxel Files (*.zox)")
             if not filename:
                 return
             handler = None
@@ -315,7 +323,8 @@ class MainWindow(QtGui.QMainWindow):
         # Get a filename
         filename, filetype = QtGui.QFileDialog.getOpenFileName(self,
                 caption="Open file",
-                filter=choices)
+                filter=choices,
+                selectedFilter="Zoxel Files (*.zox)")
         if not filename:
             return
 
@@ -326,6 +335,11 @@ class MainWindow(QtGui.QMainWindow):
                 handler =  importer
                 self._last_file_handler = handler
         
+        # Force auto-resizing
+        autoresize = self.display.autoresize
+        if not autoresize: 
+            self.display.autoresize = True
+        
         # Load the file
         self.display.clear()
         self._filename = None
@@ -335,9 +349,13 @@ class MainWindow(QtGui.QMainWindow):
         except Exception as Ex:
             QtGui.QMessageBox.warning(self, "Could not load file",
             str(Ex))
+
+        # Put auto resize setting back to how it was
+        self.display.autoresize = autoresize
             
         self.display.voxels.resize()
         self.display.voxels.saved()
+        self.display.reset_camera()
         self.update_caption()
         self.display.refresh()
 

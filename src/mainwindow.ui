@@ -86,6 +86,7 @@
    <addaction name="separator"/>
    <addaction name="action_background"/>
    <addaction name="action_resize"/>
+   <addaction name="action_reset_camera"/>
   </widget>
   <widget class="QToolBar" name="toolbar_drawing">
    <property name="windowTitle">
@@ -214,7 +215,7 @@
   <action name="action_resize">
    <property name="icon">
     <iconset resource="resources.qrc">
-     <normaloff>:/images/gfx/icons/pencil-ruler.png</normaloff>:/images/gfx/icons/pencil-ruler.png</iconset>
+     <normaloff>:/images/gfx/icons/transform-scale-2.png</normaloff>:/images/gfx/icons/transform-scale-2.png</iconset>
    </property>
    <property name="text">
     <string>Resize</string>
@@ -244,13 +245,25 @@
    </property>
    <property name="icon">
     <iconset resource="resources.qrc">
-     <normaloff>:/images/gfx/icons/eye.png</normaloff>:/images/gfx/icons/eye.png</iconset>
+     <normaloff>:/images/gfx/icons/weather-clear-2.png</normaloff>:/images/gfx/icons/weather-clear-2.png</iconset>
    </property>
    <property name="text">
     <string>Occlusion</string>
    </property>
    <property name="toolTip">
     <string>Render with ambient occlusion</string>
+   </property>
+  </action>
+  <action name="action_reset_camera">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/zoom-original-4.png</normaloff>:/images/gfx/icons/zoom-original-4.png</iconset>
+   </property>
+   <property name="text">
+    <string>Reset Camera</string>
+   </property>
+   <property name="toolTip">
+    <string>Reset camera position</string>
    </property>
   </action>
  </widget>

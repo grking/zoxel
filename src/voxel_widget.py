@@ -19,12 +19,17 @@ import math
 import array
 from PySide import QtCore, QtGui, QtOpenGL
 from OpenGL.GL import *
-from OpenGL.GLU import gluUnProject
+from OpenGL.GLU import gluUnProject, gluProject
 import voxel
 from euclid import LineSegment3, Plane, Point3
 from tool import Target
 
 class GLWidget(QtOpenGL.QGLWidget):
+
+    # Constants for referring to axis
+    X_AXIS = 1
+    Y_AXIS = 2
+    Z_AXIS = 3
 
     @property
     def floor_grid(self):
@@ -69,8 +74,8 @@ class GLWidget(QtOpenGL.QGLWidget):
 
     def __init__(self, parent=None):
         glformat = QtOpenGL.QGLFormat()
-        glformat.setVersion(1,1);
-        glformat.setProfile(QtOpenGL.QGLFormat.CoreProfile);
+        glformat.setVersion(1,1)
+        glformat.setProfile(QtOpenGL.QGLFormat.CoreProfile)
         QtOpenGL.QGLWidget.__init__(self, glformat, parent)
         # Test we have a valid context
         ver = QtOpenGL.QGLFormat.openGLVersionFlags()
@@ -82,14 +87,8 @@ class GLWidget(QtOpenGL.QGLWidget):
         self._voxel_colour = QtGui.QColor.fromHsvF(0,1.0,1.0)
         # Mouse position
         self._mouse = QtCore.QPoint()
-        # Rotation
-        self._rotate_x = 0
-        self._rotate_y = 0
-        self._rotate_z = 0
-        # Translation
-        self._translate_x = 0
-        self._translate_y = 0
-        self._translate_z = -60
+        # Default camera
+        self.reset_camera(False)
         # zoom
         self._zoom_speed = 0.1
         # Render floor grid?
@@ -98,6 +97,8 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.voxels = voxel.VoxelData()
         # Build our grid
         self.build_grid()
+        # Used to track the z component of various mouse activity
+        self._depth_focus = 1
 
     # Reset the control and clear all data
     def clear(self):
@@ -110,12 +111,23 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.build_grid()
         self.updateGL()
 
+    # Reset camera position to defaults
+    def reset_camera(self, update = True):
+        self._translate_x = 0
+        self._translate_y = 0
+        self._translate_z = -60
+        self._rotate_x = 0
+        self._rotate_y = 0
+        self._rotate_z = 0
+        if update:
+            self.updateGL()
+
     # Initialise OpenGL
     def initializeGL(self):
         # Set background colour
         self.qglClearColor(self._background_colour)
         # Our polygon winding order is clockwise
-        glFrontFace(GL_CW);
+        glFrontFace(GL_CW)
         # Enable depth testing
         glEnable(GL_DEPTH_TEST)
         # Enable backface culling
@@ -123,7 +135,11 @@ class GLWidget(QtOpenGL.QGLWidget):
         glEnable(GL_CULL_FACE)
         # Shade model
         glShadeModel(GL_SMOOTH)
-        # Build our mesh
+        # Texture support
+        glEnable(GL_TEXTURE_2D)
+        # Load our texture
+        pixmap = QtGui.QPixmap(":/images/gfx/texture.png")
+        self._texture = self.bindTexture(pixmap)
         self.build_mesh()
         # Setup our lighting
         self.setup_lights()
@@ -140,6 +156,7 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         # Enable vertex buffers
         glEnableClientState(GL_VERTEX_ARRAY)
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY)
         glEnableClientState(GL_COLOR_ARRAY)
         glEnableClientState(GL_NORMAL_ARRAY)
 
@@ -147,15 +164,20 @@ class GLWidget(QtOpenGL.QGLWidget):
         if self.wireframe:
             glPolygonMode( GL_FRONT, GL_LINE )
 
-        # Describe our buffers
-        glVertexPointer( 3, GL_FLOAT, 0, self._vertices);
-        glColorPointer(3, GL_UNSIGNED_BYTE, 0, self._colours);
-        glNormalPointer(GL_FLOAT, 0, self._normals);
+        # Bind our texture
+        glBindTexture(GL_TEXTURE_2D, self._texture)        
 
+        # Describe our buffers
+        glVertexPointer( 3, GL_FLOAT, 0, self._vertices)
+        glTexCoordPointer(2, GL_FLOAT, 0, self._uvs)
+        glColorPointer(3, GL_UNSIGNED_BYTE, 0, self._colours)
+        glNormalPointer(GL_FLOAT, 0, self._normals)
+        
         # Render the buffers
         glDrawArrays(GL_TRIANGLES, 0, self._num_vertices)
 
         glDisableClientState(GL_VERTEX_ARRAY)
+        glDisableClientState(GL_TEXTURE_COORD_ARRAY)
         glDisableClientState(GL_COLOR_ARRAY)
         glDisableClientState(GL_NORMAL_ARRAY)
 
@@ -180,6 +202,7 @@ class GLWidget(QtOpenGL.QGLWidget):
     def paintID(self):
         # Disable lighting
         glDisable(GL_LIGHTING)
+        glDisable(GL_TEXTURE_2D)
 
         # Render with white background
         self.qglClearColor(QtGui.QColor.fromRgb(0xff, 0xff, 0xff))
@@ -200,9 +223,9 @@ class GLWidget(QtOpenGL.QGLWidget):
         glEnableClientState(GL_NORMAL_ARRAY)
 
         # Describe our buffers
-        glVertexPointer( 3, GL_FLOAT, 0, self._vertices);
-        glColorPointer(3, GL_UNSIGNED_BYTE, 0, self._colour_ids);
-        glNormalPointer(GL_FLOAT, 0, self._normals);
+        glVertexPointer( 3, GL_FLOAT, 0, self._vertices)
+        glColorPointer(3, GL_UNSIGNED_BYTE, 0, self._colour_ids)
+        glNormalPointer(GL_FLOAT, 0, self._normals)
 
         # Render the buffers
         glDrawArrays(GL_TRIANGLES, 0, self._num_vertices)
@@ -216,11 +239,13 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         # Re-enable lighting
         glEnable(GL_LIGHTING)
+        glEnable(GL_TEXTURE_2D)
 
     # Render a grid
     def paintGrid(self):
         # Disable lighting
         glDisable(GL_LIGHTING)
+        glDisable(GL_TEXTURE_2D)
 
         # Grid colour
         glColor3f(1.0,1.0,1.0)
@@ -229,7 +254,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         glEnableClientState(GL_VERTEX_ARRAY)
 
         # Describe our buffers
-        glVertexPointer( 3, GL_FLOAT, 0, self._grid);
+        glVertexPointer( 3, GL_FLOAT, 0, self._grid)
 
         # Render the buffers
         glDrawArrays(GL_LINES, 0, self._num_grid_vertices)
@@ -239,9 +264,10 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         # Enable lighting
         glEnable(GL_LIGHTING)
-
+        glEnable(GL_TEXTURE_2D)
+        
     def perspective(self, fovY, aspect, zNear, zFar ):
-        fH = math.tan( fovY / 360.0 * math.pi ) * zNear;
+        fH = math.tan( fovY / 360.0 * math.pi ) * zNear
         fW = fH * aspect
         glFrustum( -fW, fW, -fH, fH, zNear, zFar )
 
@@ -254,12 +280,13 @@ class GLWidget(QtOpenGL.QGLWidget):
     def build_mesh(self):
         # Grab the voxel vertices
         (self._vertices, self._colours, self._normals,
-         self._colour_ids) = self.voxels.get_vertices()
+         self._colour_ids, self._uvs) = self.voxels.get_vertices()
         self._num_vertices = len(self._vertices)//3
         self._vertices = array.array("f", self._vertices).tostring()
         self._colours = array.array("B", self._colours).tostring()
         self._colour_ids = array.array("B", self._colour_ids).tostring()
         self._normals = array.array("f", self._normals).tostring()
+        self._uvs = array.array("f", self._uvs).tostring()
 
     # Build floor grid
     def build_grid(self):
@@ -274,8 +301,31 @@ class GLWidget(QtOpenGL.QGLWidget):
             x, y, z, face = self.window_to_voxel(event.x(), event.y())
             self.activate_tool(x, y, z, face)
             self.refresh()
+            
+        # Remember the 3d coordinates of this click
+        mx, my, mz, d = self.window_to_world(event.x(), event.y())
+        mxd, myd, mzd, _ = self.window_to_world(event.x()+1, event.y(), d)
+        self._htranslate = ((mxd - mx),(myd - my),(mzd - mz)) 
+        mxd, myd, mzd, _ = self.window_to_world(event.x(), event.y()+1, d)
+        self._vtranslate = ((mxd - mx),(myd - my),(mzd - mz))
+        # Work out translation for x,y
+        ax,ay = self.view_axis()
+        if ax == self.X_AXIS:
+            self._htranslate = abs(self._htranslate[0]) 
+        if ax == self.Y_AXIS:
+            self._htranslate = abs(self._htranslate[1]) 
+        if ax == self.Z_AXIS:
+            self._htranslate = abs(self._htranslate[2]) 
+        if ay == self.X_AXIS:
+            self._vtranslate = abs(self._vtranslate[0]) 
+        if ay == self.Y_AXIS:
+            self._vtranslate = abs(self._vtranslate[1]) 
+        if ay == self.Z_AXIS:
+            self._vtranslate = abs(self._vtranslate[2]) 
+        self._depth_focus = d 
 
     def mouseMoveEvent(self, event):
+        # Screen units delta
         dx = event.x() - self._mouse.x()
         dy = event.y() - self._mouse.y()
 
@@ -287,8 +337,9 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         # Middle mouse button held down - translate
         if event.buttons() & QtCore.Qt.MiddleButton:
-            self._translate_x = self._translate_x + (dx / 10.0)
-            self._translate_y = self._translate_y - (dy / 10.0)
+            # Work out the translation in 3d space
+            self._translate_x = self._translate_x + dx * self._htranslate 
+            self._translate_y = self._translate_y + ((-dy) * self._vtranslate)
             self.updateGL()
 
         self._mouse = QtCore.QPoint(event.pos())
@@ -355,6 +406,37 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Adjust to voxel space coordinates
         x, y, z = self.voxels.world_to_voxel(intersect.x, intersect.y, intersect.z)
         return int(x), int(y), int(z)
+
+    # Determine the axis which are perpendicular to our viewing ray, ish
+    def view_axis(self):
+        # Shoot a ray into the scene
+        x1,y1,z1 = gluUnProject(self.width()//2, self.height()//2, 0.0)
+        x2,y2,z2 = gluUnProject(self.width()//2, self.height()//2, 1.0)
+        dx = abs(x2-x1)
+        dy = abs(y2-y1)
+        dz = abs(z2-z1)
+        # The largest deviation is the axis we're looking down
+        if dz >= dx and dz >= dy:
+            return (self.X_AXIS, self.Y_AXIS)
+        elif dy >= dx and dy >= dz:
+            return (self.X_AXIS, self.Z_AXIS)
+        return (self.Z_AXIS, self.Y_AXIS)        
+
+    # Convert window x,y coordinates into x,y,z world coordinates, also return
+    # the depth
+    def window_to_world(self, x, y, z = None):
+        # Find depth
+        y = self._height - y
+        if z is None:
+            z = glReadPixels( x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT)[0][0]
+        fx,fy,fz = gluUnProject(x, y, z)
+        return fx,fy,fz,z
+    
+    # Convert x,y,z world coorindates to x,y window coordinates
+    def world_to_window(self, x, y, z): 
+        x,y,z = gluProject(x, y, z)
+        y = self._height - y
+        return x,y
 
     def activate_tool(self, x, y, z, face):
         self.target = Target(self.voxels, x, y, z, face)

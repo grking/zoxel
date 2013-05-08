@@ -89,7 +89,7 @@ class VoxelData(object):
         # Callback when our data changes 
         self.notify_changed = None
         # Autoresize when setting voxels out of bounds?
-        self._autoresize = False
+        self._autoresize = True
         # Ambient occlusion type effect
         self._occlusion = True
 
@@ -119,14 +119,17 @@ class VoxelData(object):
             if not self._autoresize:
                 return
             x, y, z = self._resize_to_include(x,y,z)
-        self._data[x][y][z] = state
+        # Set the voxel
+        if (x >= 0 and x < self.width and y >= 0 and y < self.height 
+            and z >= 0 and z < self.depth):
+            self._data[x][y][z] = state
+            if state != EMPTY:
+                if (x,y,z) not in self._cache:
+                    self._cache.append((x,y,z))
+            else:
+                if (x,y,z) in self._cache:
+                    self._cache.remove((x,y,z))
         self.changed = True
-        if state != EMPTY:
-            if (x,y,z) not in self._cache:
-                self._cache.append((x,y,z))
-        else:
-            if (x,y,z) in self._cache:
-                self._cache.remove((x,y,z))
 
     # Get the state of the given voxel
     def get(self, x, y, z):
@@ -146,13 +149,15 @@ class VoxelData(object):
         colours = []
         colour_ids = []
         normals = []
+        uvs = []
         for x,y,z in self._cache:
-            v, c, n, cid = self._get_voxel_vertices(x, y, z)
+            v, c, n, cid, uv = self._get_voxel_vertices(x, y, z)
             vertices += v
             colours += c
             normals += n
             colour_ids += cid
-        return (vertices, colours, normals, colour_ids)
+            uvs += uv
+        return (vertices, colours, normals, colour_ids, uvs)
 
     # Called to notify us that our data has been saved. i.e. we can set 
     # our "changed" status back to False.
@@ -173,6 +178,7 @@ class VoxelData(object):
         colours = []
         normals = []
         colour_ids = []
+        uvs = []
 
         # Remember voxel coordinates
         vx, vy, vz = x,y,z
@@ -253,6 +259,7 @@ class VoxelData(object):
             colours += shades[occ2]
             vertices += (x+1, y+1, z)
             colours += shades[occ4]
+            uvs += (0,0,0,1,1,0,1,0,0,1,1,1)
             normals += (0, 0, 1) * 6
             colour_ids += (id_r, id_g, id_b) * 6
         # Top face
@@ -294,6 +301,7 @@ class VoxelData(object):
             colours += shades[occ2]
             vertices += (x+1, y+1, z-1)
             colours += shades[occ4]
+            uvs += (0,0,0,1,1,0,1,0,0,1,1,1)
             normals += (0, 1, 0) * 6
             colour_ids += (id_r, id_g, id_b | 1) * 6
         # Right face
@@ -335,6 +343,7 @@ class VoxelData(object):
             colours += shades[occ2]
             vertices += (x+1, y+1, z-1)
             colours += shades[occ4]
+            uvs += (0,0,0,1,1,0,1,0,0,1,1,1)
             normals += (1, 0, 0) * 6
             colour_ids += (id_r, id_g, id_b | 3) * 6
         # Left face
@@ -376,6 +385,7 @@ class VoxelData(object):
             colours += shades[occ2]
             vertices += (x, y+1, z)
             colours += shades[occ4]
+            uvs += (0,0,0,1,1,0,1,0,0,1,1,1)
             normals += (-1, 0, 0) * 6
             colour_ids += (id_r, id_g, id_b | 2) * 6
         # Back face
@@ -417,6 +427,7 @@ class VoxelData(object):
             colours += shades[occ2]
             vertices += (x, y+1, z-1)
             colours += shades[occ4]
+            uvs += (0,0,0,1,1,0,1,0,0,1,1,1)
             normals += (0, 0, -1) * 6
             colour_ids += (id_r, id_g, id_b | 4) * 6
         # Bottom face
@@ -458,10 +469,11 @@ class VoxelData(object):
             colours += shades[occ2]
             vertices += (x+1, y, z)
             colours += shades[occ4]
+            uvs += (0,0,0,1,1,0,1,0,0,1,1,1)
             normals += (0, -1, 0) * 6
             colour_ids += (id_r, id_g, id_b | 5) * 6
 
-        return (vertices, colours, normals, colour_ids)
+        return (vertices, colours, normals, colour_ids, uvs)
 
     # Return vertices for a floor grid
     def get_grid_vertices(self):
@@ -530,8 +542,7 @@ class VoxelData(object):
         return minx, miny, minz, width, height, depth
 
     # Resize the voxel space. If no dimensions given, adjust to bounding box.
-    # If shift is an integer, we offset all voxels on all axis by the given
-    # amount.
+    # We offset all voxels on all axis by the given amount.
     def resize(self, width = None, height = None, depth = None, shift = 0):
         # No dimensions, use bounding box
         mx, my, mz, cwidth, cheight, cdepth = self.get_bounding_box()
@@ -567,13 +578,61 @@ class VoxelData(object):
     # becomes in-bounds.  We return adjusted coordinates which take into
     # account that our voxel data will be relocated in voxel space.
     def _resize_to_include(self, x, y, z):
-        # We expand all axis in both directions, this keeps our model
-        # centered.  It doesn't matter that this probably makes the space
-        # too large, because it's trivial to shrink it. 
-        new_width = self.width+2
-        new_height = self.height+2
-        new_depth = self.depth+2
-        self.resize(new_width, new_height, new_depth, 1)
-        # Return adjusted coordinates
-        return x+1, y+1, z+1
+        # One axis must be out of bounds, which is it, and in which direction?
+        dx = 0
+        dy = 0
+        dz = 0
+        if x < 0:
+            dx = -1
+        if y < 0:
+            dy = -1
+        if z < 0:
+            dz = -1
+        if x >= self.width:
+            dx = 1
+        if y >= self.height:
+            dy = 1
+        if z >= self.depth:
+            dz = 1
+        # Resize by one voxel along the expanding axis
+        dx, dy, dz = self.expand(dx, dy, dz)
+        return x+dx, y+dy, z+dz
 
+    # Expand the voxel space along a single axis.
+    # Returns the amounts by which existing voxels were shifted
+    def expand(self, dx, dy, dz):
+        # Work out our new dimensions
+        new_width = self.width+abs(dx)
+        new_height = self.height+abs(dy)
+        new_depth = self.depth+abs(dz)        
+        # Create new data structure of the required size
+        data = [[[0 for _ in xrange(new_depth)]
+            for _ in xrange(new_height)]
+                for _ in xrange(new_width)]
+        # Negative axis expansion requires shifting voxel data
+        if dx < 0:
+            dx = -dx
+        else:
+            dx = 0
+        if dy < 0:
+            dy = -dy
+        else:
+            dy = 0
+        if dz < 0:
+            dz = -dz
+        else:
+            dz = 0
+        # Copy data over at new location
+        for x in xrange(0, self.width):
+            for y in xrange(0, self.height):
+                for z in xrange(0, self.depth):
+                    data[x+dx][y+dy][z+dz] = self._data[x][y][z]
+        # Set new dimensions
+        self._width = new_width
+        self._height = new_height
+        self._depth = new_depth
+        self._data = data
+        # Rebuild our cache
+        self._cache_rebuild()
+        self.changed = True
+        return dx, dy, dz

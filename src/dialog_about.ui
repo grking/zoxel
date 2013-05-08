@@ -41,8 +41,8 @@
   <widget class="QLabel" name="label_2">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>310</y>
+     <x>10</x>
+     <y>300</y>
      <width>91</width>
      <height>41</height>
     </rect>
@@ -61,8 +61,8 @@
   <widget class="QLabel" name="label_5">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>360</y>
+     <x>10</x>
+     <y>350</y>
      <width>301</width>
      <height>16</height>
     </rect>
@@ -74,8 +74,8 @@
   <widget class="QLabel" name="label_3">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>340</y>
+     <x>10</x>
+     <y>330</y>
      <width>131</width>
      <height>16</height>
     </rect>
@@ -87,7 +87,7 @@
   <widget class="QLabel" name="ver_label">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>10</x>
      <y>390</y>
      <width>211</width>
      <height>16</height>
@@ -111,6 +111,19 @@
    </property>
    <property name="default">
     <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>370</y>
+     <width>231</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>&lt;a href=&quot;http://zoxel.blogspot.com&quot;&gt;http://zoxel.blogspot.com&lt;/a&gt;</string>
    </property>
   </widget>
  </widget>
