@@ -355,6 +355,7 @@ class MainWindow(QtGui.QMainWindow):
             
         self.display.voxels.resize()
         self.display.voxels.saved()
+        self.display.reset_camera()
         self.update_caption()
         self.display.refresh()
 
