@@ -146,13 +146,15 @@ class VoxelData(object):
         colours = []
         colour_ids = []
         normals = []
+        uvs = []
         for x,y,z in self._cache:
-            v, c, n, cid = self._get_voxel_vertices(x, y, z)
+            v, c, n, cid, uv = self._get_voxel_vertices(x, y, z)
             vertices += v
             colours += c
             normals += n
             colour_ids += cid
-        return (vertices, colours, normals, colour_ids)
+            uvs += uv
+        return (vertices, colours, normals, colour_ids, uvs)
 
     # Called to notify us that our data has been saved. i.e. we can set 
     # our "changed" status back to False.
@@ -173,6 +175,7 @@ class VoxelData(object):
         colours = []
         normals = []
         colour_ids = []
+        uvs = []
 
         # Remember voxel coordinates
         vx, vy, vz = x,y,z
@@ -253,6 +256,7 @@ class VoxelData(object):
             colours += shades[occ2]
             vertices += (x+1, y+1, z)
             colours += shades[occ4]
+            uvs += (0,0,0,1,1,0,1,0,0,1,1,1)
             normals += (0, 0, 1) * 6
             colour_ids += (id_r, id_g, id_b) * 6
         # Top face
@@ -294,6 +298,7 @@ class VoxelData(object):
             colours += shades[occ2]
             vertices += (x+1, y+1, z-1)
             colours += shades[occ4]
+            uvs += (0,0,0,1,1,0,1,0,0,1,1,1)
             normals += (0, 1, 0) * 6
             colour_ids += (id_r, id_g, id_b | 1) * 6
         # Right face
@@ -335,6 +340,7 @@ class VoxelData(object):
             colours += shades[occ2]
             vertices += (x+1, y+1, z-1)
             colours += shades[occ4]
+            uvs += (0,0,0,1,1,0,1,0,0,1,1,1)
             normals += (1, 0, 0) * 6
             colour_ids += (id_r, id_g, id_b | 3) * 6
         # Left face
@@ -376,6 +382,7 @@ class VoxelData(object):
             colours += shades[occ2]
             vertices += (x, y+1, z)
             colours += shades[occ4]
+            uvs += (0,0,0,1,1,0,1,0,0,1,1,1)
             normals += (-1, 0, 0) * 6
             colour_ids += (id_r, id_g, id_b | 2) * 6
         # Back face
@@ -417,6 +424,7 @@ class VoxelData(object):
             colours += shades[occ2]
             vertices += (x, y+1, z-1)
             colours += shades[occ4]
+            uvs += (0,0,0,1,1,0,1,0,0,1,1,1)
             normals += (0, 0, -1) * 6
             colour_ids += (id_r, id_g, id_b | 4) * 6
         # Bottom face
@@ -458,10 +466,11 @@ class VoxelData(object):
             colours += shades[occ2]
             vertices += (x+1, y, z)
             colours += shades[occ4]
+            uvs += (0,0,0,1,1,0,1,0,0,1,1,1)
             normals += (0, -1, 0) * 6
             colour_ids += (id_r, id_g, id_b | 5) * 6
 
-        return (vertices, colours, normals, colour_ids)
+        return (vertices, colours, normals, colour_ids, uvs)
 
     # Return vertices for a floor grid
     def get_grid_vertices(self):

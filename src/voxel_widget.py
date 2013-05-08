@@ -74,8 +74,8 @@ class GLWidget(QtOpenGL.QGLWidget):
 
     def __init__(self, parent=None):
         glformat = QtOpenGL.QGLFormat()
-        glformat.setVersion(1,1);
-        glformat.setProfile(QtOpenGL.QGLFormat.CoreProfile);
+        glformat.setVersion(1,1)
+        glformat.setProfile(QtOpenGL.QGLFormat.CoreProfile)
         QtOpenGL.QGLWidget.__init__(self, glformat, parent)
         # Test we have a valid context
         ver = QtOpenGL.QGLFormat.openGLVersionFlags()
@@ -127,7 +127,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Set background colour
         self.qglClearColor(self._background_colour)
         # Our polygon winding order is clockwise
-        glFrontFace(GL_CW);
+        glFrontFace(GL_CW)
         # Enable depth testing
         glEnable(GL_DEPTH_TEST)
         # Enable backface culling
@@ -135,7 +135,11 @@ class GLWidget(QtOpenGL.QGLWidget):
         glEnable(GL_CULL_FACE)
         # Shade model
         glShadeModel(GL_SMOOTH)
-        # Build our mesh
+        # Texture support
+        glEnable(GL_TEXTURE_2D)
+        # Load our texture
+        pixmap = QtGui.QPixmap(":/images/gfx/texture.png")
+        self._texture = self.bindTexture(pixmap)
         self.build_mesh()
         # Setup our lighting
         self.setup_lights()
@@ -152,6 +156,7 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         # Enable vertex buffers
         glEnableClientState(GL_VERTEX_ARRAY)
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY)
         glEnableClientState(GL_COLOR_ARRAY)
         glEnableClientState(GL_NORMAL_ARRAY)
 
@@ -159,15 +164,20 @@ class GLWidget(QtOpenGL.QGLWidget):
         if self.wireframe:
             glPolygonMode( GL_FRONT, GL_LINE )
 
-        # Describe our buffers
-        glVertexPointer( 3, GL_FLOAT, 0, self._vertices);
-        glColorPointer(3, GL_UNSIGNED_BYTE, 0, self._colours);
-        glNormalPointer(GL_FLOAT, 0, self._normals);
+        # Bind our texture
+        glBindTexture(GL_TEXTURE_2D, self._texture)        
 
+        # Describe our buffers
+        glVertexPointer( 3, GL_FLOAT, 0, self._vertices)
+        glTexCoordPointer(2, GL_FLOAT, 0, self._uvs)
+        glColorPointer(3, GL_UNSIGNED_BYTE, 0, self._colours)
+        glNormalPointer(GL_FLOAT, 0, self._normals)
+        
         # Render the buffers
         glDrawArrays(GL_TRIANGLES, 0, self._num_vertices)
 
         glDisableClientState(GL_VERTEX_ARRAY)
+        glDisableClientState(GL_TEXTURE_COORD_ARRAY)
         glDisableClientState(GL_COLOR_ARRAY)
         glDisableClientState(GL_NORMAL_ARRAY)
 
@@ -192,6 +202,7 @@ class GLWidget(QtOpenGL.QGLWidget):
     def paintID(self):
         # Disable lighting
         glDisable(GL_LIGHTING)
+        glDisable(GL_TEXTURE_2D)
 
         # Render with white background
         self.qglClearColor(QtGui.QColor.fromRgb(0xff, 0xff, 0xff))
@@ -212,9 +223,9 @@ class GLWidget(QtOpenGL.QGLWidget):
         glEnableClientState(GL_NORMAL_ARRAY)
 
         # Describe our buffers
-        glVertexPointer( 3, GL_FLOAT, 0, self._vertices);
-        glColorPointer(3, GL_UNSIGNED_BYTE, 0, self._colour_ids);
-        glNormalPointer(GL_FLOAT, 0, self._normals);
+        glVertexPointer( 3, GL_FLOAT, 0, self._vertices)
+        glColorPointer(3, GL_UNSIGNED_BYTE, 0, self._colour_ids)
+        glNormalPointer(GL_FLOAT, 0, self._normals)
 
         # Render the buffers
         glDrawArrays(GL_TRIANGLES, 0, self._num_vertices)
@@ -228,11 +239,13 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         # Re-enable lighting
         glEnable(GL_LIGHTING)
+        glEnable(GL_TEXTURE_2D)
 
     # Render a grid
     def paintGrid(self):
         # Disable lighting
         glDisable(GL_LIGHTING)
+        glDisable(GL_TEXTURE_2D)
 
         # Grid colour
         glColor3f(1.0,1.0,1.0)
@@ -241,7 +254,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         glEnableClientState(GL_VERTEX_ARRAY)
 
         # Describe our buffers
-        glVertexPointer( 3, GL_FLOAT, 0, self._grid);
+        glVertexPointer( 3, GL_FLOAT, 0, self._grid)
 
         # Render the buffers
         glDrawArrays(GL_LINES, 0, self._num_grid_vertices)
@@ -251,9 +264,10 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         # Enable lighting
         glEnable(GL_LIGHTING)
-
+        glEnable(GL_TEXTURE_2D)
+        
     def perspective(self, fovY, aspect, zNear, zFar ):
-        fH = math.tan( fovY / 360.0 * math.pi ) * zNear;
+        fH = math.tan( fovY / 360.0 * math.pi ) * zNear
         fW = fH * aspect
         glFrustum( -fW, fW, -fH, fH, zNear, zFar )
 
@@ -266,12 +280,13 @@ class GLWidget(QtOpenGL.QGLWidget):
     def build_mesh(self):
         # Grab the voxel vertices
         (self._vertices, self._colours, self._normals,
-         self._colour_ids) = self.voxels.get_vertices()
+         self._colour_ids, self._uvs) = self.voxels.get_vertices()
         self._num_vertices = len(self._vertices)//3
         self._vertices = array.array("f", self._vertices).tostring()
         self._colours = array.array("B", self._colours).tostring()
         self._colour_ids = array.array("B", self._colour_ids).tostring()
         self._normals = array.array("f", self._normals).tostring()
+        self._uvs = array.array("f", self._uvs).tostring()
 
     # Build floor grid
     def build_grid(self):
