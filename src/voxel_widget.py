@@ -26,6 +26,11 @@ from tool import Target
 
 class GLWidget(QtOpenGL.QGLWidget):
 
+    # Constants for referring to axis
+    X_AXIS = 1
+    Y_AXIS = 2
+    Z_AXIS = 3
+
     @property
     def floor_grid(self):
         return self._display_floor_grid
@@ -284,12 +289,28 @@ class GLWidget(QtOpenGL.QGLWidget):
             
         # Remember the 3d coordinates of this click
         mx, my, mz, d = self.window_to_world(event.x(), event.y())
-        mxd, myd, _, _ = self.window_to_world(event.x()+1, event.y()+1, d)
-        self._x_weight = abs(mxd - mx)
-        self._y_weight = -abs(myd - my)
+        mxd, myd, mzd, _ = self.window_to_world(event.x()+1, event.y(), d)
+        self._htranslate = ((mxd - mx),(myd - my),(mzd - mz)) 
+        mxd, myd, mzd, _ = self.window_to_world(event.x(), event.y()+1, d)
+        self._vtranslate = ((mxd - mx),(myd - my),(mzd - mz))
+        # Work out translation for x,y
+        ax,ay = self.view_axis()
+        if ax == self.X_AXIS:
+            self._htranslate = abs(self._htranslate[0]) 
+        if ax == self.Y_AXIS:
+            self._htranslate = abs(self._htranslate[1]) 
+        if ax == self.Z_AXIS:
+            self._htranslate = abs(self._htranslate[2]) 
+        if ay == self.X_AXIS:
+            self._vtranslate = abs(self._vtranslate[0]) 
+        if ay == self.Y_AXIS:
+            self._vtranslate = abs(self._vtranslate[1]) 
+        if ay == self.Z_AXIS:
+            self._vtranslate = abs(self._vtranslate[2]) 
         self._depth_focus = d 
 
     def mouseMoveEvent(self, event):
+        # Screen units delta
         dx = event.x() - self._mouse.x()
         dy = event.y() - self._mouse.y()
 
@@ -301,12 +322,9 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         # Middle mouse button held down - translate
         if event.buttons() & QtCore.Qt.MiddleButton:
-            x,y,z,_ = self.window_to_world(event.x(), event.y(), self._depth_focus)
             # Work out the translation in 3d space
-            dx = dx * self._x_weight
-            dy = dy * self._y_weight
-            self._translate_x = self._translate_x + dx
-            self._translate_y = self._translate_y + dy
+            self._translate_x = self._translate_x + dx * self._htranslate 
+            self._translate_y = self._translate_y + ((-dy) * self._vtranslate)
             self.updateGL()
 
         self._mouse = QtCore.QPoint(event.pos())
@@ -373,6 +391,21 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Adjust to voxel space coordinates
         x, y, z = self.voxels.world_to_voxel(intersect.x, intersect.y, intersect.z)
         return int(x), int(y), int(z)
+
+    # Determine the axis which are perpendicular to our viewing ray, ish
+    def view_axis(self):
+        # Shoot a ray into the scene
+        x1,y1,z1 = gluUnProject(self.width()//2, self.height()//2, 0.0)
+        x2,y2,z2 = gluUnProject(self.width()//2, self.height()//2, 1.0)
+        dx = abs(x2-x1)
+        dy = abs(y2-y1)
+        dz = abs(z2-z1)
+        # The largest deviation is the axis we're looking down
+        if dz >= dx and dz >= dy:
+            return (self.X_AXIS, self.Y_AXIS)
+        elif dy >= dx and dy >= dz:
+            return (self.X_AXIS, self.Z_AXIS)
+        return (self.Z_AXIS, self.Y_AXIS)        
 
     # Convert window x,y coordinates into x,y,z world coordinates, also return
     # the depth
