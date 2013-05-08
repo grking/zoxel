@@ -119,14 +119,17 @@ class VoxelData(object):
             if not self._autoresize:
                 return
             x, y, z = self._resize_to_include(x,y,z)
-        self._data[x][y][z] = state
+        # Set the voxel
+        if (x >= 0 and x < self.width and y >= 0 and y < self.height 
+            and z >= 0 and z < self.depth):
+            self._data[x][y][z] = state
+            if state != EMPTY:
+                if (x,y,z) not in self._cache:
+                    self._cache.append((x,y,z))
+            else:
+                if (x,y,z) in self._cache:
+                    self._cache.remove((x,y,z))
         self.changed = True
-        if state != EMPTY:
-            if (x,y,z) not in self._cache:
-                self._cache.append((x,y,z))
-        else:
-            if (x,y,z) in self._cache:
-                self._cache.remove((x,y,z))
 
     # Get the state of the given voxel
     def get(self, x, y, z):
