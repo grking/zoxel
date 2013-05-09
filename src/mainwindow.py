@@ -79,7 +79,7 @@ class MainWindow(QtGui.QMainWindow):
             self.display.autoresize = True
             self.ui.action_autoresize.setChecked(True)
         value = self.get_setting("occlusion")
-        if not value:
+        if value is None:
             value = True
         self.display.voxels.occlusion = value
         self.ui.action_occlusion.setChecked(value)
