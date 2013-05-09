@@ -65,6 +65,12 @@ class MainWindow(QtGui.QMainWindow):
         value = self.get_setting("background_colour")
         if value is not None:
             self.display.background = QtGui.QColor.fromRgb(*value)
+        value = self.get_setting("voxel_edges")
+        if value is not None:
+            self.display.voxel_edges = value
+            self.ui.action_voxel_edges.setChecked(value)
+        else:
+            self.ui.action_voxel_edges.setChecked(self.display.voxel_edges)
         value = self.get_setting("autoresize")
         if value is not None:
             self.display.autoresize = value
@@ -99,6 +105,11 @@ class MainWindow(QtGui.QMainWindow):
     def on_action_floor_grid_triggered(self):
         self.display.floor_grid = self.ui.action_floor_grid.isChecked()
         self.set_setting("display_floor_grid", self.display.floor_grid)
+
+    @QtCore.Slot()
+    def on_action_voxel_edges_triggered(self):
+        self.display.voxel_edges = self.ui.action_voxel_edges.isChecked()
+        self.set_setting("voxel_edges", self.display.voxel_edges)
 
     @QtCore.Slot()
     def on_action_new_triggered(self):

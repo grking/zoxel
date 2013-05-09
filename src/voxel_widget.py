@@ -68,6 +68,14 @@ class GLWidget(QtOpenGL.QGLWidget):
     @autoresize.setter
     def autoresize(self, value):
         self.voxels.autoresize = value
+        
+    @property
+    def voxel_edges(self):
+        return self._voxeledges
+    @voxel_edges.setter
+    def voxel_edges(self, value):
+        self._voxeledges = value
+        self.updateGL()
     
     # Our signals
     tool_activated = QtCore.Signal()
@@ -85,6 +93,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         self._background_colour = QtGui.QColor("silver")
         self._display_wireframe = False
         self._voxel_colour = QtGui.QColor.fromHsvF(0,1.0,1.0)
+        self._voxeledges = True
         # Mouse position
         self._mouse = QtCore.QPoint()
         # Default camera
@@ -169,7 +178,10 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         # Describe our buffers
         glVertexPointer( 3, GL_FLOAT, 0, self._vertices)
-        glTexCoordPointer(2, GL_FLOAT, 0, self._uvs)
+        if self._voxeledges:
+            glTexCoordPointer(2, GL_FLOAT, 0, self._uvs)
+        else:
+            glDisable(GL_TEXTURE_2D)
         glColorPointer(3, GL_UNSIGNED_BYTE, 0, self._colours)
         glNormalPointer(GL_FLOAT, 0, self._normals)
         
@@ -180,6 +192,9 @@ class GLWidget(QtOpenGL.QGLWidget):
         glDisableClientState(GL_TEXTURE_COORD_ARRAY)
         glDisableClientState(GL_COLOR_ARRAY)
         glDisableClientState(GL_NORMAL_ARRAY)
+
+        if not self._voxeledges:
+            glEnable(GL_TEXTURE_2D)
 
         # Floor grid
         if self.floor_grid:
