@@ -39,6 +39,11 @@ class FillTool(Tool):
             return
         # Grab the target colour
         search_colour = voxel
+        # Don't allow invalid fills
+        c = self.colour.getRgb()
+        fill_colour = c[0]<<24 | c[1]<<16 | c[2]<<8 | 0xff
+        if search_colour == fill_colour:
+            return
         # Initialise our search list
         search = []
         search.append((target.x, target.y, target.z))
