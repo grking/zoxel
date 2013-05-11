@@ -95,6 +95,10 @@ class Tool(object):
     def on_activate(self, target):
         pass
     
+    # Called when mouse button is held down and dragging
+    def on_drag(self, target):
+        pass
+    
     # Should return the action for the tool
     def get_action(self):
         return self.action

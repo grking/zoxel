@@ -38,4 +38,11 @@ class PaintingTool(Tool):
         if voxel:    
             target.voxels.set(target.x, target.y, target.z, self.colour)
 
+    # Colour when dragging also
+    def on_drag(self, target):
+        # If we have a voxel at the target, colour it
+        voxel = target.voxels.get(target.x, target.y, target.z)
+        if voxel:    
+            target.voxels.set(target.x, target.y, target.z, self.colour)
+    
 register_plugin(PaintingTool, "Painting Tool", "1.0")

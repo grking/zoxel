@@ -87,6 +87,7 @@ class MainWindow(QtGui.QMainWindow):
         if self.display:
             self.display.voxels.notify = self.on_data_changed
             self.display.tool_activated.connect(self.on_tool_activated)
+            self.display.tool_dragged.connect(self.on_tool_dragged)
         if self.colour_palette:
             self.colour_palette.changed.connect(self.on_colour_changed)
         # Initialise our tools
@@ -182,6 +183,9 @@ class MainWindow(QtGui.QMainWindow):
         
     def on_tool_activated(self):
         self.activate_tool(self.display.target)
+
+    def on_tool_dragged(self):
+        self.drag_tool(self.display.target)
 
     # Confirm if user wants to save before doing something drastic.
     # returns True if we should continue
@@ -385,6 +389,17 @@ class MainWindow(QtGui.QMainWindow):
         for tool in self._tools:
             if tool.get_action() is action:
                 tool.on_activate(target)
+                return
+    
+    # Send drag activation to the current selected drawing tool
+    def drag_tool(self, target):
+        action = self._tool_group.checkedAction()
+        if not action:
+            return
+        # Find who owns this action and activate
+        for tool in self._tools:
+            if tool.get_action() is action:
+                tool.on_drag(target)
                 return
     
     # Load and initialise all plugins
