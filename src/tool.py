@@ -18,19 +18,28 @@
 from PySide import QtGui
 
 class Face(object):
-    FRONT = 0
-    TOP = 1
-    LEFT = 2
-    RIGHT = 3
-    BACK = 4
-    BOTTOM = 5
+    FRONT = 0   # z-
+    TOP = 1     # y+
+    LEFT = 2    # x+
+    RIGHT = 3   # x-
+    BACK = 4    # z+
+    BOTTOM = 5  # y-
+    # Defining the faces for each plane, where "*_PLANE[0] = +" and "*_PLANE[1] = -"
+    FACES_PLANE_X = [LEFT, RIGHT]
+    FACES_PLANE_Y = [TOP, BOTTOM]
+    FACES_PLANE_Z = [BACK, FRONT]
+    # Defining the faces for each plane used in the collision detection algorithm, where the Y plane is collidable (But X and Z are not).
+    COLLIDABLE_FACES_PLANE_X = FACES_PLANE_X
+    COLLIDABLE_FACES_PLANE_Y = FACES_PLANE_Y + [None]
+    COLLIDABLE_FACES_PLANE_Z = FACES_PLANE_Z
+
 
 class Target(object):
 
     @property
     def face(self):
         return self._face
-    
+
     @property
     def x(self):
         return self._x
@@ -47,15 +56,25 @@ class Target(object):
     def voxels(self):
         return self._voxels
 
+    def __repr__(self):
+        return 'Target(face=%s,x=%d,y=%d,z=%d)' % (self._face, self._x, self._y, self._z)
+
     def __init__(self, voxels, x, y, z, face = None):
         self._face = face
         self._x = x
         self._y = y
         self._z = z
         self._voxels = voxels
-    
+
+    def __eq__(self, other):
+        return ( (self._x == other._x) and
+            (self._y == other._y ) and
+            (self._z == other._z ) and
+            (self._face == other._face ) and
+            (self._voxels == other._voxels ) )
+
     # Returns the coordinates of the voxel next to the selected face.
-    # Or None if there is not one.    
+    # Or None if there is not one.
     def get_neighbour(self):
         if self.face is None:
             return None
@@ -87,18 +106,22 @@ class Tool(object):
         self.api = api
         # Create default action
         self.action = QtGui.QAction(
-            QtGui.QPixmap(":/gfx/icons/wrench.png"), 
+            QtGui.QPixmap(":/gfx/icons/wrench.png"),
             "A Tool", None)
         self.action.setStatusTip("Unknown Tool")
 
-    # Called to trigger the primary action of the tool
+    # Called when the left mouse button is pressed
     def on_activate(self, target):
         pass
-    
-    # Called when mouse button is held down and dragging
+
+    # Called when the left mouse button is held down and dragged
     def on_drag(self, target):
         pass
-    
+
+    # Called when the left mouse button is released
+    def on_deactivate(self, target):
+        pass
+
     # Should return the action for the tool
     def get_action(self):
         return self.action
