@@ -104,6 +104,13 @@ class VoxelData(object):
         # Flag indicating if our data has changed
         self._changed = False
 
+    def is_valid_bounds(self, x, y, z):
+        return (
+            x >= 0 and x < self.width and
+            y >= 0 and y < self.height and
+            z >= 0 and z < self.depth
+        )
+
     # Set a voxel to the given state
     def set(self, x, y, z, state):
         # If this looks like a QT Color instance, convert it
@@ -112,16 +119,13 @@ class VoxelData(object):
             state = c[0]<<24 | c[1]<<16 | c[2]<<8 | 0xff
 
         # Check bounds
-        if (x < 0 or x >= self.width
-            or y < 0 or y >= self.height
-            or z < 0 or z >= self.depth):
+        if ( not self.is_valid_bounds(x, y, z ) ):
             # If we are auto resizing, handle it
             if not self._autoresize:
-                return
+                return False
             x, y, z = self._resize_to_include(x,y,z)
         # Set the voxel
-        if (x >= 0 and x < self.width and y >= 0 and y < self.height
-            and z >= 0 and z < self.depth):
+        if ( self.is_valid_bounds(x, y, z ) ):
             self._data[x][y][z] = state
             if state != EMPTY:
                 if (x,y,z) not in self._cache:
@@ -130,12 +134,11 @@ class VoxelData(object):
                 if (x,y,z) in self._cache:
                     self._cache.remove((x,y,z))
         self.changed = True
+        return True
 
     # Get the state of the given voxel
     def get(self, x, y, z):
-        if (x < 0 or x >= self.width
-            or y < 0 or y >= self.height
-            or z < 0 or z >= self.depth):
+        if ( not self.is_valid_bounds(x, y, z ) ):
             return EMPTY
         return self._data[x][y][z]
 

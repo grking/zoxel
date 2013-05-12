@@ -80,6 +80,7 @@ class GLWidget(QtOpenGL.QGLWidget):
     # Our signals
     tool_activated = QtCore.Signal()
     tool_dragged = QtCore.Signal()
+    tool_deactivated = QtCore.Signal()
 
     def __init__(self, parent=None):
         glformat = QtOpenGL.QGLFormat()
@@ -366,6 +367,13 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         self._mouse = QtCore.QPoint(event.pos())
 
+    def mouseReleaseEvent(self, event):
+        self._mouse = QtCore.QPoint(event.pos())
+        if event.button() == QtCore.Qt.LeftButton:
+            x, y, z, face = self.window_to_voxel(event.x(), event.y())
+            self.deactivate_tool(x, y, z, face)
+            self.refresh()
+
     def wheelEvent(self, event):
         if event.delta() > 0:
             self._translate_z *= 1+self._zoom_speed
@@ -467,3 +475,7 @@ class GLWidget(QtOpenGL.QGLWidget):
     def drag_tool(self, x, y, z, face):
         self.target = Target(self.voxels, x, y, z, face)
         self.tool_dragged.emit()
+
+    def deactivate_tool(self, x, y, z, face):
+        self.target = Target(self.voxels, x, y, z, face)
+        self.tool_deactivated.emit()
