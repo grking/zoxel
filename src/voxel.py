@@ -478,9 +478,11 @@ class VoxelData(object):
 
         return (vertices, colours, normals, colour_ids, uvs)
 
+
     # Return vertices for a floor grid
     def get_grid_vertices(self):
         grid = []
+        #builds the Y_plane
         for z in xrange(self.depth+1):
             gx, gy, gz = self.voxel_to_world(0, 0, z)
             grid += (gx, gy, gz)
@@ -490,6 +492,28 @@ class VoxelData(object):
             gx, gy, gz = self.voxel_to_world(x, 0, 0)
             grid += (gx, gy, gz)
             gx, gy, gz = self.voxel_to_world(x, 0, self.depth)
+            grid += (gx, gy, gz)
+        #builds the Z_plane
+        for x in xrange(self.width+1):
+            gx, gy, gz = self.voxel_to_world(x, 0, self.depth)
+            grid += (gx, gy, gz)
+            gx, gy, gz = self.voxel_to_world(x, self.height, self.depth)
+            grid += (gx, gy, gz)
+        for y in xrange(self.height+1):
+            gx, gy, gz = self.voxel_to_world(0, y, self.depth)
+            grid += (gx, gy, gz)
+            gx, gy, gz = self.voxel_to_world(self.width, y, self.depth)
+            grid += (gx, gy, gz)
+        #builds the X_plane
+        for y in xrange(self.height+1):
+            gx, gy, gz = self.voxel_to_world(0, y, 0)
+            grid += (gx, gy, gz)
+            gx, gy, gz = self.voxel_to_world(0, y, self.depth)
+            grid += (gx, gy, gz)
+        for z in xrange(self.depth+1):
+            gx, gy, gz = self.voxel_to_world(0, 0, z)
+            grid += (gx, gy, gz)
+            gx, gy, gz = self.voxel_to_world(0, self.height, z)
             grid += (gx, gy, gz)
         return grid
 

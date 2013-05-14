@@ -46,17 +46,17 @@ class MainWindow(QtGui.QMainWindow):
         self.load_state()
         # Create our GL Widget
         try:
-            widget = GLWidget(self.ui.glparent)
-            self.ui.glparent.layout().addWidget(widget)
-            self.display = widget
+            voxels = GLWidget(self.ui.glparent)
+            self.ui.glparent.layout().addWidget(voxels)
+            self.display = voxels
         except Exception as E:
             QtGui.QMessageBox.warning(self, "Initialisation Failed",
                 str(E))
             exit(1)
         # Create our palette widget
-        widget = PaletteWidget(self.ui.palette)
-        self.ui.palette.layout().addWidget(widget)
-        self.colour_palette = widget
+        voxels = PaletteWidget(self.ui.palette)
+        self.ui.palette.layout().addWidget(voxels)
+        self.colour_palette = voxels
         # More UI state
         value = self.get_setting("display_floor_grid")
         if value is not None:
