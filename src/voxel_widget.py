@@ -116,7 +116,6 @@ class GLWidget(QtOpenGL.QGLWidget):
         self._grids = VoxelGrid( self.voxels )
         # create the default _grids
         self.grids.add_grid_plane( GridPlanes.X, offset = 0, visible = True, color = QtGui.QColor("green") )
-        self.grids.add_grid_plane( GridPlanes.X, offset = self.voxels.width//2 , visible = False, color = QtGui.QColor("green") )
         self.grids.add_grid_plane( GridPlanes.Y, offset = 0, visible = True, color = QtGui.QColor("blue") )
         self.grids.add_grid_plane( GridPlanes.Z, offset = self.voxels.depth, visible = True, color = QtGui.QColor("red") )
         # Used to track the z component of various mouse activity

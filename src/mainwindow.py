@@ -155,7 +155,11 @@ class MainWindow(QtGui.QMainWindow):
             width = dialog.ui.width.value()
             height = dialog.ui.height.value()
             depth = dialog.ui.depth.value()
+            new_width_scale = float(width) / self.display.voxels.width
+            new_height_scale = float(height) / self.display.voxels.height
+            new_depth_scale = float(depth) / self.display.voxels.depth
             self.display.voxels.resize(width, height, depth)
+            self.display.grids.scale_offsets( new_width_scale, new_height_scale, new_depth_scale )
             self.display.refresh()
 
     @QtCore.Slot()

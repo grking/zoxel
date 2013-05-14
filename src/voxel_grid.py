@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import array
-from PySide import QtCore, QtGui
+from PySide import QtGui
 from OpenGL.GL import *
 #from OpenGL.GLU import gluUnProject, gluProject
 
@@ -38,14 +38,20 @@ class GridPlane(object):
     def __init__( self, voxels, plane, offset, visible, color = QtGui.QColor("white")  ):
         self._voxels = voxels
         self._plane = plane
-        self._offset = offset
+        self._offset = 0
         self._visible = visible
         self._color = color
+        self._offset_plane_limit = {
+            GridPlanes.X: lambda: self._voxels.width,
+            GridPlanes.Y: lambda: self._voxels.height,
+            GridPlanes.Z: lambda: self._voxels.depth,
+        }
         self._methods_get_plane_vertices = {
             GridPlanes.X: self._get_grid_vertices_x_plane,
             GridPlanes.Y: self._get_grid_vertices_y_plane,
             GridPlanes.Z: self._get_grid_vertices_z_plane
         }
+        self.offset = offset
         self.update_vertices()
 
     @property
@@ -64,6 +70,9 @@ class GridPlane(object):
     @offset.setter
     def offset(self, value):
         assert isinstance(value, int)
+        offset_limit = self._offset_plane_limit[self.plane]()
+        if( value > offset_limit ):
+            value = offset_limit
         if( value != self._offset ):
             self._offset = value
             self.update_vertices()
@@ -166,13 +175,13 @@ class VoxelGrid(object):
         glDisable(GL_LIGHTING)
         glDisable(GL_TEXTURE_2D)
 
-        for plane in self._planes.itervalues():
-            if( not plane.visible ):
+        for grid in self._planes.itervalues():
+            if( not grid.visible ):
                 continue
 
-            red = plane.color.redF()
-            green = plane.color.greenF()
-            blue = plane.color.blueF()
+            red = grid.color.redF()
+            green = grid.color.greenF()
+            blue = grid.color.blueF()
             # Grid colour
             glColor3f(red,green,blue)
 
@@ -180,10 +189,10 @@ class VoxelGrid(object):
             glEnableClientState(GL_VERTEX_ARRAY)
 
             # Describe our buffers
-            glVertexPointer(3, GL_FLOAT, 0, plane._vertices_array)
+            glVertexPointer(3, GL_FLOAT, 0, grid._vertices_array)
 
             # Render the buffers
-            glDrawArrays(GL_LINES, 0, plane._num_vertices)
+            glDrawArrays(GL_LINES, 0, grid._num_vertices)
 
             # Disable vertex buffers
             glDisableClientState(GL_VERTEX_ARRAY)
@@ -191,3 +200,12 @@ class VoxelGrid(object):
         # Enable lighting
         glEnable(GL_LIGHTING)
         glEnable(GL_TEXTURE_2D)
+
+    def scale_offsets(self, width_scale = None, height_scale = None, depth_scale = None ):
+        for grid in self._planes.itervalues():
+            if( grid.plane == GridPlanes.X and width_scale ):
+                grid.offset = int(round(grid.offset * width_scale))
+            elif( grid.plane == GridPlanes.Y and height_scale ):
+                grid.offset = int(round(grid.offset * height_scale))
+            elif( grid.plane == GridPlanes.Z and depth_scale ):
+                grid.offset = int(round(grid.offset * depth_scale))
