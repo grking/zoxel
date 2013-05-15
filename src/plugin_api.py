@@ -20,7 +20,7 @@ class PluginManager(object):
     plugins = []
 
 class PluginAPI(object):
-    
+
     def __init__(self):
         # All plugins get a reference to our application
         self.application = QtGui.QApplication.instance()
@@ -31,7 +31,7 @@ class PluginAPI(object):
     def register_tool(self, tool):
         # Create an instance
         self.mainwindow.register_tool(tool)
-        
+
     # Register an importer/exporter with the system
     def register_file_handler(self, handler):
         self.mainwindow.register_file_handler(handler)
@@ -43,16 +43,16 @@ class PluginAPI(object):
     # Changee the GUI palette to the given colour.
     # Accepts QColors and 32bit integer RGBA
     def set_palette_colour(self, colour):
-        self.mainwindow.colour_palette.colour = colour        
+        self.mainwindow.colour_palette.colour = colour
 
     # Returns the current voxel data
     def get_voxel_data(self):
         return self.mainwindow.display.voxels
-    
+
     # Returns the current voxel model mesh data
     # vertices, colours, normals
     def get_voxel_mesh(self):
-        vert, col, norm, _ = self.mainwindow.display.voxels.get_vertices() 
+        vert, col, norm, _ = self.mainwindow.display.voxels.get_vertices()
         return (vert, col, norm)
 
     # Get and set persistent config values. value can be any serialisable type.
@@ -64,7 +64,7 @@ class PluginAPI(object):
 
 # Plugin registration
 # Plugins call this function to register with the system.  A plugin
-# should pass the class which will be instaniated by the application, 
+# should pass the class which will be instaniated by the application,
 # this constructor is passed an instance of the system plugin API.
 def register_plugin(plugin_class, name, version):
     # Create an instance of the API to send to the plugin

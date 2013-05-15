@@ -53,7 +53,7 @@ class VoxelData(object):
     @property
     def depth(self):
         return self._depth
-    
+
     @property
     def changed(self):
         return self._changed
@@ -72,7 +72,7 @@ class VoxelData(object):
     @autoresize.setter
     def autoresize(self, value):
         self._autoresize = value
-        
+
     @property
     def occlusion(self):
         return self._occlusion
@@ -86,7 +86,7 @@ class VoxelData(object):
         self._height = _WORLD_HEIGHT
         self._depth = _WORLD_DEPTH
         self._initialise_data()
-        # Callback when our data changes 
+        # Callback when our data changes
         self.notify_changed = None
         # Autoresize when setting voxels out of bounds?
         self._autoresize = True
@@ -112,15 +112,15 @@ class VoxelData(object):
             state = c[0]<<24 | c[1]<<16 | c[2]<<8 | 0xff
 
         # Check bounds
-        if (x < 0 or x >= self.width 
-            or y < 0 or y >= self.height 
+        if (x < 0 or x >= self.width
+            or y < 0 or y >= self.height
             or z < 0 or z >= self.depth):
             # If we are auto resizing, handle it
             if not self._autoresize:
                 return
             x, y, z = self._resize_to_include(x,y,z)
         # Set the voxel
-        if (x >= 0 and x < self.width and y >= 0 and y < self.height 
+        if (x >= 0 and x < self.width and y >= 0 and y < self.height
             and z >= 0 and z < self.depth):
             self._data[x][y][z] = state
             if state != EMPTY:
@@ -159,7 +159,7 @@ class VoxelData(object):
             uvs += uv
         return (vertices, colours, normals, colour_ids, uvs)
 
-    # Called to notify us that our data has been saved. i.e. we can set 
+    # Called to notify us that our data has been saved. i.e. we can set
     # our "changed" status back to False.
     def saved(self):
         self.changed = False
@@ -228,7 +228,7 @@ class VoxelData(object):
             occ4 = 0
             if self._occlusion:
                 if self.get(vx,vy+1,vz-1) != EMPTY:
-                    occ2 += 1 
+                    occ2 += 1
                     occ4 += 1
                 if self.get(vx-1,vy,vz-1) != EMPTY:
                     occ1 += 1
@@ -270,7 +270,7 @@ class VoxelData(object):
             occ4 = 0
             if self._occlusion:
                 if self.get(vx,vy+1,vz+1) != EMPTY:
-                    occ2 += 1 
+                    occ2 += 1
                     occ4 += 1
                 if self.get(vx-1,vy+1,vz) != EMPTY:
                     occ1 += 1
@@ -312,7 +312,7 @@ class VoxelData(object):
             occ4 = 0
             if self._occlusion:
                 if self.get(vx+1,vy+1,vz) != EMPTY:
-                    occ2 += 1 
+                    occ2 += 1
                     occ4 += 1
                 if self.get(vx+1,vy,vz-1) != EMPTY:
                     occ1 += 1
@@ -354,7 +354,7 @@ class VoxelData(object):
             occ4 = 0
             if self._occlusion:
                 if self.get(vx-1,vy+1,vz) != EMPTY:
-                    occ2 += 1 
+                    occ2 += 1
                     occ4 += 1
                 if self.get(vx-1,vy,vz+1) != EMPTY:
                     occ1 += 1
@@ -396,7 +396,7 @@ class VoxelData(object):
             occ4 = 0
             if self._occlusion:
                 if self.get(vx,vy+1,vz+1) != EMPTY:
-                    occ2 += 1 
+                    occ2 += 1
                     occ4 += 1
                 if self.get(vx+1,vy,vz+1) != EMPTY:
                     occ1 += 1
@@ -438,7 +438,7 @@ class VoxelData(object):
             occ4 = 0
             if self._occlusion:
                 if self.get(vx,vy-1,vz-1) != EMPTY:
-                    occ2 += 1 
+                    occ2 += 1
                     occ4 += 1
                 if self.get(vx-1,vy-1,vz) != EMPTY:
                     occ1 += 1
@@ -604,7 +604,7 @@ class VoxelData(object):
         # Work out our new dimensions
         new_width = self.width+abs(dx)
         new_height = self.height+abs(dy)
-        new_depth = self.depth+abs(dz)        
+        new_depth = self.depth+abs(dz)
         # Create new data structure of the required size
         data = [[[0 for _ in xrange(new_depth)]
             for _ in xrange(new_height)]

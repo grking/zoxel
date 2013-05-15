@@ -15,12 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from PySide import QtCore, QtGui
-from PySide.QtCore import QRect, QPoint 
+from PySide.QtCore import QRect, QPoint
 
 class PaletteWidget(QtGui.QWidget):
 
     # Colour changed signal
-    changed = QtCore.Signal()    
+    changed = QtCore.Signal()
 
     @property
     def colour(self):
@@ -61,7 +61,7 @@ class PaletteWidget(QtGui.QWidget):
     def _draw_palette(self):
 
         # Create an image with a white background
-        self._image = QtGui.QImage(QtCore.QSize(self.width(), self.height()), 
+        self._image = QtGui.QImage(QtCore.QSize(self.width(), self.height()),
             QtGui.QImage.Format.Format_RGB32)
         self._image.fill(QtGui.QColor.fromRgb(0xff, 0xff, 0xff))
 
@@ -69,7 +69,7 @@ class PaletteWidget(QtGui.QWidget):
         qp = QtGui.QPainter()
         qp.begin(self._image)
         qp.setPen(QtCore.Qt.NoPen)
-        
+
         # Render hues
         rect = self._hue_rect
         for x in xrange(rect.x(), rect.x()+rect.width()):
@@ -79,13 +79,13 @@ class PaletteWidget(QtGui.QWidget):
                 v = 1.0
                 c = QtGui.QColor.fromHsvF(h, s, v)
                 qp.setBrush(c)
-                qp.drawRect(x, y, 8, 8)        
+                qp.drawRect(x, y, 8, 8)
 
         # Render hue selection marker
         qp.setBrush(QtGui.QColor.fromRgb(0xff, 0xff, 0xff))
         qp.drawRect(rect.x(), self._hue * rect.height(),
             rect.width(), 2)
-                
+
         # Render shades
         rect = self._shades_rect
         width = float(rect.width())
@@ -143,7 +143,7 @@ class PaletteWidget(QtGui.QWidget):
     def mouseMoveEvent(self, event):
         if event.buttons() & QtCore.Qt.LeftButton:
             self.mousePressEvent(event)
-        
+
     def resizeEvent(self, event):
         self._calculate_bounds()
         self._draw_palette()

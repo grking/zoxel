@@ -30,7 +30,7 @@ class Target(object):
     @property
     def face(self):
         return self._face
-    
+
     @property
     def x(self):
         return self._x
@@ -53,9 +53,9 @@ class Target(object):
         self._y = y
         self._z = z
         self._voxels = voxels
-    
+
     # Returns the coordinates of the voxel next to the selected face.
-    # Or None if there is not one.    
+    # Or None if there is not one.
     def get_neighbour(self):
         if self.face is None:
             return None
@@ -87,18 +87,18 @@ class Tool(object):
         self.api = api
         # Create default action
         self.action = QtGui.QAction(
-            QtGui.QPixmap(":/gfx/icons/wrench.png"), 
+            QtGui.QPixmap(":/gfx/icons/wrench.png"),
             "A Tool", None)
         self.action.setStatusTip("Unknown Tool")
 
     # Called to trigger the primary action of the tool
     def on_activate(self, target):
         pass
-    
+
     # Called when mouse button is held down and dragging
     def on_drag(self, target):
         pass
-    
+
     # Should return the action for the tool
     def get_action(self):
         return self.action

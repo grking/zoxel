@@ -18,10 +18,10 @@ import os
 from plugin_api import register_plugin
 
 class ObjFile(object):
-    
+
     # Description of file type
     description = "OBJ Files"
-    
+
     # File type filter
     filetype = "*.obj"
 
@@ -47,10 +47,10 @@ class ObjFile(object):
         # Export vertices
         i = 0
         while i < len(vertices):
-            f.write("v %f %f %f\r\n" % 
+            f.write("v %f %f %f\r\n" %
                 (vertices[i], vertices[i+1], vertices[i+2]))
             i += 3
-        
+
         # Build a list of unique colours we use so we can assign materials
         mats = {}
         i = 0
@@ -62,7 +62,7 @@ class ObjFile(object):
             if colour not in mats:
                 mats[colour] = "material_%i" % len(mats)
             i += 3
-            
+
         # Export faces
         faces = (len(vertices)//(3*3))//2
         for i in xrange(faces):
@@ -77,7 +77,7 @@ class ObjFile(object):
 
         # Tidy up
         f.close()
-        
+
         # Create our material file
         f = open(mat_filename,"wt")
         for colour, material in mats.items():

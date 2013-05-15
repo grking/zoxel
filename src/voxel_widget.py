@@ -46,14 +46,14 @@ class GLWidget(QtOpenGL.QGLWidget):
     def wireframe(self, value):
         self._display_wireframe = value
         self.updateGL()
-    
+
     @property
     def voxel_colour(self):
         return self._voxel_colour
     @voxel_colour.setter
     def voxel_colour(self, value):
         self._voxel_colour = value
-        
+
     @property
     def background(self):
         return self._background_colour
@@ -68,7 +68,7 @@ class GLWidget(QtOpenGL.QGLWidget):
     @autoresize.setter
     def autoresize(self, value):
         self.voxels.autoresize = value
-        
+
     @property
     def voxel_edges(self):
         return self._voxeledges
@@ -76,7 +76,7 @@ class GLWidget(QtOpenGL.QGLWidget):
     def voxel_edges(self, value):
         self._voxeledges = value
         self.updateGL()
-    
+
     # Our signals
     tool_activated = QtCore.Signal()
     tool_dragged = QtCore.Signal()
@@ -114,7 +114,7 @@ class GLWidget(QtOpenGL.QGLWidget):
     def clear(self):
         self.voxels.clear()
         self.refresh()
-        
+
     # Force an update of our internal data
     def refresh(self):
         self.build_mesh()
@@ -175,7 +175,7 @@ class GLWidget(QtOpenGL.QGLWidget):
             glPolygonMode( GL_FRONT, GL_LINE )
 
         # Bind our texture
-        glBindTexture(GL_TEXTURE_2D, self._texture)        
+        glBindTexture(GL_TEXTURE_2D, self._texture)
 
         # Describe our buffers
         glVertexPointer( 3, GL_FLOAT, 0, self._vertices)
@@ -185,7 +185,7 @@ class GLWidget(QtOpenGL.QGLWidget):
             glDisable(GL_TEXTURE_2D)
         glColorPointer(3, GL_UNSIGNED_BYTE, 0, self._colours)
         glNormalPointer(GL_FLOAT, 0, self._normals)
-        
+
         # Render the buffers
         glDrawArrays(GL_TRIANGLES, 0, self._num_vertices)
 
@@ -281,7 +281,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Enable lighting
         glEnable(GL_LIGHTING)
         glEnable(GL_TEXTURE_2D)
-        
+
     def perspective(self, fovY, aspect, zNear, zFar ):
         fH = math.tan( fovY / 360.0 * math.pi ) * zNear
         fW = fH * aspect
@@ -317,28 +317,28 @@ class GLWidget(QtOpenGL.QGLWidget):
             x, y, z, face = self.window_to_voxel(event.x(), event.y())
             self.activate_tool(x, y, z, face)
             self.refresh()
-            
+
         # Remember the 3d coordinates of this click
         mx, my, mz, d = self.window_to_world(event.x(), event.y())
         mxd, myd, mzd, _ = self.window_to_world(event.x()+1, event.y(), d)
-        self._htranslate = ((mxd - mx),(myd - my),(mzd - mz)) 
+        self._htranslate = ((mxd - mx),(myd - my),(mzd - mz))
         mxd, myd, mzd, _ = self.window_to_world(event.x(), event.y()+1, d)
         self._vtranslate = ((mxd - mx),(myd - my),(mzd - mz))
         # Work out translation for x,y
         ax,ay = self.view_axis()
         if ax == self.X_AXIS:
-            self._htranslate = abs(self._htranslate[0]) 
+            self._htranslate = abs(self._htranslate[0])
         if ax == self.Y_AXIS:
-            self._htranslate = abs(self._htranslate[1]) 
+            self._htranslate = abs(self._htranslate[1])
         if ax == self.Z_AXIS:
-            self._htranslate = abs(self._htranslate[2]) 
+            self._htranslate = abs(self._htranslate[2])
         if ay == self.X_AXIS:
-            self._vtranslate = abs(self._vtranslate[0]) 
+            self._vtranslate = abs(self._vtranslate[0])
         if ay == self.Y_AXIS:
-            self._vtranslate = abs(self._vtranslate[1]) 
+            self._vtranslate = abs(self._vtranslate[1])
         if ay == self.Z_AXIS:
-            self._vtranslate = abs(self._vtranslate[2]) 
-        self._depth_focus = d 
+            self._vtranslate = abs(self._vtranslate[2])
+        self._depth_focus = d
 
     def mouseMoveEvent(self, event):
         # Screen units delta
@@ -354,7 +354,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Middle mouse button held down - translate
         if event.buttons() & QtCore.Qt.MiddleButton:
             # Work out the translation in 3d space
-            self._translate_x = self._translate_x + dx * self._htranslate 
+            self._translate_x = self._translate_x + dx * self._htranslate
             self._translate_y = self._translate_y + ((-dy) * self._vtranslate)
             self.updateGL()
 
@@ -362,7 +362,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         if event.buttons() & QtCore.Qt.LeftButton:
             x, y, z, face = self.window_to_voxel(event.x(), event.y())
             self.drag_tool(x, y, z, face)
-            self.refresh()        
+            self.refresh()
 
         self._mouse = QtCore.QPoint(event.pos())
 
@@ -391,7 +391,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         else:
             # Windows seems to return an array
             voxelid = c[0][0][0]<<16 | c[1][0][0]<<8 | c[2][0][0]
-           
+
         # Perhaps we clicked on the background?
         if voxelid == 0xffffff:
             x, y, z = self.floor_intersection(x, y)
@@ -442,7 +442,7 @@ class GLWidget(QtOpenGL.QGLWidget):
             return (self.X_AXIS, self.Y_AXIS)
         elif dy >= dx and dy >= dz:
             return (self.X_AXIS, self.Z_AXIS)
-        return (self.Z_AXIS, self.Y_AXIS)        
+        return (self.Z_AXIS, self.Y_AXIS)
 
     # Convert window x,y coordinates into x,y,z world coordinates, also return
     # the depth
@@ -453,9 +453,9 @@ class GLWidget(QtOpenGL.QGLWidget):
             z = glReadPixels( x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT)[0][0]
         fx,fy,fz = gluUnProject(x, y, z)
         return fx,fy,fz,z
-    
+
     # Convert x,y,z world coorindates to x,y window coordinates
-    def world_to_window(self, x, y, z): 
+    def world_to_window(self, x, y, z):
         x,y,z = gluProject(x, y, z)
         y = self._height - y
         return x,y

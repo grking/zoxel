@@ -19,10 +19,10 @@ from plugin_api import register_plugin
 from constants import ZOXEL_VERSION
 
 class ZoxelFile(object):
-    
+
     # Description of file type
     description = "Zoxel Files"
-    
+
     # File type filter
     filetype = "*.zox"
 
@@ -41,9 +41,9 @@ class ZoxelFile(object):
 
         # File version
         version = self._file_version
-        
+
         # Build data structure
-        data = {'version': version, 'frames': 1, 
+        data = {'version': version, 'frames': 1,
                 "creator": "Zoxel Version "+ZOXEL_VERSION}
         frame = []
         for y in range(voxels.height):
@@ -52,12 +52,12 @@ class ZoxelFile(object):
                     v = voxels.get(x, y, z)
                     if v:
                         frame.append((x,y,z,v))
-        
+
         data['frame1'] = frame
-        
+
         # Open our file
         f = open(filename,"wt")
-        
+
         f.write(json.dumps(data))
 
         # Tidy up
@@ -76,11 +76,11 @@ class ZoxelFile(object):
         except Exception as Ex:
             raise Exception("Doesn't look like a valid Zoxel file (%s)" % Ex)
         f.close()
-        
+
         # Check we understand it
         if data['version'] > self._file_version:
             raise Exception("More recent version of Zoxel needed to open file.")
-        
+
         # Load the data
         frame = data['frame1']
 

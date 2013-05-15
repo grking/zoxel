@@ -20,7 +20,7 @@ class SproxelFile(object):
 
     # Description of file type
     description = "Sproxel Files"
-    
+
     # File type filter
     filetype = "*.csv"
 

@@ -19,18 +19,18 @@ from tool import Tool
 from plugin_api import register_plugin
 
 class FillTool(Tool):
-    
+
     def __init__(self, api):
         super(FillTool, self).__init__(api)
         # Create our action / icon
         self.action = QtGui.QAction(
-            QtGui.QPixmap(":/images/gfx/icons/paint-can.png"), 
+            QtGui.QPixmap(":/images/gfx/icons/paint-can.png"),
             "Fill", None)
         self.action.setStatusTip("Flood fill with colour")
         self.action.setCheckable(True)
         # Register the tool
         self.api.register_tool(self)
-    
+
     # Fill all connected voxels of the same colour with a new colour
     def on_activate(self, target):
         # We need to have a selected voxel
