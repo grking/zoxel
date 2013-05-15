@@ -46,17 +46,17 @@ class MainWindow(QtGui.QMainWindow):
         self.load_state()
         # Create our GL Widget
         try:
-            widget = GLWidget(self.ui.glparent)
-            self.ui.glparent.layout().addWidget(widget)
-            self.display = widget
+            voxels = GLWidget(self.ui.glparent)
+            self.ui.glparent.layout().addWidget(voxels)
+            self.display = voxels
         except Exception as E:
             QtGui.QMessageBox.warning(self, "Initialisation Failed",
                 str(E))
             exit(1)
         # Create our palette widget
-        widget = PaletteWidget(self.ui.palette)
-        self.ui.palette.layout().addWidget(widget)
-        self.colour_palette = widget
+        voxels = PaletteWidget(self.ui.palette)
+        self.ui.palette.layout().addWidget(voxels)
+        self.colour_palette = voxels
         # More UI state
         value = self.get_setting("display_floor_grid")
         if value is not None:
@@ -88,6 +88,7 @@ class MainWindow(QtGui.QMainWindow):
             self.display.voxels.notify = self.on_data_changed
             self.display.tool_activated.connect(self.on_tool_activated)
             self.display.tool_dragged.connect(self.on_tool_dragged)
+            self.display.tool_deactivated.connect(self.on_tool_deactivated)
         if self.colour_palette:
             self.colour_palette.changed.connect(self.on_colour_changed)
         # Initialise our tools
@@ -154,7 +155,11 @@ class MainWindow(QtGui.QMainWindow):
             width = dialog.ui.width.value()
             height = dialog.ui.height.value()
             depth = dialog.ui.depth.value()
+            new_width_scale = float(width) / self.display.voxels.width
+            new_height_scale = float(height) / self.display.voxels.height
+            new_depth_scale = float(depth) / self.display.voxels.depth
             self.display.voxels.resize(width, height, depth)
+            self.display.grids.scale_offsets( new_width_scale, new_height_scale, new_depth_scale )
             self.display.refresh()
 
     @QtCore.Slot()
@@ -186,6 +191,9 @@ class MainWindow(QtGui.QMainWindow):
 
     def on_tool_dragged(self):
         self.drag_tool(self.display.target)
+
+    def on_tool_deactivated(self):
+        self.deactivate_tool(self.display.target)
 
     # Confirm if user wants to save before doing something drastic.
     # returns True if we should continue
@@ -400,6 +408,17 @@ class MainWindow(QtGui.QMainWindow):
         for tool in self._tools:
             if tool.get_action() is action:
                 tool.on_drag(target)
+                return
+
+    # Send an deactivation event to the currently selected drawing tool
+    def deactivate_tool(self, target):
+        action = self._tool_group.checkedAction()
+        if not action:
+            return
+        # Find who owns this action and activate
+        for tool in self._tools:
+            if tool.get_action() is action:
+                tool.on_deactivate(target)
                 return
 
     # Load and initialise all plugins

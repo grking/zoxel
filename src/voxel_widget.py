@@ -23,6 +23,8 @@ from OpenGL.GLU import gluUnProject, gluProject
 import voxel
 from euclid import LineSegment3, Plane, Point3
 from tool import Target
+from voxel_grid import GridPlanes
+from voxel_grid import VoxelGrid
 
 class GLWidget(QtOpenGL.QGLWidget):
 
@@ -77,9 +79,14 @@ class GLWidget(QtOpenGL.QGLWidget):
         self._voxeledges = value
         self.updateGL()
 
+    @property
+    def grids(self):
+        return self._grids
+
     # Our signals
     tool_activated = QtCore.Signal()
     tool_dragged = QtCore.Signal()
+    tool_deactivated = QtCore.Signal()
 
     def __init__(self, parent=None):
         glformat = QtOpenGL.QGLFormat()
@@ -105,8 +112,12 @@ class GLWidget(QtOpenGL.QGLWidget):
         self._display_floor_grid = True
         # Our voxel scene
         self.voxels = voxel.VoxelData()
-        # Build our grid
-        self.build_grid()
+        # Grid manager
+        self._grids = VoxelGrid( self.voxels )
+        # create the default _grids
+        self.grids.add_grid_plane( GridPlanes.X, offset = 0, visible = True, color = QtGui.QColor("green") )
+        self.grids.add_grid_plane( GridPlanes.Y, offset = 0, visible = True, color = QtGui.QColor("blue") )
+        self.grids.add_grid_plane( GridPlanes.Z, offset = self.voxels.depth, visible = True, color = QtGui.QColor("red") )
         # Used to track the z component of various mouse activity
         self._depth_focus = 1
 
@@ -197,9 +208,8 @@ class GLWidget(QtOpenGL.QGLWidget):
         if not self._voxeledges:
             glEnable(GL_TEXTURE_2D)
 
-        # Floor grid
-        if self.floor_grid:
-            self.paintGrid()
+        # draw the _grids
+        self.grids.paint()
 
         # Default back to filled rendering
         glPolygonMode( GL_FRONT, GL_FILL )
@@ -257,31 +267,6 @@ class GLWidget(QtOpenGL.QGLWidget):
         glEnable(GL_LIGHTING)
         glEnable(GL_TEXTURE_2D)
 
-    # Render a grid
-    def paintGrid(self):
-        # Disable lighting
-        glDisable(GL_LIGHTING)
-        glDisable(GL_TEXTURE_2D)
-
-        # Grid colour
-        glColor3f(1.0,1.0,1.0)
-
-        # Enable vertex buffers
-        glEnableClientState(GL_VERTEX_ARRAY)
-
-        # Describe our buffers
-        glVertexPointer( 3, GL_FLOAT, 0, self._grid)
-
-        # Render the buffers
-        glDrawArrays(GL_LINES, 0, self._num_grid_vertices)
-
-        # Disable vertex buffers
-        glDisableClientState(GL_VERTEX_ARRAY)
-
-        # Enable lighting
-        glEnable(GL_LIGHTING)
-        glEnable(GL_TEXTURE_2D)
-
     def perspective(self, fovY, aspect, zNear, zFar ):
         fH = math.tan( fovY / 360.0 * math.pi ) * zNear
         fW = fH * aspect
@@ -306,10 +291,7 @@ class GLWidget(QtOpenGL.QGLWidget):
 
     # Build floor grid
     def build_grid(self):
-        # Build a grid
-        grid = self.voxels.get_grid_vertices()
-        self._grid = array.array("f", grid).tostring()
-        self._num_grid_vertices = len(grid)//3
+        self.grids.update_grid_plane()
 
     def mousePressEvent(self, event):
         self._mouse = QtCore.QPoint(event.pos())
@@ -365,6 +347,13 @@ class GLWidget(QtOpenGL.QGLWidget):
             self.refresh()
 
         self._mouse = QtCore.QPoint(event.pos())
+
+    def mouseReleaseEvent(self, event):
+        self._mouse = QtCore.QPoint(event.pos())
+        if event.button() == QtCore.Qt.LeftButton:
+            x, y, z, face = self.window_to_voxel(event.x(), event.y())
+            self.deactivate_tool(x, y, z, face)
+            self.refresh()
 
     def wheelEvent(self, event):
         if event.delta() > 0:
@@ -467,3 +456,7 @@ class GLWidget(QtOpenGL.QGLWidget):
     def drag_tool(self, x, y, z, face):
         self.target = Target(self.voxels, x, y, z, face)
         self.tool_dragged.emit()
+
+    def deactivate_tool(self, x, y, z, face):
+        self.target = Target(self.voxels, x, y, z, face)
+        self.tool_deactivated.emit()

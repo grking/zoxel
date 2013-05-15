@@ -16,6 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from PySide import QtGui
 from tool import Tool
+from tool import Target
+from tool import Face
 from plugin_api import register_plugin
 
 class DrawingTool(Tool):
@@ -31,14 +33,53 @@ class DrawingTool(Tool):
         # Register the tool
         self.api.register_tool(self)
 
+
+    """"
+    Tries to plot a new voxel at target location.
+    @param choosen_target: The place where the new voxel should be inserted.
+    @return: A Target object indicating the actual place where the voxel was inserted. Returns None when no insertion was made.
+    """
+    def _draw_voxel(self, choosen_target):
+        # final_target will be the place where the voxel will be inserted.
+        final_target = choosen_target
+        # Works out where exactly the new voxel goes. It can collide with an existing voxel or with the bottom of the 'y' plane,
+        #in which case, pos will be different than None.
+        pos = choosen_target.get_neighbour()
+        if pos:
+            final_target = Target( choosen_target.voxels, pos[0], pos[1], pos[2], choosen_target.face )
+        # Tries to set the voxel on the matrix and then returns the Target with it's coordinates, if it exists.
+        if( choosen_target.voxels.set(final_target.x, final_target.y, final_target.z, self.colour) ):
+            return final_target
+        else:
+            return None
+
+    def _get_valid_sequence_faces(self, face):
+        if( face in Face.COLLIDABLE_FACES_PLANE_X ):
+            return Face.COLLIDABLE_FACES_PLANE_Y + Face.COLLIDABLE_FACES_PLANE_Z
+        elif( face in Face.COLLIDABLE_FACES_PLANE_Y ):
+            return Face.COLLIDABLE_FACES_PLANE_X + Face.COLLIDABLE_FACES_PLANE_Z
+        elif( face in Face.COLLIDABLE_FACES_PLANE_Z ):
+            return Face.COLLIDABLE_FACES_PLANE_X + Face.COLLIDABLE_FACES_PLANE_Y
+        else:
+            return None
+
     # Draw a new voxel next to the targeted face
     def on_activate(self, target):
-        # Work out where exactly the new voxel goes
-        pos = target.get_neighbour()
-        if pos:
-            target.voxels.set(pos[0], pos[1], pos[2], self.colour)
-        else:
-            # Just place voxel at this positon
-            target.voxels.set(target.x, target.y, target.z, self.colour)
+        self._first_target = self._draw_voxel(target)
+
+    # When dragging, Draw a new voxel next to the targeted face
+    def on_drag(self, target):
+        # In case the first click has missed a valid target.
+        if( self._first_target is None ):
+            return
+        #
+        valid_faces = self._get_valid_sequence_faces(self._first_target.face)
+        if( ( not valid_faces ) or ( target.face not in valid_faces ) ):
+            return
+        #
+        self._draw_voxel(target)
+
+    def on_deactivate(self, target):
+        self._first_target = None
 
 register_plugin(DrawingTool, "Drawing Tool", "1.0")
