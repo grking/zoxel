@@ -40,8 +40,11 @@ class ObjFile(object):
         f = open(filename,"wt")
 
         # Use materials
-        name, _ = os.path.splitext(filename)
-        mat_filename = os.path.basename(name)+".mtl"
+        mat_pathname, mat_filename = os.path.split(filename)
+        name, ext = os.path.splitext(mat_filename)
+        if not ext:
+            filename = filename+'.obj'
+        mat_filename = os.path.join(mat_pathname, name)+".mtl"
         f.write("mtllib %s\r\n" % mat_filename)
 
         # Export vertices
