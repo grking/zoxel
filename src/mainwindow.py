@@ -46,17 +46,17 @@ class MainWindow(QtGui.QMainWindow):
         self.load_state()
         # Create our GL Widget
         try:
-            widget = GLWidget(self.ui.glparent)
-            self.ui.glparent.layout().addWidget(widget)
-            self.display = widget
+            voxels = GLWidget(self.ui.glparent)
+            self.ui.glparent.layout().addWidget(voxels)
+            self.display = voxels
         except Exception as E:
             QtGui.QMessageBox.warning(self, "Initialisation Failed",
                 str(E))
             exit(1)
         # Create our palette widget
-        widget = PaletteWidget(self.ui.palette)
-        self.ui.palette.layout().addWidget(widget)
-        self.colour_palette = widget
+        voxels = PaletteWidget(self.ui.palette)
+        self.ui.palette.layout().addWidget(voxels)
+        self.colour_palette = voxels
         # More UI state
         value = self.get_setting("display_floor_grid")
         if value is not None:
@@ -155,7 +155,11 @@ class MainWindow(QtGui.QMainWindow):
             width = dialog.ui.width.value()
             height = dialog.ui.height.value()
             depth = dialog.ui.depth.value()
+            new_width_scale = float(width) / self.display.voxels.width
+            new_height_scale = float(height) / self.display.voxels.height
+            new_depth_scale = float(depth) / self.display.voxels.depth
             self.display.voxels.resize(width, height, depth)
+            self.display.grids.scale_offsets( new_width_scale, new_height_scale, new_depth_scale )
             self.display.refresh()
 
     @QtCore.Slot()
