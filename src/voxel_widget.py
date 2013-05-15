@@ -422,12 +422,13 @@ class GLWidget(QtOpenGL.QGLWidget):
                 # Adjust to voxel space coordinates
                 x, y, z = self.voxels.world_to_voxel(intersect.x,
                     intersect.y, intersect.z)
-                print intersect.z," -> ", z
+                # Ignore out of bounds insections
+                if not self.voxels.is_valid_bounds(x, y, z):
+                    continue
                 length = near.distance(Point3(intersect.x, intersect.y, intersect.z))
                 if length < distance:
                     intersection = int(x), int(y), int(round(z))
                     distance = length
-        print intersection
         return intersection
 
     # Determine the axis which are perpendicular to our viewing ray, ish
