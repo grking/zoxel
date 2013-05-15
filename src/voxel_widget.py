@@ -17,11 +17,12 @@
 
 import math
 import array
+import sys
 from PySide import QtCore, QtGui, QtOpenGL
 from OpenGL.GL import *
 from OpenGL.GLU import gluUnProject, gluProject
 import voxel
-from euclid import LineSegment3, Plane, Point3
+from euclid import LineSegment3, Plane, Point3, Vector3
 from tool import Target
 from voxel_grid import GridPlanes
 from voxel_grid import VoxelGrid
@@ -383,7 +384,7 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         # Perhaps we clicked on the background?
         if voxelid == 0xffffff:
-            x, y, z = self.floor_intersection(x, y)
+            x, y, z = self.plane_intersection(x, y)
             if x is None:
                 return None, None, None, None
             return x, y, z, None
@@ -395,8 +396,8 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Return what we learned
         return x,y,z,face
 
-    # Calculate the intersection between mouse coordinates and floor grid
-    def floor_intersection(self, x, y):
+    # Calculate the intersection between mouse coordinates and a plane
+    def plane_intersection(self, x, y):
         # Unproject coordinates into object space
         nx,ny,nz = gluUnProject(x, y, 0.0)
         fx,fy,fz = gluUnProject(x, y, 1.0)
@@ -404,19 +405,30 @@ class GLWidget(QtOpenGL.QGLWidget):
         near = Point3(nx, ny, nz)
         far = Point3(fx, fy, fz)
         ray = LineSegment3(near, far)
-        # Define ground plane
-        _x, gridy, _z = self.voxels.voxel_to_world(0, 0, 0)
-        point1 = Point3(0,gridy,0)
-        point2 = Point3(10,gridy,10)
-        point3 = Point3(-2,gridy,-8)
-        plane = Plane(point1, point2, point3)
-        # Get intersection point
-        intersect = plane.intersect(ray)
-        if not intersect:
-            return None, None, None
-        # Adjust to voxel space coordinates
-        x, y, z = self.voxels.world_to_voxel(intersect.x, intersect.y, intersect.z)
-        return int(x), int(y), int(z)
+        # Define our planes
+        # XXX origin assumes planes are at zero offsets, should really
+        # XXX respect any grid plane offset here
+        origin = self.voxels.voxel_to_world(0, 0, self.voxels.depth-1)
+        planes = (
+            Plane(Vector3(1,0,0), origin[0]),
+            Plane(Vector3(0,1,0), origin[1]),
+            Plane(Vector3(0,0,1), origin[2]))
+        intersection = None, None, None
+        distance = sys.maxint
+        for plane in planes:
+            # Get intersection point
+            intersect = plane.intersect(ray)
+            if intersect:
+                # Adjust to voxel space coordinates
+                x, y, z = self.voxels.world_to_voxel(intersect.x,
+                    intersect.y, intersect.z)
+                print intersect.z," -> ", z
+                length = near.distance(Point3(intersect.x, intersect.y, intersect.z))
+                if length < distance:
+                    intersection = int(x), int(y), int(round(z))
+                    distance = length
+        print intersection
+        return intersection
 
     # Determine the axis which are perpendicular to our viewing ray, ish
     def view_axis(self):
