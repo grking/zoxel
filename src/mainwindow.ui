@@ -82,7 +82,6 @@
    <addaction name="separator"/>
    <addaction name="action_floor_grid"/>
    <addaction name="action_wireframe"/>
-   <addaction name="action_autoresize"/>
    <addaction name="action_occlusion"/>
    <addaction name="separator"/>
    <addaction name="action_background"/>
@@ -223,21 +222,6 @@
    </property>
    <property name="toolTip">
     <string>Set dimensions</string>
-   </property>
-  </action>
-  <action name="action_autoresize">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="resources.qrc">
-     <normaloff>:/images/gfx/icons/layer-resize.png</normaloff>:/images/gfx/icons/layer-resize.png</iconset>
-   </property>
-   <property name="text">
-    <string>Auto-expand</string>
-   </property>
-   <property name="toolTip">
-    <string>Auto expand space</string>
    </property>
   </action>
   <action name="action_occlusion">

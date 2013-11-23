@@ -71,13 +71,6 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.action_voxel_edges.setChecked(value)
         else:
             self.ui.action_voxel_edges.setChecked(self.display.voxel_edges)
-        value = self.get_setting("autoresize")
-        if value is not None:
-            self.display.autoresize = value
-            self.ui.action_autoresize.setChecked(value)
-        else:
-            self.display.autoresize = True
-            self.ui.action_autoresize.setChecked(True)
         value = self.get_setting("occlusion")
         if value is None:
             value = True
@@ -165,11 +158,6 @@ class MainWindow(QtGui.QMainWindow):
     @QtCore.Slot()
     def on_action_reset_camera_triggered(self):
         self.display.reset_camera()
-
-    @QtCore.Slot()
-    def on_action_autoresize_triggered(self):
-        self.display.autoresize = self.ui.action_autoresize.isChecked()
-        self.set_setting("autoresize", self.display.autoresize)
 
     @QtCore.Slot()
     def on_action_occlusion_triggered(self):
@@ -358,11 +346,6 @@ class MainWindow(QtGui.QMainWindow):
                 handler =  importer
                 self._last_file_handler = handler
 
-        # Force auto-resizing
-        autoresize = self.display.autoresize
-        if not autoresize:
-            self.display.autoresize = True
-
         # Load the file
         self.display.clear()
         self._filename = None
@@ -372,9 +355,6 @@ class MainWindow(QtGui.QMainWindow):
         except Exception as Ex:
             QtGui.QMessageBox.warning(self, "Could not load file",
             str(Ex))
-
-        # Put auto resize setting back to how it was
-        self.display.autoresize = autoresize
 
         self.display.voxels.resize()
         self.display.voxels.saved()

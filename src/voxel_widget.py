@@ -66,13 +66,6 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.updateGL()
 
     @property
-    def autoresize(self):
-        return self.voxels.autoresize
-    @autoresize.setter
-    def autoresize(self, value):
-        self.voxels.autoresize = value
-
-    @property
     def voxel_edges(self):
         return self._voxeledges
     @voxel_edges.setter

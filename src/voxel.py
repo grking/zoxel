@@ -30,9 +30,9 @@ import math
 # We are an editor for "small" voxel models. So this needs to be small.
 # Dimensions are fundamentally limited by our encoding of face ID's into
 # colours (for picking) to 127x127x126.
-_WORLD_WIDTH = 32
-_WORLD_HEIGHT = 32
-_WORLD_DEPTH = 32
+_WORLD_WIDTH = 16
+_WORLD_HEIGHT = 16
+_WORLD_DEPTH = 16
 
 # Types of voxel
 EMPTY = 0
@@ -67,13 +67,6 @@ class VoxelData(object):
         self._changed = value
 
     @property
-    def autoresize(self):
-        return self._autoresize
-    @autoresize.setter
-    def autoresize(self, value):
-        self._autoresize = value
-
-    @property
     def occlusion(self):
         return self._occlusion
     @occlusion.setter
@@ -88,8 +81,6 @@ class VoxelData(object):
         self._initialise_data()
         # Callback when our data changes
         self.notify_changed = None
-        # Autoresize when setting voxels out of bounds?
-        self._autoresize = True
         # Ambient occlusion type effect
         self._occlusion = True
 
@@ -120,10 +111,7 @@ class VoxelData(object):
 
         # Check bounds
         if ( not self.is_valid_bounds(x, y, z ) ):
-            # If we are auto resizing, handle it
-            if not self._autoresize:
-                return False
-            x, y, z = self._resize_to_include(x,y,z)
+            return False
         # Set the voxel
         if ( self.is_valid_bounds(x, y, z ) ):
             self._data[x][y][z] = state
