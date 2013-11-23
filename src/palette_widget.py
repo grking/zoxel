@@ -28,7 +28,7 @@ class PaletteWidget(QtGui.QWidget):
     @colour.setter
     def colour(self, value):
         # If this is an integer, assume is RGBA
-        if type(value) is int:
+        if not isinstance(value,QtGui.QColor):
             r = (value & 0xff000000) >> 24
             g = (value & 0xff0000) >> 16
             b = (value & 0xff00) >> 8
