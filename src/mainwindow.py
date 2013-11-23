@@ -23,6 +23,7 @@ from ui_mainwindow import Ui_MainWindow
 from voxel_widget import GLWidget
 import json
 from palette_widget import PaletteWidget
+import os
 
 class MainWindow(QtGui.QMainWindow):
 
@@ -59,6 +60,8 @@ class MainWindow(QtGui.QMainWindow):
         depth = self.get_setting("default_model_depth")
         if width:
             self.resize_voxels(width, height, depth)
+            # Resize is detected as a change, discard changes
+            self.display.voxels.saved()
         # Create our palette widget
         voxels = PaletteWidget(self.ui.palette)
         self.ui.palette.layout().addWidget(voxels)
@@ -289,16 +292,23 @@ class MainWindow(QtGui.QMainWindow):
             choices.append( "%s (%s)" % (exporter.description, exporter.filetype))
         choices = ";;".join(choices)
 
+        # Grab our default location
+        directory = self.get_setting("default_directory")
+
         # Get a filename if we need one
         if newfile or not filename:
             filename, filetype = QtGui.QFileDialog.getSaveFileName(self,
-                "Save As",
-                "model",
-                choices,
+                caption = "Save As",
+                filter = choices,
+                dir = directory,
                 selectedFilter="Zoxel Files (*.zox)")
             if not filename:
                 return
             handler = None
+
+        # Remember the location
+        directory = os.path.dirname(filename)
+        self.set_setting("default_directory", directory)
 
         # Find the handler if we need to
         if not handler:
@@ -344,13 +354,21 @@ class MainWindow(QtGui.QMainWindow):
             choices.append( "%s (%s)" % (importer.description, importer.filetype))
         choices = ";;".join(choices)
 
+        # Grab our default location
+        directory = self.get_setting("default_directory")
+
         # Get a filename
         filename, filetype = QtGui.QFileDialog.getOpenFileName(self,
                 caption="Open file",
                 filter=choices,
+                dir = directory, 
                 selectedFilter="Zoxel Files (*.zox)")
         if not filename:
             return
+
+        # Remember the location
+        directory = os.path.dirname(filename)
+        self.set_setting("default_directory", directory)
 
         # Find the handler
         for importer in handlers:
