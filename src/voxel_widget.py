@@ -89,9 +89,9 @@ class GLWidget(QtOpenGL.QGLWidget):
     tool_dragged = QtCore.Signal()
     tool_deactivated = QtCore.Signal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent = None):
         glformat = QtOpenGL.QGLFormat()
-        glformat.setVersion(1,1)
+        glformat.setVersion(1, 1)
         glformat.setProfile(QtOpenGL.QGLFormat.CoreProfile)
         QtOpenGL.QGLWidget.__init__(self, glformat, parent)
         # Test we have a valid context
@@ -101,7 +101,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Default values
         self._background_colour = QtGui.QColor("silver")
         self._display_wireframe = False
-        self._voxel_colour = QtGui.QColor.fromHsvF(0,1.0,1.0)
+        self._voxel_colour = QtGui.QColor.fromHsvF(0, 1.0, 1.0)
         self._voxeledges = True
         # Mouse position
         self._mouse = QtCore.QPoint()
@@ -114,11 +114,14 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Our voxel scene
         self.voxels = voxel.VoxelData()
         # Grid manager
-        self._grids = VoxelGrid( self.voxels )
+        self._grids = VoxelGrid(self.voxels)
         # create the default _grids
-        self.grids.add_grid_plane( GridPlanes.X, offset = 0, visible = True, color = QtGui.QColor("green") )
-        self.grids.add_grid_plane( GridPlanes.Y, offset = 0, visible = True, color = QtGui.QColor("blue") )
-        self.grids.add_grid_plane( GridPlanes.Z, offset = self.voxels.depth, visible = True, color = QtGui.QColor("red") )
+        self.grids.add_grid_plane(GridPlanes.X, offset = 0, visible = True,
+            color = QtGui.QColor(0x6c, 0x7d, 0x67))
+        self.grids.add_grid_plane(GridPlanes.Y, offset = 0, visible = True,
+            color = QtGui.QColor(0x65, 0x65, 0x7b))
+        self.grids.add_grid_plane(GridPlanes.Z, offset = self.voxels.depth,
+            visible = True, color = QtGui.QColor(0x7b, 0x65, 0x68))
         # Used to track the z component of various mouse activity
         self._depth_focus = 1
 
@@ -171,7 +174,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.qglClearColor(self._background_colour)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
-        glTranslatef(self._translate_x,self._translate_y, self._translate_z)
+        glTranslatef(self._translate_x, self._translate_y, self._translate_z)
         glRotated(self._rotate_x, 1.0, 0.0, 0.0)
         glRotated(self._rotate_y, 0.0, 1.0, 0.0)
         glRotated(self._rotate_z, 0.0, 0.0, 1.0)
@@ -184,13 +187,13 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         # Wireframe?
         if self.wireframe:
-            glPolygonMode( GL_FRONT, GL_LINE )
+            glPolygonMode(GL_FRONT, GL_LINE)
 
         # Bind our texture
         glBindTexture(GL_TEXTURE_2D, self._texture)
 
         # Describe our buffers
-        glVertexPointer( 3, GL_FLOAT, 0, self._vertices)
+        glVertexPointer(3, GL_FLOAT, 0, self._vertices)
         if self._voxeledges:
             glTexCoordPointer(2, GL_FLOAT, 0, self._uvs)
         else:
@@ -213,13 +216,13 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.grids.paint()
 
         # Default back to filled rendering
-        glPolygonMode( GL_FRONT, GL_FILL )
+        glPolygonMode(GL_FRONT, GL_FILL)
 
     # Window is resizing
     def resizeGL(self, width, height):
         self._width = width
         self._height = height
-        glViewport(0,0,width,height)
+        glViewport(0, 0, width, height)
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         self.perspective(45.0, float(width) / height, 0.1, 300)
@@ -235,11 +238,11 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.qglClearColor(QtGui.QColor.fromRgb(0xff, 0xff, 0xff))
 
         # Ensure we fill our polygons
-        glPolygonMode( GL_FRONT, GL_FILL )
+        glPolygonMode(GL_FRONT, GL_FILL)
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         glLoadIdentity()
-        glTranslatef(self._translate_x,self._translate_y, self._translate_z)
+        glTranslatef(self._translate_x, self._translate_y, self._translate_z)
         glRotated(self._rotate_x, 1.0, 0.0, 0.0)
         glRotated(self._rotate_y, 0.0, 1.0, 0.0)
         glRotated(self._rotate_z, 0.0, 0.0, 1.0)
@@ -250,7 +253,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         glEnableClientState(GL_NORMAL_ARRAY)
 
         # Describe our buffers
-        glVertexPointer( 3, GL_FLOAT, 0, self._vertices)
+        glVertexPointer(3, GL_FLOAT, 0, self._vertices)
         glColorPointer(3, GL_UNSIGNED_BYTE, 0, self._colour_ids)
         glNormalPointer(GL_FLOAT, 0, self._normals)
 
@@ -268,10 +271,10 @@ class GLWidget(QtOpenGL.QGLWidget):
         glEnable(GL_LIGHTING)
         glEnable(GL_TEXTURE_2D)
 
-    def perspective(self, fovY, aspect, zNear, zFar ):
-        fH = math.tan( fovY / 360.0 * math.pi ) * zNear
+    def perspective(self, fovY, aspect, zNear, zFar):
+        fH = math.tan(fovY / 360.0 * math.pi) * zNear
         fW = fH * aspect
-        glFrustum( -fW, fW, -fH, fH, zNear, zFar )
+        glFrustum(-fW, fW, -fH, fH, zNear, zFar)
 
     def setup_lights(self):
         glEnable(GL_LIGHTING)
@@ -283,7 +286,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Grab the voxel vertices
         (self._vertices, self._colours, self._normals,
          self._colour_ids, self._uvs) = self.voxels.get_vertices()
-        self._num_vertices = len(self._vertices)//3
+        self._num_vertices = len(self._vertices) // 3
         self._vertices = array.array("f", self._vertices).tostring()
         self._colours = array.array("B", self._colours).tostring()
         self._colour_ids = array.array("B", self._colour_ids).tostring()
@@ -303,12 +306,12 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         # Remember the 3d coordinates of this click
         mx, my, mz, d = self.window_to_world(event.x(), event.y())
-        mxd, myd, mzd, _ = self.window_to_world(event.x()+1, event.y(), d)
-        self._htranslate = ((mxd - mx),(myd - my),(mzd - mz))
-        mxd, myd, mzd, _ = self.window_to_world(event.x(), event.y()+1, d)
-        self._vtranslate = ((mxd - mx),(myd - my),(mzd - mz))
+        mxd, myd, mzd, _ = self.window_to_world(event.x() + 1, event.y(), d)
+        self._htranslate = ((mxd - mx), (myd - my), (mzd - mz))
+        mxd, myd, mzd, _ = self.window_to_world(event.x(), event.y() + 1, d)
+        self._vtranslate = ((mxd - mx), (myd - my), (mzd - mz))
         # Work out translation for x,y
-        ax,ay = self.view_axis()
+        ax, ay = self.view_axis()
         if ax == self.X_AXIS:
             self._htranslate = abs(self._htranslate[0])
         if ax == self.Y_AXIS:
@@ -358,9 +361,9 @@ class GLWidget(QtOpenGL.QGLWidget):
 
     def wheelEvent(self, event):
         if event.delta() > 0:
-            self._translate_z *= 1+self._zoom_speed
+            self._translate_z *= 1 + self._zoom_speed
         else:
-            self._translate_z *= 1-self._zoom_speed
+            self._translate_z *= 1 - self._zoom_speed
         self.updateGL()
 
     # Return voxel space x,y,z coordinates given x, y window coordinates
@@ -373,14 +376,14 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Render our scene (to the back buffer) using colour IDs
         self.paintID()
         # Grab the colour / ID at the coordinates
-        c = glReadPixels( x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE)
+        c = glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE)
         if type(c) is str:
             # This is what MESA on Linux seems to return
             # Grab the colour (ID) which was clicked on
-            voxelid = ord(c[0])<<16 | ord(c[1])<<8 | ord(c[2])
+            voxelid = ord(c[0]) << 16 | ord(c[1]) << 8 | ord(c[2])
         else:
             # Windows seems to return an array
-            voxelid = c[0][0][0]<<16 | c[1][0][0]<<8 | c[2][0][0]
+            voxelid = c[0][0][0] << 16 | c[1][0][0] << 8 | c[2][0][0]
 
         # Perhaps we clicked on the background?
         if voxelid == 0xffffff:
@@ -389,18 +392,18 @@ class GLWidget(QtOpenGL.QGLWidget):
                 return None, None, None, None
             return x, y, z, None
         # Decode the colour ID into x,y,z,face
-        x = (voxelid & 0xfe0000)>>17
-        y = (voxelid & 0x1fc00)>>10
-        z = (voxelid & 0x3f8)>>3
+        x = (voxelid & 0xfe0000) >> 17
+        y = (voxelid & 0x1fc00) >> 10
+        z = (voxelid & 0x3f8) >> 3
         face = voxelid & 0x07
         # Return what we learned
-        return x,y,z,face
+        return x, y, z, face
 
     # Calculate the intersection between mouse coordinates and a plane
     def plane_intersection(self, x, y):
         # Unproject coordinates into object space
-        nx,ny,nz = gluUnProject(x, y, 0.0)
-        fx,fy,fz = gluUnProject(x, y, 1.0)
+        nx, ny, nz = gluUnProject(x, y, 0.0)
+        fx, fy, fz = gluUnProject(x, y, 1.0)
         # Calculate the ray
         near = Point3(nx, ny, nz)
         far = Point3(fx, fy, fz)
@@ -408,11 +411,11 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Define our planes
         # XXX origin assumes planes are at zero offsets, should really
         # XXX respect any grid plane offset here
-        origin = self.voxels.voxel_to_world(0, 0, self.voxels.depth-1)
+        origin = self.voxels.voxel_to_world(0, 0, self.voxels.depth - 1)
         planes = (
-            Plane(Vector3(1,0,0), origin[0]),
-            Plane(Vector3(0,1,0), origin[1]),
-            Plane(Vector3(0,0,1), origin[2]))
+            Plane(Vector3(1, 0, 0), origin[0]),
+            Plane(Vector3(0, 1, 0), origin[1]),
+            Plane(Vector3(0, 0, 1), origin[2]))
         intersection = None, None, None
         distance = sys.maxint
         for plane in planes:
@@ -434,11 +437,11 @@ class GLWidget(QtOpenGL.QGLWidget):
     # Determine the axis which are perpendicular to our viewing ray, ish
     def view_axis(self):
         # Shoot a ray into the scene
-        x1,y1,z1 = gluUnProject(self.width()//2, self.height()//2, 0.0)
-        x2,y2,z2 = gluUnProject(self.width()//2, self.height()//2, 1.0)
-        dx = abs(x2-x1)
-        dy = abs(y2-y1)
-        dz = abs(z2-z1)
+        x1, y1, z1 = gluUnProject(self.width() // 2, self.height() // 2, 0.0)
+        x2, y2, z2 = gluUnProject(self.width() // 2, self.height() // 2, 1.0)
+        dx = abs(x2 - x1)
+        dy = abs(y2 - y1)
+        dz = abs(z2 - z1)
         # The largest deviation is the axis we're looking down
         if dz >= dx and dz >= dy:
             return (self.X_AXIS, self.Y_AXIS)
@@ -452,15 +455,15 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Find depth
         y = self._height - y
         if z is None:
-            z = glReadPixels( x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT)[0][0]
-        fx,fy,fz = gluUnProject(x, y, z)
-        return fx,fy,fz,z
+            z = glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT)[0][0]
+        fx, fy, fz = gluUnProject(x, y, z)
+        return fx, fy, fz, z
 
     # Convert x,y,z world coorindates to x,y window coordinates
     def world_to_window(self, x, y, z):
-        x,y,z = gluProject(x, y, z)
+        x, y, z = gluProject(x, y, z)
         y = self._height - y
-        return x,y
+        return x, y
 
     def activate_tool(self, x, y, z, face):
         self.target = Target(self.voxels, x, y, z, face)
