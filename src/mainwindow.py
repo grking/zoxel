@@ -53,6 +53,12 @@ class MainWindow(QtGui.QMainWindow):
             QtGui.QMessageBox.warning(self, "Initialisation Failed",
                 str(E))
             exit(1)
+        # Load default model dimensions
+        width = self.get_setting("default_model_width")
+        height = self.get_setting("default_model_height")
+        depth = self.get_setting("default_model_depth")
+        if width:
+            self.resize_voxels(width, height, depth)
         # Create our palette widget
         voxels = PaletteWidget(self.ui.palette)
         self.ui.palette.layout().addWidget(voxels)
@@ -148,12 +154,19 @@ class MainWindow(QtGui.QMainWindow):
             width = dialog.ui.width.value()
             height = dialog.ui.height.value()
             depth = dialog.ui.depth.value()
-            new_width_scale = float(width) / self.display.voxels.width
-            new_height_scale = float(height) / self.display.voxels.height
-            new_depth_scale = float(depth) / self.display.voxels.depth
-            self.display.voxels.resize(width, height, depth)
-            self.display.grids.scale_offsets( new_width_scale, new_height_scale, new_depth_scale )
-            self.display.refresh()
+            self.resize_voxels(width, height, depth)
+
+    def resize_voxels(self, width, height, depth):
+        new_width_scale = float(width) / self.display.voxels.width
+        new_height_scale = float(height) / self.display.voxels.height
+        new_depth_scale = float(depth) / self.display.voxels.depth
+        self.display.voxels.resize(width, height, depth)
+        self.display.grids.scale_offsets( new_width_scale, new_height_scale, new_depth_scale )
+        self.display.refresh()
+        # Remember these dimensions
+        self.set_setting("default_model_width", width)
+        self.set_setting("default_model_height", height)
+        self.set_setting("default_model_depth", depth)
 
     @QtCore.Slot()
     def on_action_reset_camera_triggered(self):
