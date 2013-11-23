@@ -35,11 +35,11 @@ class GLWidget(QtOpenGL.QGLWidget):
     Z_AXIS = 3
 
     @property
-    def floor_grid(self):
-        return self._display_floor_grid
-    @floor_grid.setter
-    def floor_grid(self, value):
-        self._display_floor_grid = value
+    def axis_grids(self):
+        return self._display_axis_grids
+    @axis_grids.setter
+    def axis_grids(self, value):
+        self._display_axis_grids = value
         self.updateGL()
 
     @property
@@ -102,8 +102,8 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.reset_camera(False)
         # zoom
         self._zoom_speed = 0.1
-        # Render floor grid?
-        self._display_floor_grid = True
+        # Render axis grids?
+        self._display_axis_grids = True
         # Our voxel scene
         self.voxels = voxel.VoxelData()
         # Grid manager
@@ -126,14 +126,14 @@ class GLWidget(QtOpenGL.QGLWidget):
     # Force an update of our internal data
     def refresh(self):
         self.build_mesh()
-        self.build_grid()
+        self.build_grids()
         self.updateGL()
 
     # Reset camera position to defaults
     def reset_camera(self, update = True):
         self._translate_x = 0
         self._translate_y = 0
-        self._translate_z = -60
+        self._translate_z = -30
         self._rotate_x = 0
         self._rotate_y = 0
         self._rotate_z = 0
@@ -205,8 +205,9 @@ class GLWidget(QtOpenGL.QGLWidget):
         if not self._voxeledges:
             glEnable(GL_TEXTURE_2D)
 
-        # draw the _grids
-        self.grids.paint()
+        # draw the grids
+        if self._display_axis_grids:
+            self.grids.paint()
 
         # Default back to filled rendering
         glPolygonMode(GL_FRONT, GL_FILL)
@@ -286,8 +287,8 @@ class GLWidget(QtOpenGL.QGLWidget):
         self._normals = array.array("f", self._normals).tostring()
         self._uvs = array.array("f", self._uvs).tostring()
 
-    # Build floor grid
-    def build_grid(self):
+    # Build axis grids
+    def build_grids(self):
         self.grids.update_grid_plane()
 
     def mousePressEvent(self, event):

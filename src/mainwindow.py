@@ -58,10 +58,10 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.palette.layout().addWidget(voxels)
         self.colour_palette = voxels
         # More UI state
-        value = self.get_setting("display_floor_grid")
+        value = self.get_setting("display_axis_grids")
         if value is not None:
-            self.ui.action_floor_grid.setChecked(value)
-            self.display.floor_grid = value
+            self.ui.action_axis_grids.setChecked(value)
+            self.display.axis_grids = value
         value = self.get_setting("background_colour")
         if value is not None:
             self.display.background = QtGui.QColor.fromRgb(*value)
@@ -97,9 +97,9 @@ class MainWindow(QtGui.QMainWindow):
             pass
 
     @QtCore.Slot()
-    def on_action_floor_grid_triggered(self):
-        self.display.floor_grid = self.ui.action_floor_grid.isChecked()
-        self.set_setting("display_floor_grid", self.display.floor_grid)
+    def on_action_axis_grids_triggered(self):
+        self.display.axis_grids = self.ui.action_axis_grids.isChecked()
+        self.set_setting("display_axis_grids", self.display.axis_grids)
 
     @QtCore.Slot()
     def on_action_voxel_edges_triggered(self):
