@@ -190,6 +190,13 @@ class MainWindow(QtGui.QMainWindow):
             colour = (colour.red(), colour.green(), colour.blue())
             self.set_setting("background_colour", colour)
 
+    @QtCore.Slot()
+    def on_action_voxel_colour_triggered(self):
+        # Choose a voxel colour
+        colour = QtGui.QColorDialog.getColor()
+        if colour.isValid():
+            self.colour_palette.colour = colour
+
     def on_tool_activated(self):
         self.activate_tool(self.display.target)
 

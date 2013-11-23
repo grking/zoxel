@@ -84,6 +84,7 @@
    <addaction name="action_wireframe"/>
    <addaction name="action_occlusion"/>
    <addaction name="separator"/>
+   <addaction name="action_voxel_colour"/>
    <addaction name="action_background"/>
    <addaction name="action_resize"/>
    <addaction name="action_reset_camera"/>
@@ -267,6 +268,18 @@
    </property>
    <property name="toolTip">
     <string>Toggle view voxel edges</string>
+   </property>
+  </action>
+  <action name="action_voxel_colour">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/color.png</normaloff>:/images/gfx/icons/color.png</iconset>
+   </property>
+   <property name="text">
+    <string>Voxel Colour</string>
+   </property>
+   <property name="toolTip">
+    <string>Pick Voxel Colour</string>
    </property>
   </action>
  </widget>
