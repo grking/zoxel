@@ -26,6 +26,7 @@ from euclid import LineSegment3, Plane, Point3, Vector3
 from tool import Target
 from voxel_grid import GridPlanes
 from voxel_grid import VoxelGrid
+import time
 
 class GLWidget(QtOpenGL.QGLWidget):
 
@@ -117,6 +118,8 @@ class GLWidget(QtOpenGL.QGLWidget):
             visible = True, color = QtGui.QColor(0x7b, 0x65, 0x68))
         # Used to track the z component of various mouse activity
         self._depth_focus = 1
+        # Keep track how long mouse buttons are down for
+        self._mousedown_time = 0
 
     # Reset the control and clear all data
     def clear(self):
@@ -294,6 +297,7 @@ class GLWidget(QtOpenGL.QGLWidget):
     def mousePressEvent(self, event):
         self._mouse = QtCore.QPoint(event.pos())
         if event.buttons() & QtCore.Qt.LeftButton:
+            self._mousedown_time = time.time()
             x, y, z, face = self.window_to_voxel(event.x(), event.y())
             self.activate_tool(x, y, z, face)
             self.refresh()
@@ -340,9 +344,11 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         # Left mouse button held down
         if event.buttons() & QtCore.Qt.LeftButton:
-            x, y, z, face = self.window_to_voxel(event.x(), event.y())
-            self.drag_tool(x, y, z, face)
-            self.refresh()
+            # How long have we been held down?
+            if time.time() - self._mousedown_time > 0.5:
+                x, y, z, face = self.window_to_voxel(event.x(), event.y())
+                self.drag_tool(x, y, z, face)
+                self.refresh()
 
         self._mouse = QtCore.QPoint(event.pos())
 
