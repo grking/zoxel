@@ -54,6 +54,9 @@ class ZoxelFile(object):
                         frame.append((x,y,z,v))
 
         data['frame1'] = frame
+        data['width'] = voxels.width
+        data['height'] = voxels.height
+        data['depth'] = voxels.depth
 
         # Open our file
         f = open(filename,"wt")
@@ -65,7 +68,7 @@ class ZoxelFile(object):
 
     # Called when we need to load a file. Should raise an exception if there
     # is a problem.
-    def load(self, filename):
+    def load(self, filename):        
         # grab the voxel data
         voxels = self.api.get_voxel_data()
 
@@ -83,8 +86,29 @@ class ZoxelFile(object):
 
         # Load the data
         frame = data['frame1']
-
+        
+        # Do we have model dimensions
+        if 'width' in data:
+            # Yes, so resize to them
+            voxels.resize(data['width'], data['height'], data['depth'])
+        else:
+            # Zoxel file with no dimension data, determine size
+            maxX = -127
+            maxY = -127
+            maxZ = -127
+            for x, y, z, v in frame:
+                if x > maxX:
+                    maxX = x
+                if y > maxY:
+                    maxY = y
+                if z > maxZ:
+                    maxZ = z
+            # Resize
+            voxels.resize(maxX+1, maxY+1, maxZ+1)
+        
+        # Write the voxel data
         for x, y, z, v in frame:
             voxels.set(x, y, z, v)
+            
 
 register_plugin(ZoxelFile, "Zoxel file format IO", "1.0")

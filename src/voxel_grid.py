@@ -55,6 +55,13 @@ class GridPlane(object):
         self.update_vertices()
 
     @property
+    def voxels(self):
+        return self._voxels
+    @voxels.setter
+    def voxels(self, voxels):
+        self._voxels = voxels
+
+    @property
     def plane(self):
         return self._plane
     @plane.setter
@@ -165,8 +172,11 @@ class VoxelGrid(object):
         else:
             return None
 
-    def update_grid_plane(self):
+    def update_grid_plane(self, voxels):
         for plane in self._planes.itervalues():
+            plane.voxels = voxels
+            if plane.plane == GridPlanes.Z:
+                plane.offset = voxels.depth
             plane.update_vertices()
 
     # Render the grids

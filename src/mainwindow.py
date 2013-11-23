@@ -356,7 +356,8 @@ class MainWindow(QtGui.QMainWindow):
             QtGui.QMessageBox.warning(self, "Could not load file",
             str(Ex))
 
-        self.display.voxels.resize()
+        self.display.build_grids()
+        #self.display.voxels.resize()
         self.display.voxels.saved()
         self.display.reset_camera()
         self.update_caption()

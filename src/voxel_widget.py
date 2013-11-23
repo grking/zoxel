@@ -289,7 +289,7 @@ class GLWidget(QtOpenGL.QGLWidget):
 
     # Build axis grids
     def build_grids(self):
-        self.grids.update_grid_plane()
+        self.grids.update_grid_plane(self.voxels)
 
     def mousePressEvent(self, event):
         self._mouse = QtCore.QPoint(event.pos())
