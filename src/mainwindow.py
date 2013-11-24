@@ -23,6 +23,7 @@ from ui_mainwindow import Ui_MainWindow
 from voxel_widget import GLWidget
 import json
 from palette_widget import PaletteWidget
+import os
 
 class MainWindow(QtGui.QMainWindow):
 
@@ -46,34 +47,41 @@ class MainWindow(QtGui.QMainWindow):
         self.load_state()
         # Create our GL Widget
         try:
-            widget = GLWidget(self.ui.glparent)
-            self.ui.glparent.layout().addWidget(widget)
-            self.display = widget
+            voxels = GLWidget(self.ui.glparent)
+            self.ui.glparent.layout().addWidget(voxels)
+            self.display = voxels
         except Exception as E:
             QtGui.QMessageBox.warning(self, "Initialisation Failed",
                 str(E))
             exit(1)
+        # Load default model dimensions
+        width = self.get_setting("default_model_width")
+        height = self.get_setting("default_model_height")
+        depth = self.get_setting("default_model_depth")
+        if width:
+            self.resize_voxels(width, height, depth)
+            # Resize is detected as a change, discard changes
+            self.display.voxels.saved()
         # Create our palette widget
-        widget = PaletteWidget(self.ui.palette)
-        self.ui.palette.layout().addWidget(widget)
-        self.colour_palette = widget
+        voxels = PaletteWidget(self.ui.palette)
+        self.ui.palette.layout().addWidget(voxels)
+        self.colour_palette = voxels
         # More UI state
-        value = self.get_setting("display_floor_grid")
+        value = self.get_setting("display_axis_grids")
         if value is not None:
-            self.ui.action_floor_grid.setChecked(value)
-            self.display.floor_grid = value
+            self.ui.action_axis_grids.setChecked(value)
+            self.display.axis_grids = value
         value = self.get_setting("background_colour")
         if value is not None:
             self.display.background = QtGui.QColor.fromRgb(*value)
-        value = self.get_setting("autoresize")
+        value = self.get_setting("voxel_edges")
         if value is not None:
-            self.display.autoresize = value
-            self.ui.action_autoresize.setChecked(value)
+            self.display.voxel_edges = value
+            self.ui.action_voxel_edges.setChecked(value)
         else:
-            self.display.autoresize = True
-            self.ui.action_autoresize.setChecked(True)
+            self.ui.action_voxel_edges.setChecked(self.display.voxel_edges)
         value = self.get_setting("occlusion")
-        if not value:
+        if value is None:
             value = True
         self.display.voxels.occlusion = value
         self.ui.action_occlusion.setChecked(value)
@@ -81,6 +89,8 @@ class MainWindow(QtGui.QMainWindow):
         if self.display:
             self.display.voxels.notify = self.on_data_changed
             self.display.tool_activated.connect(self.on_tool_activated)
+            self.display.tool_dragged.connect(self.on_tool_dragged)
+            self.display.tool_deactivated.connect(self.on_tool_deactivated)
         if self.colour_palette:
             self.colour_palette.changed.connect(self.on_colour_changed)
         # Initialise our tools
@@ -96,9 +106,14 @@ class MainWindow(QtGui.QMainWindow):
             pass
 
     @QtCore.Slot()
-    def on_action_floor_grid_triggered(self):
-        self.display.floor_grid = self.ui.action_floor_grid.isChecked()
-        self.set_setting("display_floor_grid", self.display.floor_grid)
+    def on_action_axis_grids_triggered(self):
+        self.display.axis_grids = self.ui.action_axis_grids.isChecked()
+        self.set_setting("display_axis_grids", self.display.axis_grids)
+
+    @QtCore.Slot()
+    def on_action_voxel_edges_triggered(self):
+        self.display.voxel_edges = self.ui.action_voxel_edges.isChecked()
+        self.set_setting("voxel_edges", self.display.voxel_edges)
 
     @QtCore.Slot()
     def on_action_new_triggered(self):
@@ -110,7 +125,7 @@ class MainWindow(QtGui.QMainWindow):
         self.display.clear()
         self.display.voxels.saved()
         self.update_caption()
-                
+
     @QtCore.Slot()
     def on_action_wireframe_triggered(self):
         self.display.wireframe = self.ui.action_wireframe.isChecked()
@@ -125,12 +140,12 @@ class MainWindow(QtGui.QMainWindow):
     def on_action_saveas_triggered(self):
         # Save
         self.save(True)
-    
+
     @QtCore.Slot()
     def on_action_open_triggered(self):
         # Load
         self.load()
-        
+
     @QtCore.Slot()
     def on_action_resize_triggered(self):
         # Resize model dimensions
@@ -142,24 +157,30 @@ class MainWindow(QtGui.QMainWindow):
             width = dialog.ui.width.value()
             height = dialog.ui.height.value()
             depth = dialog.ui.depth.value()
-            self.display.voxels.resize(width, height, depth)
-            self.display.refresh()
+            self.resize_voxels(width, height, depth)
+
+    def resize_voxels(self, width, height, depth):
+        new_width_scale = float(width) / self.display.voxels.width
+        new_height_scale = float(height) / self.display.voxels.height
+        new_depth_scale = float(depth) / self.display.voxels.depth
+        self.display.voxels.resize(width, height, depth)
+        self.display.grids.scale_offsets( new_width_scale, new_height_scale, new_depth_scale )
+        self.display.refresh()
+        # Remember these dimensions
+        self.set_setting("default_model_width", width)
+        self.set_setting("default_model_height", height)
+        self.set_setting("default_model_depth", depth)
 
     @QtCore.Slot()
     def on_action_reset_camera_triggered(self):
         self.display.reset_camera()
 
     @QtCore.Slot()
-    def on_action_autoresize_triggered(self):
-        self.display.autoresize = self.ui.action_autoresize.isChecked()
-        self.set_setting("autoresize", self.display.autoresize)
-
-    @QtCore.Slot()
     def on_action_occlusion_triggered(self):
         self.display.voxels.occlusion = self.ui.action_occlusion.isChecked()
         self.set_setting("occlusion", self.display.voxels.occlusion)
         self.display.refresh()
-    
+
     @QtCore.Slot()
     def on_action_background_triggered(self):
         # Choose a background colour
@@ -167,16 +188,29 @@ class MainWindow(QtGui.QMainWindow):
         if colour.isValid():
             self.display.background = colour
             colour = (colour.red(), colour.green(), colour.blue())
-            self.set_setting("background_colour", colour)        
-        
+            self.set_setting("background_colour", colour)
+
+    @QtCore.Slot()
+    def on_action_voxel_colour_triggered(self):
+        # Choose a voxel colour
+        colour = QtGui.QColorDialog.getColor()
+        if colour.isValid():
+            self.colour_palette.colour = colour
+
     def on_tool_activated(self):
-        self.activate_tool(self.display.target)
+        self.activate_tool(self.display.target, self.display.mouse_position)
+
+    def on_tool_dragged(self):
+        self.drag_tool(self.display.target, self.display.mouse_position)
+
+    def on_tool_deactivated(self):
+        self.deactivate_tool(self.display.target)
 
     # Confirm if user wants to save before doing something drastic.
     # returns True if we should continue
     def confirm_save(self):
-        responce = QtGui.QMessageBox.question(self,"Save changes?", 
-            "Save changes before discarding?", 
+        responce = QtGui.QMessageBox.question(self,"Save changes?",
+            "Save changes before discarding?",
             buttons = (QtGui.QMessageBox.Save | QtGui.QMessageBox.Cancel
             | QtGui.QMessageBox.No))
         if responce == QtGui.QMessageBox.StandardButton.Save:
@@ -189,7 +223,7 @@ class MainWindow(QtGui.QMainWindow):
     # Voxel data changed signal handler
     def on_data_changed(self):
         self.update_caption()
-        
+
     # Colour selection changed handler
     def on_colour_changed(self):
         self.display.voxel_colour = self.colour_palette.colour
@@ -265,16 +299,23 @@ class MainWindow(QtGui.QMainWindow):
             choices.append( "%s (%s)" % (exporter.description, exporter.filetype))
         choices = ";;".join(choices)
 
+        # Grab our default location
+        directory = self.get_setting("default_directory")
+
         # Get a filename if we need one
         if newfile or not filename:
             filename, filetype = QtGui.QFileDialog.getSaveFileName(self,
-                "Save As",
-                "model",
-                choices,
+                caption = "Save As",
+                filter = choices,
+                dir = directory,
                 selectedFilter="Zoxel Files (*.zox)")
             if not filename:
                 return
             handler = None
+
+        # Remember the location
+        directory = os.path.dirname(filename)
+        self.set_setting("default_directory", directory)
 
         # Find the handler if we need to
         if not handler:
@@ -290,7 +331,7 @@ class MainWindow(QtGui.QMainWindow):
         except Exception as Ex:
             QtGui.QMessageBox.warning(self, "Save Failed",
             str(Ex))
-                    
+
         # If we saved, clear edited state
         if saved:
             self._filename = filename
@@ -320,13 +361,21 @@ class MainWindow(QtGui.QMainWindow):
             choices.append( "%s (%s)" % (importer.description, importer.filetype))
         choices = ";;".join(choices)
 
+        # Grab our default location
+        directory = self.get_setting("default_directory")
+
         # Get a filename
         filename, filetype = QtGui.QFileDialog.getOpenFileName(self,
                 caption="Open file",
                 filter=choices,
+                dir = directory, 
                 selectedFilter="Zoxel Files (*.zox)")
         if not filename:
             return
+
+        # Remember the location
+        directory = os.path.dirname(filename)
+        self.set_setting("default_directory", directory)
 
         # Find the handler
         for importer in handlers:
@@ -334,12 +383,7 @@ class MainWindow(QtGui.QMainWindow):
             if filetype == ourtype:
                 handler =  importer
                 self._last_file_handler = handler
-        
-        # Force auto-resizing
-        autoresize = self.display.autoresize
-        if not autoresize: 
-            self.display.autoresize = True
-        
+
         # Load the file
         self.display.clear()
         self._filename = None
@@ -350,10 +394,8 @@ class MainWindow(QtGui.QMainWindow):
             QtGui.QMessageBox.warning(self, "Could not load file",
             str(Ex))
 
-        # Put auto resize setting back to how it was
-        self.display.autoresize = autoresize
-            
-        self.display.voxels.resize()
+        self.display.build_grids()
+        #self.display.voxels.resize()
         self.display.voxels.saved()
         self.display.reset_camera()
         self.update_caption()
@@ -366,16 +408,38 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.toolbar_drawing.addAction(tool.get_action())
 
     # Send an activation event to the currently selected drawing tool
-    def activate_tool(self, target):
+    def activate_tool(self, target, mouse_position):
         action = self._tool_group.checkedAction()
         if not action:
             return
         # Find who owns this action and activate
         for tool in self._tools:
             if tool.get_action() is action:
-                tool.on_activate(target)
+                tool.on_activate(target, mouse_position)
                 return
-    
+
+    # Send drag activation to the current selected drawing tool
+    def drag_tool(self, target, mouse_position):
+        action = self._tool_group.checkedAction()
+        if not action:
+            return
+        # Find who owns this action and activate
+        for tool in self._tools:
+            if tool.get_action() is action:
+                tool.on_drag(target, mouse_position)
+                return
+
+    # Send an deactivation event to the currently selected drawing tool
+    def deactivate_tool(self, target):
+        action = self._tool_group.checkedAction()
+        if not action:
+            return
+        # Find who owns this action and activate
+        for tool in self._tools:
+            if tool.get_action() is action:
+                tool.on_deactivate(target)
+                return
+
     # Load and initialise all plugins
     def load_plugins(self):
         import plugin_loader

@@ -20,7 +20,7 @@ class SproxelFile(object):
 
     # Description of file type
     description = "Sproxel Files"
-    
+
     # File type filter
     filetype = "*.csv"
 
@@ -70,6 +70,7 @@ class SproxelFile(object):
         x = int(x)
         y = int(y)
         z = int(z)
+        voxels.resize(x, y, z)
         # Parse the file
         for fy in xrange(y-1,-1,-1):
             for fz in xrange(z-1,-1,-1):

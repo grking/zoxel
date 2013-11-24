@@ -24,7 +24,7 @@ class EraseTool(Tool):
         super(EraseTool, self).__init__(api)
         # Create our action / icon
         self.action = QtGui.QAction(
-            QtGui.QPixmap(":/images/gfx/icons/shovel.png"), 
+            QtGui.QPixmap(":/images/gfx/icons/shovel.png"),
             "Erase", None)
         self.action.setStatusTip("Erase voxels")
         self.action.setCheckable(True)
@@ -32,7 +32,7 @@ class EraseTool(Tool):
         self.api.register_tool(self)
 
     # Clear the targeted voxel
-    def on_activate(self, target):
+    def on_activate(self, target, mouse_position):
         target.voxels.set(target.x, target.y, target.z, 0)
 
 register_plugin(EraseTool, "Erasing Tool", "1.0")

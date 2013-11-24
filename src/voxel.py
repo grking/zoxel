@@ -30,9 +30,9 @@ import math
 # We are an editor for "small" voxel models. So this needs to be small.
 # Dimensions are fundamentally limited by our encoding of face ID's into
 # colours (for picking) to 127x127x126.
-_WORLD_WIDTH = 32
-_WORLD_HEIGHT = 32
-_WORLD_DEPTH = 32
+_WORLD_WIDTH = 16
+_WORLD_HEIGHT = 16
+_WORLD_DEPTH = 16
 
 # Types of voxel
 EMPTY = 0
@@ -53,7 +53,7 @@ class VoxelData(object):
     @property
     def depth(self):
         return self._depth
-    
+
     @property
     def changed(self):
         return self._changed
@@ -67,13 +67,6 @@ class VoxelData(object):
         self._changed = value
 
     @property
-    def autoresize(self):
-        return self._autoresize
-    @autoresize.setter
-    def autoresize(self, value):
-        self._autoresize = value
-        
-    @property
     def occlusion(self):
         return self._occlusion
     @occlusion.setter
@@ -86,10 +79,8 @@ class VoxelData(object):
         self._height = _WORLD_HEIGHT
         self._depth = _WORLD_DEPTH
         self._initialise_data()
-        # Callback when our data changes 
+        # Callback when our data changes
         self.notify_changed = None
-        # Autoresize when setting voxels out of bounds?
-        self._autoresize = True
         # Ambient occlusion type effect
         self._occlusion = True
 
@@ -104,6 +95,13 @@ class VoxelData(object):
         # Flag indicating if our data has changed
         self._changed = False
 
+    def is_valid_bounds(self, x, y, z):
+        return (
+            x >= 0 and x < self.width and
+            y >= 0 and y < self.height and
+            z >= 0 and z < self.depth
+        )
+
     # Set a voxel to the given state
     def set(self, x, y, z, state):
         # If this looks like a QT Color instance, convert it
@@ -112,16 +110,10 @@ class VoxelData(object):
             state = c[0]<<24 | c[1]<<16 | c[2]<<8 | 0xff
 
         # Check bounds
-        if (x < 0 or x >= self.width 
-            or y < 0 or y >= self.height 
-            or z < 0 or z >= self.depth):
-            # If we are auto resizing, handle it
-            if not self._autoresize:
-                return
-            x, y, z = self._resize_to_include(x,y,z)
+        if ( not self.is_valid_bounds(x, y, z ) ):
+            return False
         # Set the voxel
-        if (x >= 0 and x < self.width and y >= 0 and y < self.height 
-            and z >= 0 and z < self.depth):
+        if ( self.is_valid_bounds(x, y, z ) ):
             self._data[x][y][z] = state
             if state != EMPTY:
                 if (x,y,z) not in self._cache:
@@ -130,12 +122,11 @@ class VoxelData(object):
                 if (x,y,z) in self._cache:
                     self._cache.remove((x,y,z))
         self.changed = True
+        return True
 
     # Get the state of the given voxel
     def get(self, x, y, z):
-        if (x < 0 or x >= self.width
-            or y < 0 or y >= self.height
-            or z < 0 or z >= self.depth):
+        if ( not self.is_valid_bounds(x, y, z ) ):
             return EMPTY
         return self._data[x][y][z]
 
@@ -159,7 +150,7 @@ class VoxelData(object):
             uvs += uv
         return (vertices, colours, normals, colour_ids, uvs)
 
-    # Called to notify us that our data has been saved. i.e. we can set 
+    # Called to notify us that our data has been saved. i.e. we can set
     # our "changed" status back to False.
     def saved(self):
         self.changed = False
@@ -228,7 +219,7 @@ class VoxelData(object):
             occ4 = 0
             if self._occlusion:
                 if self.get(vx,vy+1,vz-1) != EMPTY:
-                    occ2 += 1 
+                    occ2 += 1
                     occ4 += 1
                 if self.get(vx-1,vy,vz-1) != EMPTY:
                     occ1 += 1
@@ -270,7 +261,7 @@ class VoxelData(object):
             occ4 = 0
             if self._occlusion:
                 if self.get(vx,vy+1,vz+1) != EMPTY:
-                    occ2 += 1 
+                    occ2 += 1
                     occ4 += 1
                 if self.get(vx-1,vy+1,vz) != EMPTY:
                     occ1 += 1
@@ -312,7 +303,7 @@ class VoxelData(object):
             occ4 = 0
             if self._occlusion:
                 if self.get(vx+1,vy+1,vz) != EMPTY:
-                    occ2 += 1 
+                    occ2 += 1
                     occ4 += 1
                 if self.get(vx+1,vy,vz-1) != EMPTY:
                     occ1 += 1
@@ -354,7 +345,7 @@ class VoxelData(object):
             occ4 = 0
             if self._occlusion:
                 if self.get(vx-1,vy+1,vz) != EMPTY:
-                    occ2 += 1 
+                    occ2 += 1
                     occ4 += 1
                 if self.get(vx-1,vy,vz+1) != EMPTY:
                     occ1 += 1
@@ -396,7 +387,7 @@ class VoxelData(object):
             occ4 = 0
             if self._occlusion:
                 if self.get(vx,vy+1,vz+1) != EMPTY:
-                    occ2 += 1 
+                    occ2 += 1
                     occ4 += 1
                 if self.get(vx+1,vy,vz+1) != EMPTY:
                     occ1 += 1
@@ -438,7 +429,7 @@ class VoxelData(object):
             occ4 = 0
             if self._occlusion:
                 if self.get(vx,vy-1,vz-1) != EMPTY:
-                    occ2 += 1 
+                    occ2 += 1
                     occ4 += 1
                 if self.get(vx-1,vy-1,vz) != EMPTY:
                     occ1 += 1
@@ -475,9 +466,11 @@ class VoxelData(object):
 
         return (vertices, colours, normals, colour_ids, uvs)
 
+
     # Return vertices for a floor grid
     def get_grid_vertices(self):
         grid = []
+        #builds the Y_plane
         for z in xrange(self.depth+1):
             gx, gy, gz = self.voxel_to_world(0, 0, z)
             grid += (gx, gy, gz)
@@ -487,6 +480,28 @@ class VoxelData(object):
             gx, gy, gz = self.voxel_to_world(x, 0, 0)
             grid += (gx, gy, gz)
             gx, gy, gz = self.voxel_to_world(x, 0, self.depth)
+            grid += (gx, gy, gz)
+        #builds the Z_plane
+        for x in xrange(self.width+1):
+            gx, gy, gz = self.voxel_to_world(x, 0, self.depth)
+            grid += (gx, gy, gz)
+            gx, gy, gz = self.voxel_to_world(x, self.height, self.depth)
+            grid += (gx, gy, gz)
+        for y in xrange(self.height+1):
+            gx, gy, gz = self.voxel_to_world(0, y, self.depth)
+            grid += (gx, gy, gz)
+            gx, gy, gz = self.voxel_to_world(self.width, y, self.depth)
+            grid += (gx, gy, gz)
+        #builds the X_plane
+        for y in xrange(self.height+1):
+            gx, gy, gz = self.voxel_to_world(0, y, 0)
+            grid += (gx, gy, gz)
+            gx, gy, gz = self.voxel_to_world(0, y, self.depth)
+            grid += (gx, gy, gz)
+        for z in xrange(self.depth+1):
+            gx, gy, gz = self.voxel_to_world(0, 0, z)
+            grid += (gx, gy, gz)
+            gx, gy, gz = self.voxel_to_world(0, self.height, z)
             grid += (gx, gy, gz)
         return grid
 
@@ -604,7 +619,7 @@ class VoxelData(object):
         # Work out our new dimensions
         new_width = self.width+abs(dx)
         new_height = self.height+abs(dy)
-        new_depth = self.depth+abs(dz)        
+        new_depth = self.depth+abs(dz)
         # Create new data structure of the required size
         data = [[[0 for _ in xrange(new_depth)]
             for _ in xrange(new_height)]
@@ -636,3 +651,22 @@ class VoxelData(object):
         self._cache_rebuild()
         self.changed = True
         return dx, dy, dz
+
+    # Translate the voxel data.
+    def translate(self, x, y, z):
+        # Create new temporary data structure
+        data = [[[0 for _ in xrange(self.depth)]
+            for _ in xrange(self.height)]
+                for _ in xrange(self.width)]
+        # Copy data over at new location
+        for tx in xrange(0, self.width):
+            for ty in xrange(0, self.height):
+                for tz in xrange(0, self.depth):
+                    dx = (tx+x) % self.width
+                    dy = (ty+y) % self.height
+                    dz = (tz+z) % self.depth
+                    data[dx][dy][dz] = self._data[tx][ty][tz]
+        self._data = data
+        # Rebuild our cache
+        self._cache_rebuild()
+        self.changed = True

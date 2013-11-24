@@ -19,26 +19,31 @@ from tool import Tool
 from plugin_api import register_plugin
 
 class FillTool(Tool):
-    
+
     def __init__(self, api):
         super(FillTool, self).__init__(api)
         # Create our action / icon
         self.action = QtGui.QAction(
-            QtGui.QPixmap(":/images/gfx/icons/paint-can.png"), 
+            QtGui.QPixmap(":/images/gfx/icons/paint-can.png"),
             "Fill", None)
         self.action.setStatusTip("Flood fill with colour")
         self.action.setCheckable(True)
         # Register the tool
         self.api.register_tool(self)
-    
+
     # Fill all connected voxels of the same colour with a new colour
-    def on_activate(self, target):
+    def on_activate(self, target, mouse_position):
         # We need to have a selected voxel
         voxel = target.voxels.get(target.x, target.y, target.z)
         if not voxel:
             return
         # Grab the target colour
         search_colour = voxel
+        # Don't allow invalid fills
+        c = self.colour.getRgb()
+        fill_colour = c[0]<<24 | c[1]<<16 | c[2]<<8 | 0xff
+        if search_colour == fill_colour:
+            return
         # Initialise our search list
         search = []
         search.append((target.x, target.y, target.z))

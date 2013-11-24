@@ -19,23 +19,30 @@ from tool import Tool
 from plugin_api import register_plugin
 
 class PaintingTool(Tool):
-    
+
     def __init__(self, api):
         super(PaintingTool, self).__init__(api)
         # Create our action / icon
         self.action = QtGui.QAction(
-            QtGui.QPixmap(":/images/gfx/icons/paint-brush.png"), 
+            QtGui.QPixmap(":/images/gfx/icons/paint-brush.png"),
             "Paint", None)
         self.action.setStatusTip("Colour Voxels")
         self.action.setCheckable(True)
         # Register the tool
         self.api.register_tool(self)
-    
+
     # Colour the targeted voxel
-    def on_activate(self, target):
+    def on_activate(self, target, mouse_position):
         # If we have a voxel at the target, colour it
         voxel = target.voxels.get(target.x, target.y, target.z)
-        if voxel:    
+        if voxel:
+            target.voxels.set(target.x, target.y, target.z, self.colour)
+
+    # Colour when dragging also
+    def on_drag(self, target, mouse_position):
+        # If we have a voxel at the target, colour it
+        voxel = target.voxels.get(target.x, target.y, target.z)
+        if voxel:
             target.voxels.set(target.x, target.y, target.z, self.colour)
 
 register_plugin(PaintingTool, "Painting Tool", "1.0")
