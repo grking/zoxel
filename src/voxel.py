@@ -651,3 +651,22 @@ class VoxelData(object):
         self._cache_rebuild()
         self.changed = True
         return dx, dy, dz
+
+    # Translate the voxel data.
+    def translate(self, x, y, z):
+        # Create new temporary data structure
+        data = [[[0 for _ in xrange(self.depth)]
+            for _ in xrange(self.height)]
+                for _ in xrange(self.width)]
+        # Copy data over at new location
+        for tx in xrange(0, self.width):
+            for ty in xrange(0, self.height):
+                for tz in xrange(0, self.depth):
+                    dx = (tx+x) % self.width
+                    dy = (ty+y) % self.height
+                    dz = (tz+z) % self.depth
+                    data[dx][dy][dz] = self._data[tx][ty][tz]
+        self._data = data
+        # Rebuild our cache
+        self._cache_rebuild()
+        self.changed = True

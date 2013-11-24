@@ -32,7 +32,7 @@ class EraseTool(Tool):
         self.api.register_tool(self)
 
     # Clear the targeted voxel
-    def on_activate(self, target):
+    def on_activate(self, target, mouse_position):
         target.voxels.set(target.x, target.y, target.z, 0)
 
 register_plugin(EraseTool, "Erasing Tool", "1.0")

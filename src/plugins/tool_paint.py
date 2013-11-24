@@ -32,14 +32,14 @@ class PaintingTool(Tool):
         self.api.register_tool(self)
 
     # Colour the targeted voxel
-    def on_activate(self, target):
+    def on_activate(self, target, mouse_position):
         # If we have a voxel at the target, colour it
         voxel = target.voxels.get(target.x, target.y, target.z)
         if voxel:
             target.voxels.set(target.x, target.y, target.z, self.colour)
 
     # Colour when dragging also
-    def on_drag(self, target):
+    def on_drag(self, target, mouse_position):
         # If we have a voxel at the target, colour it
         voxel = target.voxels.get(target.x, target.y, target.z)
         if voxel:

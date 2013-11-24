@@ -198,10 +198,10 @@ class MainWindow(QtGui.QMainWindow):
             self.colour_palette.colour = colour
 
     def on_tool_activated(self):
-        self.activate_tool(self.display.target)
+        self.activate_tool(self.display.target, self.display.mouse_position)
 
     def on_tool_dragged(self):
-        self.drag_tool(self.display.target)
+        self.drag_tool(self.display.target, self.display.mouse_position)
 
     def on_tool_deactivated(self):
         self.deactivate_tool(self.display.target)
@@ -408,25 +408,25 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.toolbar_drawing.addAction(tool.get_action())
 
     # Send an activation event to the currently selected drawing tool
-    def activate_tool(self, target):
+    def activate_tool(self, target, mouse_position):
         action = self._tool_group.checkedAction()
         if not action:
             return
         # Find who owns this action and activate
         for tool in self._tools:
             if tool.get_action() is action:
-                tool.on_activate(target)
+                tool.on_activate(target, mouse_position)
                 return
 
     # Send drag activation to the current selected drawing tool
-    def drag_tool(self, target):
+    def drag_tool(self, target, mouse_position):
         action = self._tool_group.checkedAction()
         if not action:
             return
         # Find who owns this action and activate
         for tool in self._tools:
             if tool.get_action() is action:
-                tool.on_drag(target)
+                tool.on_drag(target, mouse_position)
                 return
 
     # Send an deactivation event to the currently selected drawing tool

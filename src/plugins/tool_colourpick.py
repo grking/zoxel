@@ -32,7 +32,7 @@ class ColourPickTool(Tool):
         self.api.register_tool(self)
 
     # Grab the colour of the selected voxel
-    def on_activate(self, target):
+    def on_activate(self, target, mouse_position):
         # If we have a voxel at the target, colour it
         voxel = target.voxels.get(target.x, target.y, target.z)
         if voxel:

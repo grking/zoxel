@@ -99,6 +99,10 @@ class GLWidget(QtOpenGL.QGLWidget):
         self._voxeledges = True
         # Mouse position
         self._mouse = QtCore.QPoint()
+        self._mouse_absolute = QtCore.QPoint()
+        self.mouse_delta_relative = (0,0)
+        self.mouse_delta_absolute = (0,0)
+        self.mouse_position = (0,0)
         # Default camera
         self.reset_camera(False)
         # zoom
@@ -296,6 +300,9 @@ class GLWidget(QtOpenGL.QGLWidget):
 
     def mousePressEvent(self, event):
         self._mouse = QtCore.QPoint(event.pos())
+        self._mouse_absolute = QtCore.QPoint(event.pos())
+        self.mouse_position = (self._mouse.x(),self._mouse.y())
+
         if event.buttons() & QtCore.Qt.LeftButton:
             self._mousedown_time = time.time()
             x, y, z, face = self.window_to_voxel(event.x(), event.y())
@@ -325,9 +332,17 @@ class GLWidget(QtOpenGL.QGLWidget):
         self._depth_focus = d
 
     def mouseMoveEvent(self, event):
+
+        self.mouse_position = (self._mouse.x(),self._mouse.y())
+
         # Screen units delta
         dx = event.x() - self._mouse.x()
         dy = event.y() - self._mouse.y()
+        
+        # Remember the mouse deltas
+        self.mouse_delta_relative = (dx, dy)
+        self.mouse_delta_absolute = (event.x() - self._mouse_absolute.x(), 
+            event.y() - self._mouse_absolute.y())
 
         # Right mouse button held down - rotate
         if event.buttons() & QtCore.Qt.RightButton:
@@ -337,10 +352,11 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         # Middle mouse button held down - translate
         if event.buttons() & QtCore.Qt.MiddleButton:
+            
             # Work out the translation in 3d space
             self._translate_x = self._translate_x + dx * self._htranslate
             self._translate_y = self._translate_y + ((-dy) * self._vtranslate)
-            self.updateGL()
+            self.refresh()
 
         # Left mouse button held down
         if event.buttons() & QtCore.Qt.LeftButton:

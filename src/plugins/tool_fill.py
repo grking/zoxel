@@ -32,7 +32,7 @@ class FillTool(Tool):
         self.api.register_tool(self)
 
     # Fill all connected voxels of the same colour with a new colour
-    def on_activate(self, target):
+    def on_activate(self, target, mouse_position):
         # We need to have a selected voxel
         voxel = target.voxels.get(target.x, target.y, target.z)
         if not voxel:

@@ -63,11 +63,11 @@ class DrawingTool(Tool):
             return None
 
     # Draw a new voxel next to the targeted face
-    def on_activate(self, target):
+    def on_activate(self, target, mouse_position):
         self._first_target = self._draw_voxel(target)
 
     # When dragging, Draw a new voxel next to the targeted face
-    def on_drag(self, target):
+    def on_drag(self, target, mouse_position):
         # In case the first click has missed a valid target.
         if( self._first_target is None ):
             return
