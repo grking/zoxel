@@ -427,11 +427,11 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Define our planes
         # XXX origin assumes planes are at zero offsets, should really
         # XXX respect any grid plane offset here
-        origin = self.voxels.voxel_to_world(0, 0, self.voxels.depth - 1)
+        origin = self.voxels.voxel_to_world(0, 0, self.voxels.depth)
         planes = (
             Plane(Vector3(1, 0, 0), origin[0]),
             Plane(Vector3(0, 1, 0), origin[1]),
-            Plane(Vector3(0, 0, 1), origin[2]))
+            Plane(Vector3(0, 0, 1), origin[2]+0.001))
         intersection = None, None, None
         distance = sys.maxint
         for plane in planes:
@@ -441,12 +441,15 @@ class GLWidget(QtOpenGL.QGLWidget):
                 # Adjust to voxel space coordinates
                 x, y, z = self.voxels.world_to_voxel(intersect.x,
                     intersect.y, intersect.z)
+                x = int(x)
+                y = int(y)
+                z = int(z)
                 # Ignore out of bounds insections
                 if not self.voxels.is_valid_bounds(x, y, z):
                     continue
                 length = near.distance(Point3(intersect.x, intersect.y, intersect.z))
                 if length < distance:
-                    intersection = int(x), int(y), int(round(z))
+                    intersection = int(x), int(y), int(z)
                     distance = length
         return intersection
 
