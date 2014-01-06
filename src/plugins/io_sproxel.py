@@ -51,7 +51,8 @@ class SproxelFile(object):
                         line.append("#00000000")
                     else:
                         voxel = (voxel & 0xffffff00) | 0xff
-                        line.append("#"+hex(voxel)[2:].upper().rjust(8,"0"))
+                        voxel = "%x" % voxel
+                        line.append("#"+voxel.upper().rjust(8,"0"))
                 f.write(",".join(line)+"\n")
             f.write("\n")
 
