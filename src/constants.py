@@ -15,4 +15,4 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-ZOXEL_VERSION = "0.4.1 (27th December 2013)"
+ZOXEL_VERSION = "0.4.2 (6th January 2014)"
