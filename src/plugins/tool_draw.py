@@ -66,6 +66,10 @@ class DrawingTool(Tool):
     def on_activate(self, target, mouse_position):
         self._first_target = self._draw_voxel(target)
 
+    # Erase targetted voxel 
+    def on_activate_alt(self, target, mouse_position):
+        target.voxels.set(target.x, target.y, target.z, 0)
+
     # When dragging, Draw a new voxel next to the targeted face
     def on_drag(self, target, mouse_position):
         # In case the first click has missed a valid target.
