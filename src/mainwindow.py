@@ -402,11 +402,13 @@ class MainWindow(QtGui.QMainWindow):
 
         # Load the file
         self.display.clear()
+        self.display.voxels.disable_undo()
         self._filename = None
         try:
             handler.load(filename)
             self._filename = filename
         except Exception as Ex:
+            self.display.voxels.enable_undo()
             QtGui.QMessageBox.warning(self, "Could not load file",
             str(Ex))
 
@@ -415,6 +417,7 @@ class MainWindow(QtGui.QMainWindow):
         self.display.voxels.saved()
         self.display.reset_camera()
         self.update_caption()
+        self.display.voxels.enable_undo()
         self.display.refresh()
 
     # Registers a tool in the drawing toolbar
