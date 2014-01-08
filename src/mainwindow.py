@@ -418,10 +418,12 @@ class MainWindow(QtGui.QMainWindow):
         self.display.refresh()
 
     # Registers a tool in the drawing toolbar
-    def register_tool(self, tool):
+    def register_tool(self, tool, activate = False):
         self._tools.append(tool)
         self._tool_group.addAction(tool.get_action())
         self.ui.toolbar_drawing.addAction(tool.get_action())
+        if activate:
+            tool.get_action().setChecked(True)
 
     # Send an activation event to the currently selected drawing tool
     def activate_tool(self, target, mouse_position):

@@ -31,7 +31,7 @@ class DrawingTool(Tool):
         self.action.setStatusTip("Draw Voxels")
         self.action.setCheckable(True)
         # Register the tool
-        self.api.register_tool(self)
+        self.api.register_tool(self, True)
 
     """"
     Tries to plot a new voxel at target location.
