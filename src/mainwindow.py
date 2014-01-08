@@ -89,6 +89,7 @@ class MainWindow(QtGui.QMainWindow):
         if self.display:
             self.display.voxels.notify = self.on_data_changed
             self.display.tool_activated.connect(self.on_tool_activated)
+            self.display.tool_activated_alt.connect(self.on_tool_activated_alt)
             self.display.tool_dragged.connect(self.on_tool_dragged)
             self.display.tool_deactivated.connect(self.on_tool_deactivated)
         if self.colour_palette:
@@ -147,6 +148,18 @@ class MainWindow(QtGui.QMainWindow):
         self.load()
 
     @QtCore.Slot()
+    def on_action_undo_triggered(self):
+        # Undo
+        self.display.voxels.undo()
+        self.display.refresh()
+    
+    @QtCore.Slot()
+    def on_action_redo_triggered(self):
+        # Redo
+        self.display.voxels.redo()
+        self.display.refresh()
+
+    @QtCore.Slot()
     def on_action_resize_triggered(self):
         # Resize model dimensions
         dialog = ResizeDialog(self)
@@ -199,6 +212,9 @@ class MainWindow(QtGui.QMainWindow):
 
     def on_tool_activated(self):
         self.activate_tool(self.display.target, self.display.mouse_position)
+
+    def on_tool_activated_alt(self):
+        self.activate_tool_alt(self.display.target, self.display.mouse_position)
 
     def on_tool_dragged(self):
         self.drag_tool(self.display.target, self.display.mouse_position)
@@ -402,10 +418,12 @@ class MainWindow(QtGui.QMainWindow):
         self.display.refresh()
 
     # Registers a tool in the drawing toolbar
-    def register_tool(self, tool):
+    def register_tool(self, tool, activate = False):
         self._tools.append(tool)
         self._tool_group.addAction(tool.get_action())
         self.ui.toolbar_drawing.addAction(tool.get_action())
+        if activate:
+            tool.get_action().setChecked(True)
 
     # Send an activation event to the currently selected drawing tool
     def activate_tool(self, target, mouse_position):
@@ -416,6 +434,17 @@ class MainWindow(QtGui.QMainWindow):
         for tool in self._tools:
             if tool.get_action() is action:
                 tool.on_activate(target, mouse_position)
+                return
+
+    # Send an alternative activation event to the currently selected tool
+    def activate_tool_alt(self, target, mouse_position):
+        action = self._tool_group.checkedAction()
+        if not action:
+            return
+        # Find who owns this action and activate
+        for tool in self._tools:
+            if tool.get_action() is action:
+                tool.on_activate_alt(target, mouse_position)
                 return
 
     # Send drag activation to the current selected drawing tool

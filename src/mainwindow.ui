@@ -32,7 +32,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>25</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_file">
@@ -61,7 +61,15 @@
     <addaction name="action_wireframe"/>
     <addaction name="action_voxel_edges"/>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="action_undo"/>
+    <addaction name="action_redo"/>
+   </widget>
    <addaction name="menu_file"/>
+   <addaction name="menuEdit"/>
    <addaction name="menuView"/>
    <addaction name="menu_help"/>
   </widget>
@@ -79,6 +87,9 @@
    <addaction name="action_new"/>
    <addaction name="action_open"/>
    <addaction name="action_save"/>
+   <addaction name="separator"/>
+   <addaction name="action_undo"/>
+   <addaction name="action_redo"/>
    <addaction name="separator"/>
    <addaction name="action_axis_grids"/>
    <addaction name="action_wireframe"/>
@@ -280,6 +291,36 @@
    </property>
    <property name="toolTip">
     <string>Pick Voxel Colour</string>
+   </property>
+  </action>
+  <action name="action_undo">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/undo.png</normaloff>:/images/gfx/icons/undo.png</iconset>
+   </property>
+   <property name="text">
+    <string>Undo</string>
+   </property>
+   <property name="toolTip">
+    <string>Undo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
+  </action>
+  <action name="action_redo">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/redo.png</normaloff>:/images/gfx/icons/redo.png</iconset>
+   </property>
+   <property name="text">
+    <string>Redo</string>
+   </property>
+   <property name="toolTip">
+    <string>Redo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Z</string>
    </property>
   </action>
  </widget>

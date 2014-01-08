@@ -25,6 +25,7 @@
 # which describes the current state of the voxel world.
 
 import math
+import copy
 
 # Default world dimensions (in voxels)
 # We are an editor for "small" voxel models. So this needs to be small.
@@ -94,6 +95,9 @@ class VoxelData(object):
         self._cache = []
         # Flag indicating if our data has changed
         self._changed = False
+        # Undo buffer
+        self._undo = []
+        self._undo_ptr = 0
 
     def is_valid_bounds(self, x, y, z):
         return (
@@ -104,6 +108,9 @@ class VoxelData(object):
 
     # Set a voxel to the given state
     def set(self, x, y, z, state):
+        # Undoable
+        self.undo_push()
+        
         # If this looks like a QT Color instance, convert it
         if hasattr(state, "getRgb"):
             c = state.getRgb()
@@ -129,6 +136,16 @@ class VoxelData(object):
         if ( not self.is_valid_bounds(x, y, z ) ):
             return EMPTY
         return self._data[x][y][z]
+
+    # Return a copy of the voxel data
+    def get_data(self):
+        return copy.deepcopy(self._data)
+
+    # Set all of our data at once
+    def set_data(self, data):
+        self._data = copy.deepcopy(data)
+        self._cache_rebuild()
+        self.changed = True
 
     # Clear our voxel data
     def clear(self):
@@ -670,3 +687,33 @@ class VoxelData(object):
         # Rebuild our cache
         self._cache_rebuild()
         self.changed = True
+
+    # Add current state to undo buffer
+    def undo_push(self):
+        # If we're not at the end of the undo buffer, remove future
+        if self._undo_ptr < len(self._undo):
+            self._undo = self._undo[:self._undo_ptr]
+        # Push current state onto into undo history
+        data = self.get_data()
+        self._undo.append(data)
+        self._undo_ptr = len(self._undo)
+
+    # Undo previous operation
+    def undo(self):
+        # If this is the first undo, it's a change, so push to undo buffer
+        if self._undo_ptr == len(self._undo):
+            self.undo_push()
+            self._undo_ptr -= 1
+        self._undo_ptr -= 1
+        if(self._undo_ptr >= 0):
+            data = self._undo[self._undo_ptr]
+            self.set_data(data)
+        else:
+            self._undo_ptr = 0
+    
+    # Redo an undone operation
+    def redo(self):
+        if self._undo_ptr < len(self._undo)-1:
+            self._undo_ptr += 1
+            data = self._undo[self._undo_ptr]
+            self.set_data(data)

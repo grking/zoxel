@@ -31,7 +31,7 @@ class DrawingTool(Tool):
         self.action.setStatusTip("Draw Voxels")
         self.action.setCheckable(True)
         # Register the tool
-        self.api.register_tool(self)
+        self.api.register_tool(self, True)
 
     """"
     Tries to plot a new voxel at target location.
@@ -65,6 +65,10 @@ class DrawingTool(Tool):
     # Draw a new voxel next to the targeted face
     def on_activate(self, target, mouse_position):
         self._first_target = self._draw_voxel(target)
+
+    # Erase targetted voxel 
+    def on_activate_alt(self, target, mouse_position):
+        target.voxels.set(target.x, target.y, target.z, 0)
 
     # When dragging, Draw a new voxel next to the targeted face
     def on_drag(self, target, mouse_position):

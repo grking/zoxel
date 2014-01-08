@@ -28,9 +28,9 @@ class PluginAPI(object):
         self.mainwindow = self.application.mainwindow
 
     # Register a drawing tool with the system
-    def register_tool(self, tool):
+    def register_tool(self, tool, activate = False):
         # Create an instance
-        self.mainwindow.register_tool(tool)
+        self.mainwindow.register_tool(tool, activate)
 
     # Register an importer/exporter with the system
     def register_file_handler(self, handler):

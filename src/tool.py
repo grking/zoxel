@@ -114,6 +114,10 @@ class Tool(object):
     def on_activate(self, target, mouse_position):
         pass
 
+    # Called when the right mouse button is pressed
+    def on_activate_alt(self, target, mouse_position):
+        pass
+
     # Called when the left mouse button is held down and dragged
     def on_drag(self, target, mouse_position):
         pass

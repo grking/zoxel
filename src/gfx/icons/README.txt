@@ -1,3 +1,5 @@
+Undo and Redo icons by http://turbomilk.com/
+
 Fugue Icons
 
 (C) 2013 Yusuke Kamiyamane. All rights reserved.
