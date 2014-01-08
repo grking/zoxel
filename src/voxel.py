@@ -98,6 +98,7 @@ class VoxelData(object):
         # Undo buffer
         self._undo = []
         self._undo_ptr = 0
+        self._undo_enabled = True
 
     def is_valid_bounds(self, x, y, z):
         return (
@@ -690,6 +691,8 @@ class VoxelData(object):
 
     # Add current state to undo buffer
     def undo_push(self):
+        if not self._undo_enabled:
+            return
         # If we're not at the end of the undo buffer, remove future
         if self._undo_ptr < len(self._undo):
             self._undo = self._undo[:self._undo_ptr]
@@ -717,3 +720,9 @@ class VoxelData(object):
             self._undo_ptr += 1
             data = self._undo[self._undo_ptr]
             self.set_data(data)
+
+    # Enable/Disable undo buffer
+    def disable_undo(self):
+        self._undo_enabled = False
+    def enable_undo(self):
+        self._undo_enabled = True
