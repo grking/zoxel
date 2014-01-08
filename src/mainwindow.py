@@ -147,6 +147,18 @@ class MainWindow(QtGui.QMainWindow):
         self.load()
 
     @QtCore.Slot()
+    def on_action_undo_triggered(self):
+        # Undo
+        self.display.voxels.undo()
+        self.display.refresh()
+    
+    @QtCore.Slot()
+    def on_action_redo_triggered(self):
+        # Redo
+        self.display.voxels.redo()
+        self.display.refresh()
+
+    @QtCore.Slot()
     def on_action_resize_triggered(self):
         # Resize model dimensions
         dialog = ResizeDialog(self)
