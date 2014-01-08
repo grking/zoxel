@@ -335,6 +335,9 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         self.mouse_position = (self._mouse.x(),self._mouse.y())
 
+        ctrl = event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier
+        shift = event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier
+
         # Screen units delta
         dx = event.x() - self._mouse.x()
         dy = event.y() - self._mouse.y()
@@ -344,14 +347,16 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.mouse_delta_absolute = (event.x() - self._mouse_absolute.x(), 
             event.y() - self._mouse_absolute.y())
 
-        # Right mouse button held down - rotate
-        if event.buttons() & QtCore.Qt.RightButton:
+        # Right mouse button held down with CTRL key - rotate
+        # Or middle mouse button held 
+        if ((event.buttons() & QtCore.Qt.RightButton and ctrl)
+            or (event.buttons() & QtCore.Qt.MiddleButton)):
             self._rotate_x = self._rotate_x + dy
             self._rotate_y = self._rotate_y + dx
             self.updateGL()
 
-        # Middle mouse button held down - translate
-        if event.buttons() & QtCore.Qt.MiddleButton:
+        # Middle mouse button held down with CTRL - translate
+        if event.buttons() & QtCore.Qt.MiddleButton and ctrl:
             
             # Work out the translation in 3d space
             self._translate_x = self._translate_x + dx * self._htranslate
