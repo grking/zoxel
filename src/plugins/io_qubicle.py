@@ -138,6 +138,10 @@ class QubicleFile(object):
             width = self.uint32(f)
             height = self.uint32(f)
             depth = self.uint32(f)
+            
+            # Don't allow huge models
+            if width > 127 or height > 127 or depth > 127:
+                raise Exception("Model to large - max 127x127x127")
     
             if width > max_width:
                 max_width = width
