@@ -149,7 +149,7 @@
     <layout class="QGridLayout" name="gridLayout_3"/>
    </widget>
   </widget>
-  <widget class="QToolBar" name="animation">
+  <widget class="QToolBar" name="toolbar_animation">
    <property name="windowTitle">
     <string>toolBar</string>
    </property>

@@ -43,6 +43,11 @@ class MainWindow(QtGui.QMainWindow):
         # Our global state
         self.settings = QtCore.QSettings("Zoxel", "Zoxel")
         self.state = {}
+        # Our animation timer
+        self._timer = QtCore.QTimer(self)
+        self.connect(self._timer, QtCore.SIGNAL("timeout()"), 
+            self.on_animation_tick)
+        self._anim_speed = 200
         # Load our state if possible
         self.load_state()
         # Create our GL Widget
@@ -99,6 +104,9 @@ class MainWindow(QtGui.QMainWindow):
         self._tools = []
         # Setup window
         self.update_caption()
+
+    def on_animation_tick(self):
+        self.on_action_anim_next_triggered()
 
     @QtCore.Slot()
     def on_action_about_triggered(self):
@@ -223,11 +231,11 @@ class MainWindow(QtGui.QMainWindow):
 
     @QtCore.Slot()
     def on_action_anim_play_triggered(self):
-        pass
+        self._timer.start(self._anim_speed)
 
     @QtCore.Slot()
     def on_action_anim_stop_triggered(self):
-        pass
+        self._timer.stop()
 
     @QtCore.Slot()
     def on_action_anim_next_triggered(self):
