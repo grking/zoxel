@@ -1,5 +1,7 @@
 <RCC>
   <qresource prefix="images">
+    <file>gfx/icons/zoom_in.png</file>
+    <file>gfx/icons/zoom_out.png</file>
     <file>gfx/icons/redo.png</file>
     <file>gfx/icons/undo.png</file>
     <file>gfx/texture.png</file>

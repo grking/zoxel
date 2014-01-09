@@ -87,10 +87,13 @@ class QubicleFile(object):
             for y in xrange(voxels.height):
                 for x in xrange(voxels.width):
                     vox = voxels.get(x, y, z)
+                    alpha = 0xff
+                    if not vox:
+                        alpha = 0x00
                     r = (vox & 0xff000000)>>24
                     g = (vox & 0xff0000)>>16
                     b = (vox & 0xff00)>>8
-                    vox = r | g<<8 | b<<16 | 0xff<<24
+                    vox = r | g<<8 | b<<16 | alpha<<24
                     self.uint32(f, vox)
 
         # Tidy up
@@ -121,6 +124,12 @@ class QubicleFile(object):
         # Matrix count
         matrix_count = self.uint32(f)
         
+        # Warn about multiple matrices
+        if matrix_count > 1:
+            self.api.warning("Qubicle files with more than 1 matrix"
+                             " are not yet properly supported. All "
+                             " matrices will be (badly) merged.")
+        
         max_width = 0
         max_height = 0
         max_depth = 0
@@ -135,6 +144,10 @@ class QubicleFile(object):
             width = self.uint32(f)
             height = self.uint32(f)
             depth = self.uint32(f)
+            
+            # Don't allow huge models
+            if width > 127 or height > 127 or depth > 127:
+                raise Exception("Model to large - max 127x127x127")
     
             if width > max_width:
                 max_width = width

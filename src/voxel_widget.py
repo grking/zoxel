@@ -300,17 +300,20 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.grids.update_grid_plane(self.voxels)
 
     def mousePressEvent(self, event):
+        
+        ctrl = event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier
+        
         self._mouse = QtCore.QPoint(event.pos())
         self._mouse_absolute = QtCore.QPoint(event.pos())
         self.mouse_position = (self._mouse.x(),self._mouse.y())
 
-        if event.buttons() & QtCore.Qt.LeftButton:
+        if event.buttons() & QtCore.Qt.LeftButton and not ctrl:
             self._mousedown_time = time.time()
             x, y, z, face = self.window_to_voxel(event.x(), event.y())
             self.activate_tool(x, y, z, face)
             self.refresh()
 
-        if event.buttons() & QtCore.Qt.RightButton:
+        if event.buttons() & QtCore.Qt.RightButton and not ctrl:
             self._mousedown_time = time.time()
             x, y, z, face = self.window_to_voxel(event.x(), event.y())
             self.activate_tool_alt(x, y, z, face)
@@ -386,6 +389,14 @@ class GLWidget(QtOpenGL.QGLWidget):
             x, y, z, face = self.window_to_voxel(event.x(), event.y())
             self.deactivate_tool(x, y, z, face)
             self.refresh()
+
+    def zoom_in(self):
+        self._translate_z *= 1 - self._zoom_speed
+        self.updateGL()
+        
+    def zoom_out(self):
+        self._translate_z *= 1 + self._zoom_speed        
+        self.updateGL()
 
     def wheelEvent(self, event):
         if event.delta() > 0:

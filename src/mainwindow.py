@@ -117,6 +117,14 @@ class MainWindow(QtGui.QMainWindow):
         self.set_setting("voxel_edges", self.display.voxel_edges)
 
     @QtCore.Slot()
+    def on_action_zoom_in_triggered(self):
+        self.display.zoom_in()
+
+    @QtCore.Slot()
+    def on_action_zoom_out_triggered(self):
+        self.display.zoom_out()
+
+    @QtCore.Slot()
     def on_action_new_triggered(self):
         if self.display.voxels.changed:
             if not self.confirm_save():
