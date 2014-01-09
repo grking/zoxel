@@ -99,6 +99,10 @@ class VoxelData(object):
         self._undo = []
         self._undo_ptr = 0
         self._undo_enabled = True
+        # Animation
+        self._frame_count = 1
+        self._current_frame = 0
+        self._frames = [self._data]
 
     def is_valid_bounds(self, x, y, z):
         return (
@@ -106,6 +110,54 @@ class VoxelData(object):
             y >= 0 and y < self.height and
             z >= 0 and z < self.depth
         )
+
+    # Change to the given frame
+    # FIXME - support frame specific undo buffers
+    def select_frame(self, frame_number):
+        # Sanity
+        if frame_number < 0 or frame_number >= self._frame_count:
+            return
+        # Make sure we really have a pointer to the current data
+        self._frames[self._current_frame] = self._data
+        # Change to new frame
+        self._data = self._frames[frame_number]
+        self._current_frame = frame_number
+        self._cache_rebuild()
+        self.changed = True
+
+    # Add a new frame by copying the current one
+    def add_frame(self):
+        data = self.get_data()
+        self._frames.insert(self._current_frame+1, data)
+        self._frame_count += 1
+        self.select_frame(self._current_frame+1)
+
+    # Delete the current frame
+    def delete_frame(self):
+        # Sanity - we can't have no frames at all
+        if self._frame_count <= 1:
+            return
+        # Remember the frame we want to delete
+        killframe = self._current_frame
+        # Select a different frame
+        self.select_previous_frame()
+        # Remove the frame
+        del self._frames[killframe]
+        self._frame_count -= 1
+
+    # Change to the next frame (with wrap)
+    def select_next_frame(self):
+        nextframe = self._current_frame+1
+        if nextframe >= self._frame_count:
+            nextframe = 0
+        self.select_frame(nextframe)
+
+    # Change to the previous frame (with wrap)
+    def select_previous_frame(self):
+        prevframe = self._current_frame-1
+        if prevframe < 0:
+            prevframe = self._frame_count-1
+        self.select_frame(prevframe)
 
     # Set a voxel to the given state
     def set(self, x, y, z, state):

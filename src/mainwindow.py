@@ -213,11 +213,13 @@ class MainWindow(QtGui.QMainWindow):
 
     @QtCore.Slot()
     def on_action_anim_add_triggered(self):
-        pass
+        self.display.voxels.add_frame()
+        self.display.refresh()
 
     @QtCore.Slot()
     def on_action_anim_delete_triggered(self):
-        pass
+        self.display.voxels.delete_frame()
+        self.display.refresh()
 
     @QtCore.Slot()
     def on_action_anim_play_triggered(self):
@@ -229,11 +231,13 @@ class MainWindow(QtGui.QMainWindow):
 
     @QtCore.Slot()
     def on_action_anim_next_triggered(self):
-        pass
+        self.display.voxels.select_next_frame()
+        self.display.refresh()
 
     @QtCore.Slot()
     def on_action_anim_previous_triggered(self):
-        pass
+        self.display.voxels.select_previous_frame()
+        self.display.refresh()
     
     @QtCore.Slot()
     def on_action_anim_settings_triggered(self):
