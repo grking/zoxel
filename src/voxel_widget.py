@@ -390,6 +390,14 @@ class GLWidget(QtOpenGL.QGLWidget):
             self.deactivate_tool(x, y, z, face)
             self.refresh()
 
+    def zoom_in(self):
+        self._translate_z *= 1 - self._zoom_speed
+        self.updateGL()
+        
+    def zoom_out(self):
+        self._translate_z *= 1 + self._zoom_speed        
+        self.updateGL()
+
     def wheelEvent(self, event):
         if event.delta() > 0:
             self._translate_z *= 1 + self._zoom_speed

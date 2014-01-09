@@ -60,6 +60,9 @@
     <addaction name="action_axis_grids"/>
     <addaction name="action_wireframe"/>
     <addaction name="action_voxel_edges"/>
+    <addaction name="separator"/>
+    <addaction name="action_zoom_in"/>
+    <addaction name="action_zoom_out"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -98,7 +101,10 @@
    <addaction name="action_voxel_colour"/>
    <addaction name="action_background"/>
    <addaction name="action_resize"/>
+   <addaction name="separator"/>
    <addaction name="action_reset_camera"/>
+   <addaction name="action_zoom_in"/>
+   <addaction name="action_zoom_out"/>
   </widget>
   <widget class="QToolBar" name="toolbar_drawing">
    <property name="windowTitle">
@@ -321,6 +327,36 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+Z</string>
+   </property>
+  </action>
+  <action name="action_zoom_in">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/zoom_in.png</normaloff>:/images/gfx/icons/zoom_in.png</iconset>
+   </property>
+   <property name="text">
+    <string>Zoom in</string>
+   </property>
+   <property name="toolTip">
+    <string>Zoom in</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl++</string>
+   </property>
+  </action>
+  <action name="action_zoom_out">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/zoom_out.png</normaloff>:/images/gfx/icons/zoom_out.png</iconset>
+   </property>
+   <property name="text">
+    <string>Zoom out</string>
+   </property>
+   <property name="toolTip">
+    <string>Zoom out</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
    </property>
   </action>
  </widget>
