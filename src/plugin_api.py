@@ -61,6 +61,10 @@ class PluginAPI(object):
         self.api.mainwindow.set_setting(name, value)
     def get_config(self, name):
         return self.api.mainwindow.get_setting(name)
+    
+    # Display a warning message
+    def warning(self, message):
+        QtGui.QMessageBox.warning(self.mainwindow, "Warning", message)
 
 # Plugin registration
 # Plugins call this function to register with the system.  A plugin
