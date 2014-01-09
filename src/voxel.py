@@ -141,9 +141,12 @@ class VoxelData(object):
         killframe = self._current_frame
         # Select a different frame
         self.select_previous_frame()
-        # Remove the frame
+        # Remove the old frame
         del self._frames[killframe]
         self._frame_count -= 1
+        # If we only have one frame left, must be first frame
+        if self._frame_count == 1:
+            self._current_frame = 0
 
     # Change to the next frame (with wrap)
     def select_next_frame(self):
