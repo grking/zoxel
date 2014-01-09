@@ -87,10 +87,13 @@ class QubicleFile(object):
             for y in xrange(voxels.height):
                 for x in xrange(voxels.width):
                     vox = voxels.get(x, y, z)
+                    alpha = 0xff
+                    if not vox:
+                        alpha = 0x00
                     r = (vox & 0xff000000)>>24
                     g = (vox & 0xff0000)>>16
                     b = (vox & 0xff00)>>8
-                    vox = r | g<<8 | b<<16 | 0xff<<24
+                    vox = r | g<<8 | b<<16 | alpha<<24
                     self.uint32(f, vox)
 
         # Tidy up
