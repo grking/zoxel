@@ -212,6 +212,34 @@ class MainWindow(QtGui.QMainWindow):
             self.set_setting("background_colour", colour)
 
     @QtCore.Slot()
+    def on_action_anim_add_triggered(self):
+        pass
+
+    @QtCore.Slot()
+    def on_action_anim_delete_triggered(self):
+        pass
+
+    @QtCore.Slot()
+    def on_action_anim_play_triggered(self):
+        pass
+
+    @QtCore.Slot()
+    def on_action_anim_stop_triggered(self):
+        pass
+
+    @QtCore.Slot()
+    def on_action_anim_next_triggered(self):
+        pass
+
+    @QtCore.Slot()
+    def on_action_anim_previous_triggered(self):
+        pass
+    
+    @QtCore.Slot()
+    def on_action_anim_settings_triggered(self):
+        pass
+
+    @QtCore.Slot()
     def on_action_voxel_colour_triggered(self):
         # Choose a voxel colour
         colour = QtGui.QColorDialog.getColor()

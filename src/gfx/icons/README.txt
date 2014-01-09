@@ -1,3 +1,4 @@
+Animation icons by Aha-Soft ( http://www.small-icons.com/ )
 Zoom in and Zoom out icons by http://ashung.deviantart.com/
 Undo and Redo icons by http://turbomilk.com/
 

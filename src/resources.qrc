@@ -1,5 +1,26 @@
 <RCC>
   <qresource prefix="images">
+    <file>gfx/icons/Stop.png</file>
+    <file>gfx/icons/Rewind.png</file>
+    <file>gfx/icons/Previousrecord.png</file>
+    <file>gfx/icons/Playback.png</file>
+    <file>gfx/icons/Play.png</file>
+    <file>gfx/icons/Pause.png</file>
+    <file>gfx/icons/Nexttrack.png</file>
+    <file>gfx/icons/Last.png</file>
+    <file>gfx/icons/Lastrecord.png</file>
+    <file>gfx/icons/Go.png</file>
+    <file>gfx/icons/Goforward.png</file>
+    <file>gfx/icons/Goback.png</file>
+    <file>gfx/icons/Forward.png</file>
+    <file>gfx/icons/First-record.png</file>
+    <file>gfx/icons/First.png</file>
+    <file>gfx/icons/Fast-forward.png</file>
+    <file>gfx/icons/Delete.png</file>
+    <file>gfx/icons/Create.png</file>
+    <file>gfx/icons/Cancel.png</file>
+    <file>gfx/icons/Back.png</file>
+    <file>gfx/icons/Add.png</file>
     <file>gfx/icons/zoom_in.png</file>
     <file>gfx/icons/zoom_out.png</file>
     <file>gfx/icons/redo.png</file>
