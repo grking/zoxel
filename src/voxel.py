@@ -111,6 +111,10 @@ class VoxelData(object):
             z >= 0 and z < self.depth
         )
 
+    # Return the number of animation frames
+    def get_frame_count(self):
+        return self._frame_count
+
     # Change to the given frame
     # FIXME - support frame specific undo buffers
     def select_frame(self, frame_number):
