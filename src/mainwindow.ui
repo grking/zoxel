@@ -70,6 +70,12 @@
     </property>
     <addaction name="action_undo"/>
     <addaction name="action_redo"/>
+    <addaction name="separator"/>
+    <addaction name="action_rotate_x"/>
+    <addaction name="action_rotate_y"/>
+    <addaction name="action_rotate_z"/>
+    <addaction name="separator"/>
+    <addaction name="action_resize"/>
    </widget>
    <widget class="QMenu" name="menuAnimation">
     <property name="title">
@@ -472,6 +478,30 @@
    </property>
    <property name="toolTip">
     <string>Delete current frame</string>
+   </property>
+  </action>
+  <action name="action_rotate_x">
+   <property name="text">
+    <string>Rotate X-Axis</string>
+   </property>
+   <property name="toolTip">
+    <string>Rotate voxels around X axis</string>
+   </property>
+  </action>
+  <action name="action_rotate_y">
+   <property name="text">
+    <string>Rotate Y-Axis</string>
+   </property>
+   <property name="toolTip">
+    <string>Rotate voxels around Y axis</string>
+   </property>
+  </action>
+  <action name="action_rotate_z">
+   <property name="text">
+    <string>Rotate Z-Axis</string>
+   </property>
+   <property name="toolTip">
+    <string>Rotate voxels around Z axis</string>
    </property>
   </action>
  </widget>

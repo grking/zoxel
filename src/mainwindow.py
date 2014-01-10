@@ -104,6 +104,7 @@ class MainWindow(QtGui.QMainWindow):
         self._tools = []
         # Setup window
         self.update_caption()
+        self.refresh_actions()
 
     def on_animation_tick(self):
         self.on_action_anim_next_triggered()
@@ -223,24 +224,29 @@ class MainWindow(QtGui.QMainWindow):
     def on_action_anim_add_triggered(self):
         self.display.voxels.add_frame()
         self.display.refresh()
+        self.refresh_actions()
 
     @QtCore.Slot()
     def on_action_anim_delete_triggered(self):
         self.display.voxels.delete_frame()
         self.display.refresh()
+        self.refresh_actions()
 
     @QtCore.Slot()
     def on_action_anim_play_triggered(self):
         self._timer.start(self._anim_speed)
+        self.refresh_actions()
 
     @QtCore.Slot()
     def on_action_anim_stop_triggered(self):
         self._timer.stop()
+        self.refresh_actions()
 
     @QtCore.Slot()
     def on_action_anim_next_triggered(self):
         self.display.voxels.select_next_frame()
         self.display.refresh()
+        self.refresh_actions()
 
     @QtCore.Slot()
     def on_action_anim_previous_triggered(self):
@@ -250,6 +256,21 @@ class MainWindow(QtGui.QMainWindow):
     @QtCore.Slot()
     def on_action_anim_settings_triggered(self):
         pass
+
+    @QtCore.Slot()
+    def on_action_rotate_x_triggered(self):
+        self.display.voxels.rotate_about_axis(self.display.voxels.X_AXIS)
+        self.display.refresh()
+
+    @QtCore.Slot()
+    def on_action_rotate_y_triggered(self):
+        self.display.voxels.rotate_about_axis(self.display.voxels.Y_AXIS)
+        self.display.refresh()
+
+    @QtCore.Slot()
+    def on_action_rotate_z_triggered(self):
+        self.display.voxels.rotate_about_axis(self.display.voxels.Z_AXIS)
+        self.display.refresh()
 
     @QtCore.Slot()
     def on_action_voxel_colour_triggered(self):
@@ -523,3 +544,13 @@ class MainWindow(QtGui.QMainWindow):
     # Load and initialise all plugins
     def load_plugins(self):
         import plugin_loader
+
+    # Update the state of the UI actions
+    def refresh_actions(self):
+        num_frames = self.display.voxels.get_frame_count()
+        self.ui.action_anim_delete.setEnabled(num_frames > 1)
+        self.ui.action_anim_previous.setEnabled(num_frames > 1)
+        self.ui.action_anim_next.setEnabled(num_frames > 1)
+        self.ui.action_anim_play.setEnabled(num_frames > 1 
+            and not self._timer.isActive())
+        self.ui.action_anim_stop.setEnabled(self._timer.isActive())

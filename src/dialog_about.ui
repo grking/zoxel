@@ -68,7 +68,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Copyright (c) 2013, Graham R King</string>
+    <string>Copyright (c) 2013-2014, Graham R King</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_3">
