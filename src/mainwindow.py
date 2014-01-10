@@ -253,6 +253,7 @@ class MainWindow(QtGui.QMainWindow):
     def on_action_anim_previous_triggered(self):
         self.display.voxels.select_previous_frame()
         self.display.refresh()
+        self.refresh_actions()
     
     @QtCore.Slot()
     def on_action_anim_settings_triggered(self):

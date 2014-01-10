@@ -166,9 +166,9 @@
     <bool>false</bool>
    </attribute>
    <addaction name="action_anim_add"/>
-   <addaction name="action_anim_previous"/>
    <addaction name="action_anim_stop"/>
    <addaction name="action_anim_play"/>
+   <addaction name="action_anim_previous"/>
    <addaction name="action_anim_next"/>
   </widget>
   <action name="action_exit">
@@ -443,6 +443,9 @@
    <property name="toolTip">
     <string>Go to next frame</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Right</string>
+   </property>
   </action>
   <action name="action_anim_previous">
    <property name="icon">
@@ -454,6 +457,9 @@
    </property>
    <property name="toolTip">
     <string>Go to previous frame</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Left</string>
    </property>
   </action>
   <action name="action_anim_settings">
