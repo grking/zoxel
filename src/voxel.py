@@ -168,6 +168,9 @@ class VoxelData(object):
         # If we only have one frame left, must be first frame
         if self._frame_count == 1:
             self._current_frame = 0
+        # If we wrapped around, fix the frame pointer
+        if self._current_frame > killframe:
+            self._current_frame -= 1
 
     # Change to the next frame (with wrap)
     def select_next_frame(self):
