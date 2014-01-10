@@ -26,6 +26,7 @@
 
 import math
 import copy
+from undo import Undo, UndoItem
 
 # Default world dimensions (in voxels)
 # We are an editor for "small" voxel models. So this needs to be small.
@@ -44,6 +45,11 @@ OCCLUSION = 0.7
 
 class VoxelData(object):
 
+    # Constants for referring to axis
+    X_AXIS = 1
+    Y_AXIS = 2
+    Z_AXIS = 3
+    
     # World dimension properties
     @property
     def width(self):
@@ -79,6 +85,9 @@ class VoxelData(object):
         self._width = _WORLD_WIDTH
         self._height = _WORLD_HEIGHT
         self._depth = _WORLD_DEPTH
+        # Our undo buffer
+        self._undo = Undo()
+        # Init data
         self._initialise_data()
         # Callback when our data changes
         self.notify_changed = None
@@ -88,17 +97,23 @@ class VoxelData(object):
     # Initialise our data
     def _initialise_data(self):
         # Our scene data
-        self._data = [[[0 for _ in xrange(self.depth)]
-            for _ in xrange(self.height)]
-                for _ in xrange(self.width)]
+        self._data = self.blank_data()
         # Our cache of non-empty voxels (coordinate groups)
         self._cache = []
         # Flag indicating if our data has changed
         self._changed = False
-        # Undo buffer
-        self._undo = []
-        self._undo_ptr = 0
-        self._undo_enabled = True
+        # Reset undo buffer
+        self._undo.clear()
+        # Animation
+        self._frame_count = 1
+        self._current_frame = 0
+        self._frames = [self._data]
+
+    # Return an empty voxel space
+    def blank_data(self):
+        return [[[0 for _ in xrange(self.depth)]
+            for _ in xrange(self.height)]
+                for _ in xrange(self.width)]
 
     def is_valid_bounds(self, x, y, z):
         return (
@@ -107,11 +122,76 @@ class VoxelData(object):
             z >= 0 and z < self.depth
         )
 
+    # Return the number of animation frames
+    def get_frame_count(self):
+        return self._frame_count
+
+    # Change to the given frame
+    # FIXME - support frame specific undo buffers
+    def select_frame(self, frame_number):
+        # Sanity
+        if frame_number < 0 or frame_number >= self._frame_count:
+            return
+        # Make sure we really have a pointer to the current data
+        self._frames[self._current_frame] = self._data
+        # Change to new frame
+        self._data = self._frames[frame_number]
+        self._current_frame = frame_number
+        self._undo.frame = self._current_frame
+        self._cache_rebuild()
+        self.changed = True
+
+    # Add a new frame by copying the current one
+    def add_frame(self, copy_current = True):
+        if copy_current:
+            data = self.get_data()
+        else:
+            data = self.blank_data()
+        self._frames.insert(self._current_frame+1, data)
+        self._undo.add_frame(self._current_frame+1)
+        self._frame_count += 1
+        self.select_frame(self._current_frame+1)
+
+    # Delete the current frame
+    def delete_frame(self):
+        # Sanity - we can't have no frames at all
+        if self._frame_count <= 1:
+            return
+        # Remember the frame we want to delete
+        killframe = self._current_frame
+        # Select a different frame
+        self.select_previous_frame()
+        # Remove the old frame
+        del self._frames[killframe]
+        self._undo.delete_frame(killframe)
+        self._frame_count -= 1
+        # If we only have one frame left, must be first frame
+        if self._frame_count == 1:
+            self._current_frame = 0
+        # If we wrapped around, fix the frame pointer
+        if self._current_frame > killframe:
+            self._current_frame -= 1
+
+    # Change to the next frame (with wrap)
+    def select_next_frame(self):
+        nextframe = self._current_frame+1
+        if nextframe >= self._frame_count:
+            nextframe = 0
+        self.select_frame(nextframe)
+
+    # Change to the previous frame (with wrap)
+    def select_previous_frame(self):
+        prevframe = self._current_frame-1
+        if prevframe < 0:
+            prevframe = self._frame_count-1
+        self.select_frame(prevframe)
+
+    # Get current frame number
+    def get_frame_number(self):
+        return self._current_frame
+
     # Set a voxel to the given state
-    def set(self, x, y, z, state):
-        # Undoable
-        self.undo_push()
-        
+    def set(self, x, y, z, state, undo = True):
         # If this looks like a QT Color instance, convert it
         if hasattr(state, "getRgb"):
             c = state.getRgb()
@@ -122,6 +202,10 @@ class VoxelData(object):
             return False
         # Set the voxel
         if ( self.is_valid_bounds(x, y, z ) ):
+            # Add to undo
+            if undo:
+                self._undo.add(UndoItem(Undo.SET_VOXEL, 
+                (x, y, z, self._data[x][y][z]), (x, y, z, state)))
             self._data[x][y][z] = state
             if state != EMPTY:
                 if (x,y,z) not in self._cache:
@@ -549,6 +633,7 @@ class VoxelData(object):
                         self._cache.append((x, y, z))
 
     # Calculate the actual bounding box of the model in voxel space
+    # Consider all animation frames
     def get_bounding_box(self):
         minx = 999
         miny = 999
@@ -556,19 +641,23 @@ class VoxelData(object):
         maxx = -999
         maxy = -999
         maxz = -999
-        for x,y,z in self._cache:
-            if x < minx:
-                minx = x
-            if x > maxx:
-                maxx = x
-            if y < miny:
-                miny = y
-            if y > maxy:
-                maxy = y
-            if z < minz:
-                minz = z
-            if z > maxz:
-                maxz = z
+        for data in self._frames:
+            for x in range(self.width):
+                for z in range(self.depth):
+                    for y in range(self.height):
+                        if data[x][y][z] != EMPTY:
+                            if x < minx:
+                                minx = x
+                            if x > maxx:
+                                maxx = x
+                            if y < miny:
+                                miny = y
+                            if y > maxy:
+                                maxy = y
+                            if z < minz:
+                                minz = z
+                            if z > maxz:
+                                maxz = z
         width = (maxx-minx)+1
         height = (maxy-miny)+1
         depth = (maxz-minz)+1
@@ -576,102 +665,106 @@ class VoxelData(object):
 
     # Resize the voxel space. If no dimensions given, adjust to bounding box.
     # We offset all voxels on all axis by the given amount.
+    # Resize all animation frames
     def resize(self, width = None, height = None, depth = None, shift = 0):
+        # Reset undo buffer
+        self._undo.clear()
         # No dimensions, use bounding box
         mx, my, mz, cwidth, cheight, cdepth = self.get_bounding_box()
         if not width:
             width, height, depth = cwidth, cheight, cdepth
-        # Create new data structure of the required size
-        data = [[[0 for _ in xrange(depth)]
-            for _ in xrange(height)]
-                for _ in xrange(width)]
-        # Adjust ranges
-        movewidth = min(width, cwidth)
-        moveheight = min(height, cheight)
-        movedepth = min(depth, cdepth)
-        # Calculate translation
-        dx = (0-mx)+shift
-        dy = (0-my)+shift
-        dz = (0-mz)+shift
-        # Copy data over at new location
-        for x in xrange(mx, mx+movewidth):
-            for y in xrange(my, my+moveheight):
-                for z in xrange(mz, mz+movedepth):
-                    data[x+dx][y+dy][z+dz] = self._data[x][y][z]
+        for i, frame in enumerate(self._frames):
+            # Create new data structure of the required size
+            data = [[[0 for _ in xrange(depth)]
+                for _ in xrange(height)]
+                    for _ in xrange(width)]
+            # Adjust ranges
+            movewidth = min(width, cwidth)
+            moveheight = min(height, cheight)
+            movedepth = min(depth, cdepth)
+            # Calculate translation
+            dx = (0-mx)+shift
+            dy = (0-my)+shift
+            dz = (0-mz)+shift
+            # Copy data over at new location
+            for x in xrange(mx, mx+movewidth):
+                for y in xrange(my, my+moveheight):
+                    for z in xrange(mz, mz+movedepth):
+                        data[x+dx][y+dy][z+dz] = frame[x][y][z]
+            self._frames[i] = data
+        self._data = self._frames[self._current_frame]
         # Set new dimensions
         self._width = width
         self._height = height
         self._depth = depth
-        self._data = data
         # Rebuild our cache
         self._cache_rebuild()
         self.changed = True
 
-    # Resize our voxel space so that the out-of-bounds coordinate given
-    # becomes in-bounds.  We return adjusted coordinates which take into
-    # account that our voxel data will be relocated in voxel space.
-    def _resize_to_include(self, x, y, z):
-        # One axis must be out of bounds, which is it, and in which direction?
-        dx = 0
-        dy = 0
-        dz = 0
-        if x < 0:
-            dx = -1
-        if y < 0:
-            dy = -1
-        if z < 0:
-            dz = -1
-        if x >= self.width:
-            dx = 1
-        if y >= self.height:
-            dy = 1
-        if z >= self.depth:
-            dz = 1
-        # Resize by one voxel along the expanding axis
-        dx, dy, dz = self.expand(dx, dy, dz)
-        return x+dx, y+dy, z+dz
+    # Rotate voxels in voxel space 90 degrees
+    def rotate_about_axis(self, axis):
+        # Reset undo buffer
+        self._undo.clear()
 
-    # Expand the voxel space along a single axis.
-    # Returns the amounts by which existing voxels were shifted
-    def expand(self, dx, dy, dz):
-        # Work out our new dimensions
-        new_width = self.width+abs(dx)
-        new_height = self.height+abs(dy)
-        new_depth = self.depth+abs(dz)
-        # Create new data structure of the required size
-        data = [[[0 for _ in xrange(new_depth)]
-            for _ in xrange(new_height)]
-                for _ in xrange(new_width)]
-        # Negative axis expansion requires shifting voxel data
-        if dx < 0:
-            dx = -dx
-        else:
-            dx = 0
-        if dy < 0:
-            dy = -dy
-        else:
-            dy = 0
-        if dz < 0:
-            dz = -dz
-        else:
-            dz = 0
-        # Copy data over at new location
-        for x in xrange(0, self.width):
-            for y in xrange(0, self.height):
-                for z in xrange(0, self.depth):
-                    data[x+dx][y+dy][z+dz] = self._data[x][y][z]
-        # Set new dimensions
-        self._width = new_width
-        self._height = new_height
-        self._depth = new_depth
-        self._data = data
+        if axis == self.Y_AXIS:
+            width = self.depth # note swap
+            height = self.height
+            depth = self.width
+        elif axis == self.X_AXIS:
+            width = self.width
+            height = self.depth
+            depth = self.height
+        elif axis == self.Z_AXIS:
+            width = self.height
+            height = self.width
+            depth = self.depth
+
+        for i, frame in enumerate(self._frames):
+                    
+            # Create new temporary data structure
+            data = [[[0 for _ in xrange(depth)]
+                for _ in xrange(height)]
+                    for _ in xrange(width)]
+            
+            # Copy data over at new location
+            for tx in xrange(0, self.width):
+                for ty in xrange(0, self.height):
+                    for tz in xrange(0, self.depth):
+                        if axis == self.Y_AXIS:
+                            dx = (-tz)-1
+                            dy = ty
+                            dz = tx
+                        elif axis == self.X_AXIS:
+                            dx = tx
+                            dy = (-tz)-1
+                            dz = ty
+                        elif axis == self.Z_AXIS:
+                            dx = ty
+                            dy = (-tx)-1
+                            dz = tz
+                        data[dx][dy][dz] = frame[tx][ty][tz]
+            self._frames[i] = data
+        
+        self._width = width
+        self._height = height
+        self._depth = depth
+        
+        self._data = self._frames[self._current_frame]
         # Rebuild our cache
         self._cache_rebuild()
         self.changed = True
-        return dx, dy, dz
-
+    
     # Translate the voxel data.
-    def translate(self, x, y, z):
+    def translate(self, x, y, z, undo = True):
+        # Sanity
+        if x == 0 and y == 0 and z == 0:
+            return
+        
+        # Add to undo
+        if undo:
+            self._undo.add(UndoItem(Undo.TRANSLATE, 
+            (-x, -y, -z), (x, y, z)))
+        
         # Create new temporary data structure
         data = [[[0 for _ in xrange(self.depth)]
             for _ in xrange(self.height)]
@@ -685,44 +778,37 @@ class VoxelData(object):
                     dz = (tz+z) % self.depth
                     data[dx][dy][dz] = self._data[tx][ty][tz]
         self._data = data
+        self._frames[self._current_frame] = self._data
         # Rebuild our cache
         self._cache_rebuild()
         self.changed = True
 
-    # Add current state to undo buffer
-    def undo_push(self):
-        if not self._undo_enabled:
-            return
-        # If we're not at the end of the undo buffer, remove future
-        if self._undo_ptr < len(self._undo):
-            self._undo = self._undo[:self._undo_ptr]
-        # Push current state onto into undo history
-        data = self.get_data()
-        self._undo.append(data)
-        self._undo_ptr = len(self._undo)
-
     # Undo previous operation
     def undo(self):
-        # If this is the first undo, it's a change, so push to undo buffer
-        if self._undo_ptr == len(self._undo):
-            self.undo_push()
-            self._undo_ptr -= 1
-        self._undo_ptr -= 1
-        if(self._undo_ptr >= 0):
-            data = self._undo[self._undo_ptr]
-            self.set_data(data)
-        else:
-            self._undo_ptr = 0
-    
+        op = self._undo.undo()
+        # Voxel edit
+        if op and op.operation == Undo.SET_VOXEL:
+            data = op.olddata
+            self.set(data[0], data[1], data[2], data[3], False)
+        # Translation
+        elif op and op.operation == Undo.TRANSLATE:
+            data = op.olddata
+            self.translate(data[0], data[1], data[2], False)
+            
     # Redo an undone operation
     def redo(self):
-        if self._undo_ptr < len(self._undo)-1:
-            self._undo_ptr += 1
-            data = self._undo[self._undo_ptr]
-            self.set_data(data)
+        op = self._undo.redo()
+        # Voxel edit
+        if op and op.operation == Undo.SET_VOXEL:
+            data = op.newdata
+            self.set(data[0], data[1], data[2], data[3], False)
+        # Translation
+        elif op and op.operation == Undo.TRANSLATE:
+            data = op.newdata
+            self.translate(data[0], data[1], data[2], False)
 
     # Enable/Disable undo buffer
     def disable_undo(self):
-        self._undo_enabled = False
+        self._undo.enabled = False
     def enable_undo(self):
-        self._undo_enabled = True
+        self._undo.enabled = True

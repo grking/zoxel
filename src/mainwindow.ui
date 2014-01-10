@@ -70,10 +70,30 @@
     </property>
     <addaction name="action_undo"/>
     <addaction name="action_redo"/>
+    <addaction name="separator"/>
+    <addaction name="action_rotate_x"/>
+    <addaction name="action_rotate_y"/>
+    <addaction name="action_rotate_z"/>
+    <addaction name="separator"/>
+    <addaction name="action_resize"/>
+   </widget>
+   <widget class="QMenu" name="menuAnimation">
+    <property name="title">
+     <string>Animation</string>
+    </property>
+    <addaction name="action_anim_play"/>
+    <addaction name="action_anim_stop"/>
+    <addaction name="action_anim_next"/>
+    <addaction name="action_anim_previous"/>
+    <addaction name="separator"/>
+    <addaction name="action_anim_add"/>
+    <addaction name="separator"/>
+    <addaction name="action_anim_delete"/>
    </widget>
    <addaction name="menu_file"/>
    <addaction name="menuEdit"/>
    <addaction name="menuView"/>
+   <addaction name="menuAnimation"/>
    <addaction name="menu_help"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -133,6 +153,22 @@
     </property>
     <layout class="QGridLayout" name="gridLayout_3"/>
    </widget>
+  </widget>
+  <widget class="QToolBar" name="toolbar_animation">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_anim_add"/>
+   <addaction name="action_anim_stop"/>
+   <addaction name="action_anim_play"/>
+   <addaction name="action_anim_previous"/>
+   <addaction name="action_anim_next"/>
   </widget>
   <action name="action_exit">
    <property name="icon">
@@ -357,6 +393,123 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="action_anim_add">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/Create.png</normaloff>:/images/gfx/icons/Create.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add Frame</string>
+   </property>
+   <property name="toolTip">
+    <string>Add new animation frame</string>
+   </property>
+  </action>
+  <action name="action_anim_play">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/Go.png</normaloff>:/images/gfx/icons/Go.png</iconset>
+   </property>
+   <property name="text">
+    <string>Play</string>
+   </property>
+   <property name="toolTip">
+    <string>Play animation</string>
+   </property>
+  </action>
+  <action name="action_anim_stop">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/Stop.png</normaloff>:/images/gfx/icons/Stop.png</iconset>
+   </property>
+   <property name="text">
+    <string>Stop</string>
+   </property>
+   <property name="toolTip">
+    <string>Stop animation</string>
+   </property>
+  </action>
+  <action name="action_anim_next">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/Goforward.png</normaloff>:/images/gfx/icons/Goforward.png</iconset>
+   </property>
+   <property name="text">
+    <string>Next Frame</string>
+   </property>
+   <property name="toolTip">
+    <string>Go to next frame</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Right</string>
+   </property>
+  </action>
+  <action name="action_anim_previous">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/Goback.png</normaloff>:/images/gfx/icons/Goback.png</iconset>
+   </property>
+   <property name="text">
+    <string>Previous Frame</string>
+   </property>
+   <property name="toolTip">
+    <string>Go to previous frame</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Left</string>
+   </property>
+  </action>
+  <action name="action_anim_settings">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/wrench-screwdriver.png</normaloff>:/images/gfx/icons/wrench-screwdriver.png</iconset>
+   </property>
+   <property name="text">
+    <string>Animation Settings</string>
+   </property>
+   <property name="toolTip">
+    <string>Animation Settings</string>
+   </property>
+  </action>
+  <action name="action_anim_delete">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/Cancel.png</normaloff>:/images/gfx/icons/Cancel.png</iconset>
+   </property>
+   <property name="text">
+    <string>Delete Frame</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete current frame</string>
+   </property>
+  </action>
+  <action name="action_rotate_x">
+   <property name="text">
+    <string>Rotate Model X-Axis</string>
+   </property>
+   <property name="toolTip">
+    <string>Rotate voxels around X axis</string>
+   </property>
+  </action>
+  <action name="action_rotate_y">
+   <property name="text">
+    <string>Rotate Model Y-Axis</string>
+   </property>
+   <property name="toolTip">
+    <string>Rotate voxels around Y axis</string>
+   </property>
+  </action>
+  <action name="action_rotate_z">
+   <property name="text">
+    <string>Rotate Model Z-Axis</string>
+   </property>
+   <property name="toolTip">
+    <string>Rotate voxels around Z axis</string>
    </property>
   </action>
  </widget>

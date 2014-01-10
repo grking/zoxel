@@ -43,17 +43,21 @@ class ZoxelFile(object):
         version = self._file_version
 
         # Build data structure
-        data = {'version': version, 'frames': 1,
+        data = {'version': version, 'frames': voxels.get_frame_count(),
                 "creator": "Zoxel Version "+ZOXEL_VERSION}
-        frame = []
-        for y in range(voxels.height):
-            for z in range(voxels.depth):
-                for x in range(voxels.width):
-                    v = voxels.get(x, y, z)
-                    if v:
-                        frame.append((x,y,z,v))
+        
+        for f in xrange(voxels.get_frame_count()):
+            frame = []
+            voxels.select_frame(f)
+            for y in range(voxels.height):
+                for z in range(voxels.depth):
+                    for x in range(voxels.width):
+                        v = voxels.get(x, y, z)
+                        if v:
+                            frame.append((x,y,z,v))
+    
+            data['frame{0}'.format(f+1)] = frame
 
-        data['frame1'] = frame
         data['width'] = voxels.width
         data['height'] = voxels.height
         data['depth'] = voxels.depth
@@ -84,6 +88,9 @@ class ZoxelFile(object):
         if data['version'] > self._file_version:
             raise Exception("More recent version of Zoxel needed to open file.")
 
+        # How many frames?
+        frames = data['frames']
+
         # Load the data
         frame = data['frame1']
         
@@ -106,9 +113,17 @@ class ZoxelFile(object):
             # Resize
             voxels.resize(maxX+1, maxY+1, maxZ+1)
         
-        # Write the voxel data
-        for x, y, z, v in frame:
-            voxels.set(x, y, z, v)
-            
+        # Read the voxel data
+        for f in xrange(frames):
+            frame = data['frame{0}'.format(f+1)]
+            for x, y, z, v in frame:
+                voxels.set(x, y, z, v)
+            # Add another frame if required
+            if f < frames-1:
+                voxels.add_frame(False)
+                
+        # Select the first frame by default
+        if frames > 1:
+            voxels.select_frame(0)
 
 register_plugin(ZoxelFile, "Zoxel file format IO", "1.0")

@@ -6,7 +6,8 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{02032A04-CEBD-4E65-9433-A700D205AC32}
 AppName=Zoxel
-AppVersion=0.4.5
+#define VERSION "0.4.5"
+AppVersion={#VERSION}
 AppPublisher=Graham R King
 AppPublisherURL=http://zoxel.blogspot.co.uk
 AppSupportURL=http://zoxel.blogspot.co.uk
@@ -14,7 +15,7 @@ AppUpdatesURL=http://zoxel.blogspot.co.uk
 DefaultDirName={pf}\Zoxel
 DefaultGroupName=Zoxel
 OutputDir=C:\Source\zoxel\install
-OutputBaseFilename=zoxel-v{AppVersion}
+OutputBaseFilename=zoxel-v{#VERSION}
 Compression=lzma
 SolidCompression=yes
 
