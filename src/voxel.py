@@ -97,9 +97,7 @@ class VoxelData(object):
     # Initialise our data
     def _initialise_data(self):
         # Our scene data
-        self._data = [[[0 for _ in xrange(self.depth)]
-            for _ in xrange(self.height)]
-                for _ in xrange(self.width)]
+        self._data = self.blank_data()
         # Our cache of non-empty voxels (coordinate groups)
         self._cache = []
         # Flag indicating if our data has changed
@@ -110,6 +108,12 @@ class VoxelData(object):
         self._frame_count = 1
         self._current_frame = 0
         self._frames = [self._data]
+
+    # Return an empty voxel space
+    def blank_data(self):
+        return [[[0 for _ in xrange(self.depth)]
+            for _ in xrange(self.height)]
+                for _ in xrange(self.width)]
 
     def is_valid_bounds(self, x, y, z):
         return (
@@ -138,8 +142,11 @@ class VoxelData(object):
         self.changed = True
 
     # Add a new frame by copying the current one
-    def add_frame(self):
-        data = self.get_data()
+    def add_frame(self, copy_current = True):
+        if copy_current:
+            data = self.get_data()
+        else:
+            data = self.blank_data()
         self._frames.insert(self._current_frame+1, data)
         self._undo.add_frame(self._current_frame+1)
         self._frame_count += 1

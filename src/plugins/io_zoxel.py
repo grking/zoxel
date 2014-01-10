@@ -120,7 +120,7 @@ class ZoxelFile(object):
                 voxels.set(x, y, z, v)
             # Add another frame if required
             if f < frames-1:
-                voxels.add_frame()
+                voxels.add_frame(False)
                 
         # Select the first frame by default
         if frames > 1:
