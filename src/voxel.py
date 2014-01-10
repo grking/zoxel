@@ -608,6 +608,7 @@ class VoxelData(object):
                         self._cache.append((x, y, z))
 
     # Calculate the actual bounding box of the model in voxel space
+    # Consider all animation frames
     def get_bounding_box(self):
         minx = 999
         miny = 999
@@ -615,19 +616,23 @@ class VoxelData(object):
         maxx = -999
         maxy = -999
         maxz = -999
-        for x,y,z in self._cache:
-            if x < minx:
-                minx = x
-            if x > maxx:
-                maxx = x
-            if y < miny:
-                miny = y
-            if y > maxy:
-                maxy = y
-            if z < minz:
-                minz = z
-            if z > maxz:
-                maxz = z
+        for data in self._frames:
+            for x in range(self.width):
+                for z in range(self.depth):
+                    for y in range(self.height):
+                        if data[x][y][z] != EMPTY:
+                            if x < minx:
+                                minx = x
+                            if x > maxx:
+                                maxx = x
+                            if y < miny:
+                                miny = y
+                            if y > maxy:
+                                maxy = y
+                            if z < minz:
+                                minz = z
+                            if z > maxz:
+                                maxz = z
         width = (maxx-minx)+1
         height = (maxy-miny)+1
         depth = (maxz-minz)+1
@@ -635,33 +640,36 @@ class VoxelData(object):
 
     # Resize the voxel space. If no dimensions given, adjust to bounding box.
     # We offset all voxels on all axis by the given amount.
+    # Resize all animation frames
     def resize(self, width = None, height = None, depth = None, shift = 0):
         # No dimensions, use bounding box
         mx, my, mz, cwidth, cheight, cdepth = self.get_bounding_box()
         if not width:
             width, height, depth = cwidth, cheight, cdepth
-        # Create new data structure of the required size
-        data = [[[0 for _ in xrange(depth)]
-            for _ in xrange(height)]
-                for _ in xrange(width)]
-        # Adjust ranges
-        movewidth = min(width, cwidth)
-        moveheight = min(height, cheight)
-        movedepth = min(depth, cdepth)
-        # Calculate translation
-        dx = (0-mx)+shift
-        dy = (0-my)+shift
-        dz = (0-mz)+shift
-        # Copy data over at new location
-        for x in xrange(mx, mx+movewidth):
-            for y in xrange(my, my+moveheight):
-                for z in xrange(mz, mz+movedepth):
-                    data[x+dx][y+dy][z+dz] = self._data[x][y][z]
+        for i, frame in enumerate(self._frames):
+            # Create new data structure of the required size
+            data = [[[0 for _ in xrange(depth)]
+                for _ in xrange(height)]
+                    for _ in xrange(width)]
+            # Adjust ranges
+            movewidth = min(width, cwidth)
+            moveheight = min(height, cheight)
+            movedepth = min(depth, cdepth)
+            # Calculate translation
+            dx = (0-mx)+shift
+            dy = (0-my)+shift
+            dz = (0-mz)+shift
+            # Copy data over at new location
+            for x in xrange(mx, mx+movewidth):
+                for y in xrange(my, my+moveheight):
+                    for z in xrange(mz, mz+movedepth):
+                        data[x+dx][y+dy][z+dz] = frame[x][y][z]
+            self._frames[i] = data
+        self._data = self._frames[self._current_frame]
         # Set new dimensions
         self._width = width
         self._height = height
         self._depth = depth
-        self._data = data
         # Rebuild our cache
         self._cache_rebuild()
         self.changed = True
@@ -744,6 +752,7 @@ class VoxelData(object):
                     dz = (tz+z) % self.depth
                     data[dx][dy][dz] = self._data[tx][ty][tz]
         self._data = data
+        self._frames[self._current_frame] = self._data
         # Rebuild our cache
         self._cache_rebuild()
         self.changed = True
