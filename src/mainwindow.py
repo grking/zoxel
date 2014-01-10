@@ -362,6 +362,10 @@ class MainWindow(QtGui.QMainWindow):
             caption += " - [Unsaved model]"
         if self.display and self.display.voxels.changed:
             caption += " *"
+        numframes = self.display.voxels.get_frame_count()
+        frame = self.display.voxels.get_frame_number()+1
+        if numframes > 1:
+            caption += " - Frame {0} of {1}".format(frame, numframes)
         if caption != self._caption:
             self.setWindowTitle(caption)
         self._caption = caption
@@ -554,3 +558,5 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.action_anim_play.setEnabled(num_frames > 1 
             and not self._timer.isActive())
         self.ui.action_anim_stop.setEnabled(self._timer.isActive())
+        self.update_caption()
+

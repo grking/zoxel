@@ -176,6 +176,10 @@ class VoxelData(object):
             prevframe = self._frame_count-1
         self.select_frame(prevframe)
 
+    # Get current frame number
+    def get_frame_number(self):
+        return self._current_frame
+
     # Set a voxel to the given state
     def set(self, x, y, z, state, undo = True):
         # If this looks like a QT Color instance, convert it
