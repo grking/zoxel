@@ -143,6 +143,7 @@ class MainWindow(QtGui.QMainWindow):
         self.display.clear()
         self.display.voxels.saved()
         self.update_caption()
+        self.refresh_actions()
 
     @QtCore.Slot()
     def on_action_wireframe_triggered(self):
@@ -308,6 +309,7 @@ class MainWindow(QtGui.QMainWindow):
     # Voxel data changed signal handler
     def on_data_changed(self):
         self.update_caption()
+        self.refresh_actions()
 
     # Colour selection changed handler
     def on_colour_changed(self):
@@ -427,6 +429,7 @@ class MainWindow(QtGui.QMainWindow):
             self._last_file_handler = handler
             self.display.voxels.saved()
             self.update_caption()
+        self.refresh_actions()
         return saved
 
     # Registers an file handler (importer/exporter) with the system
@@ -490,6 +493,7 @@ class MainWindow(QtGui.QMainWindow):
         self.display.voxels.saved()
         self.display.reset_camera()
         self.update_caption()
+        self.refresh_actions()
         self.display.voxels.enable_undo()
         self.display.refresh()
 
@@ -559,4 +563,3 @@ class MainWindow(QtGui.QMainWindow):
             and not self._timer.isActive())
         self.ui.action_anim_stop.setEnabled(self._timer.isActive())
         self.update_caption()
-

@@ -71,7 +71,7 @@ class Undo(object):
             return
         # Clear future if we're somewhere in the middle of the undo history
         if self._ptr[self._frame] < len(self._buffer[self._frame])-1:
-            self._buffer = self._buffer[self._frame][:self._ptr[self._frame]+1]
+            self._buffer[self._frame] = self._buffer[self._frame][:self._ptr[self._frame]+1]
         self._buffer[self._frame].append(item)
         self._ptr[self._frame] = len(self._buffer[self._frame])-1
     
