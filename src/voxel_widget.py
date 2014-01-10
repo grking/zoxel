@@ -360,7 +360,7 @@ class GLWidget(QtOpenGL.QGLWidget):
         # Right mouse button held down with CTRL key - rotate
         # Or middle mouse button held 
         if ((event.buttons() & QtCore.Qt.RightButton and ctrl)
-            or (event.buttons() & QtCore.Qt.MiddleButton)):
+            or ((event.buttons() & QtCore.Qt.MiddleButton) and not ctrl)):
             self._rotate_x = self._rotate_x + dy
             self._rotate_y = self._rotate_y + dx
             self.updateGL()
