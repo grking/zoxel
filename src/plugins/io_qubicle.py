@@ -42,7 +42,9 @@ class QubicleFile(object):
         else:
             # Read
             x = bytearray(f.read(4))
-            return x[0] | x[1]<<8 | x[2]<<16 | x[3]<<24
+            if len(x) == 4:
+                return x[0] | x[1]<<8 | x[2]<<16 | x[3]<<24
+            return 0
 
     # Called when we need to save. Should raise an exception if there is a
     # problem saving.
