@@ -281,6 +281,28 @@ class MainWindow(QtGui.QMainWindow):
         if colour.isValid():
             self.colour_palette.colour = colour
 
+    @QtCore.Slot()
+    def on_action_export_image_triggered(self):
+        png = QtGui.QPixmap.grabWidget(self.display)
+        choices = "PNG Image (*.png);;JPEG Image (*.jpg)"
+
+        # Grab our default location
+        directory = self.get_setting("default_directory")
+        # grab a filename
+        filename, filetype = QtGui.QFileDialog.getSaveFileName(self,
+            caption = "Export Image As",
+            filter = choices,
+            dir = directory)
+        if not filename:
+            return
+
+        # Remember the location
+        directory = os.path.dirname(filename)
+        self.set_setting("default_directory", directory)
+
+        # Save the PNG
+        png.save(filename,filetype.split()[0])
+
     def on_tool_activated(self):
         self.activate_tool(self.display.target, self.display.mouse_position)
 

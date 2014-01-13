@@ -45,6 +45,8 @@
     <addaction name="action_save"/>
     <addaction name="action_saveas"/>
     <addaction name="separator"/>
+    <addaction name="action_export_image"/>
+    <addaction name="separator"/>
     <addaction name="action_exit"/>
    </widget>
    <widget class="QMenu" name="menu_help">
@@ -510,6 +512,18 @@
    </property>
    <property name="toolTip">
     <string>Rotate voxels around Z axis</string>
+   </property>
+  </action>
+  <action name="action_export_image">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/gfx/icons/disk.png</normaloff>:/images/gfx/icons/disk.png</iconset>
+   </property>
+   <property name="text">
+    <string>Export Image...</string>
+   </property>
+   <property name="toolTip">
+    <string>Export image of current model view</string>
    </property>
   </action>
  </widget>

@@ -127,7 +127,6 @@ class VoxelData(object):
         return self._frame_count
 
     # Change to the given frame
-    # FIXME - support frame specific undo buffers
     def select_frame(self, frame_number):
         # Sanity
         if frame_number < 0 or frame_number >= self._frame_count:
