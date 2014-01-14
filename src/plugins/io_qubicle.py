@@ -107,7 +107,7 @@ class QubicleFile(object):
         voxels = self.api.get_voxel_data()
 
         # Open our file
-        f = open(filename,"rt")
+        f = open(filename,"rb")
 
         # Version 
         version = self.uint32(f)
