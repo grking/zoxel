@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from PySide import QtGui
-from tool import Tool
+from tool import Tool, EventData, MouseButtons, KeyModifiers, Face
 from plugin_api import register_plugin
 
 class DragTool(Tool):
@@ -32,13 +32,13 @@ class DragTool(Tool):
         self.api.register_tool(self)
 
     # Colour the targeted voxel
-    def on_activate(self, target, mouse_position):
-        self._mouse = mouse_position
+    def on_drag_start(self, target):
+        self._mouse = (target.mouse_x, target.mouse_y)
 
     # Drag the model in voxel space
-    def on_drag(self, target, mouse_position):
-            dx = mouse_position[0] - self._mouse[0]
-            dy = mouse_position[1] - self._mouse[1]
+    def on_drag(self, target):
+            dx = target.mouse_x - self._mouse[0]
+            dy = target.mouse_y - self._mouse[1]
             # Work out some sort of vague translation between screen and voxels
             sx = self.api.mainwindow.width() / target.voxels.width
             sy = self.api.mainwindow.height() / target.voxels.height
@@ -81,7 +81,7 @@ class DragTool(Tool):
                     tz = -1
             
             if ty != 0 or tx != 0 or tz != 0:
-                self._mouse = mouse_position
+                self._mouse = (target.mouse_x, target.mouse_y)
             
             target.voxels.translate(tx, ty, tz)
             

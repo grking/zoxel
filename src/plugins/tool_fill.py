@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from PySide import QtGui
-from tool import Tool
+from tool import Tool, EventData, MouseButtons, KeyModifiers, Face
 from plugin_api import register_plugin
 
 class FillTool(Tool):
@@ -32,9 +32,9 @@ class FillTool(Tool):
         self.api.register_tool(self)
 
     # Fill all connected voxels of the same colour with a new colour
-    def on_activate(self, target, mouse_position):
+    def on_mouse_click(self, target):
         # We need to have a selected voxel
-        voxel = target.voxels.get(target.x, target.y, target.z)
+        voxel = target.voxels.get(target.world_x, target.world_y, target.world_z)
         if not voxel:
             return
         # Grab the target colour
@@ -46,7 +46,7 @@ class FillTool(Tool):
             return
         # Initialise our search list
         search = []
-        search.append((target.x, target.y, target.z))
+        search.append((target.world_x, target.world_y, target.world_z))
         # Keep iterating over the search list until no more to do
         while len(search):
             x,y,z = search.pop()

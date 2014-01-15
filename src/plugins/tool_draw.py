@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from PySide import QtGui
-from tool import Tool
-from tool import Target
-from tool import Face
+from tool import Tool, EventData, MouseButtons, KeyModifiers, Face
 from plugin_api import register_plugin
 
 class DrawingTool(Tool):
@@ -33,22 +31,23 @@ class DrawingTool(Tool):
         # Register the tool
         self.api.register_tool(self, True)
 
-    """"
-    Tries to plot a new voxel at target location.
-    @param choosen_target: The place where the new voxel should be inserted.
-    @return: A Target object indicating the actual place where the voxel was inserted. Returns None when no insertion was made.
-    """
-    def _draw_voxel(self, choosen_target):
-        # final_target will be the place where the voxel will be inserted.
-        final_target = choosen_target
+    # Tries to plot a new voxel at target location.
+    # param choosen_target: The place where the new voxel should be inserted.
+    # returns A Target object indicating the actual place where the voxel were
+    # inserted. Returns None when no insertion was made.
+    def _draw_voxel(self, target):
         # Works out where exactly the new voxel goes. It can collide with an existing voxel or with the bottom of the 'y' plane,
         #in which case, pos will be different than None.
-        pos = choosen_target.get_neighbour()
+        pos = target.get_neighbour()
         if pos:
-            final_target = Target( choosen_target.voxels, pos[0], pos[1], pos[2], choosen_target.face )
-        # Tries to set the voxel on the matrix and then returns the Target with it's coordinates, if it exists.
-        if( choosen_target.voxels.set(final_target.x, final_target.y, final_target.z, self.colour) ):
-            return final_target
+            target.world_x = pos[0]
+            target.world_y = pos[1]
+            target.world_z = pos[2]
+        # Tries to set the voxel on the matrix and then returns the Target 
+        # with it's coordinates, if it exists.
+        if( target.voxels.set(target.world_x, target.world_y, target.world_z, 
+                              self.colour) ):
+            return target
         else:
             return None
 
@@ -63,26 +62,24 @@ class DrawingTool(Tool):
             return None
 
     # Draw a new voxel next to the targeted face
-    def on_activate(self, target, mouse_position):
-        self._first_target = self._draw_voxel(target)
+    def on_mouse_click(self, data):
+        if data.mouse_button == MouseButtons.LEFT:
+            self._first_target = self._draw_voxel(data)
+        elif data.mouse_button == MouseButtons.RIGHT:
+            data.voxels.set(data.world_x, data.world_y, data.world_z, 0)
 
-    # Erase targetted voxel 
-    def on_activate_alt(self, target, mouse_position):
-        target.voxels.set(target.x, target.y, target.z, 0)
+    # Start a drag
+    def on_drag_start(self, data):
+        self._first_target = data
 
     # When dragging, Draw a new voxel next to the targeted face
-    def on_drag(self, target, mouse_position):
+    def on_drag(self, data):
         # In case the first click has missed a valid target.
         if( self._first_target is None ):
             return
-        #
         valid_faces = self._get_valid_sequence_faces(self._first_target.face)
-        if( ( not valid_faces ) or ( target.face not in valid_faces ) ):
+        if( ( not valid_faces ) or ( data.face not in valid_faces ) ):
             return
-        #
-        self._draw_voxel(target)
-
-    def on_deactivate(self, target):
-        self._first_target = None
+        self._draw_voxel(data)
 
 register_plugin(DrawingTool, "Drawing Tool", "1.0")

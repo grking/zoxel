@@ -17,6 +17,17 @@
 
 from PySide import QtGui
 
+# Enumeration type
+def enum(*sequential, **named):
+    enums = dict(zip(sequential, range(len(sequential))), **named)
+    return type('Enum', (), enums)
+
+# Mouse buttons
+MouseButtons = enum('LEFT', 'MIDDLE', 'RIGHT')
+
+# Keyboard modifiers
+KeyModifiers = enum('CTRL', 'SHIFT', 'ALT')
+
 class Face(object):
     FRONT = 0   # z-
     TOP = 1     # y+
@@ -28,43 +39,94 @@ class Face(object):
     FACES_PLANE_X = [LEFT, RIGHT]
     FACES_PLANE_Y = [TOP, BOTTOM]
     FACES_PLANE_Z = [BACK, FRONT]
-    # Defining the faces for each plane used in the collision detection algorithm, where the Y plane is collidable (But X and Z are not).
+    # Defining the faces for each plane used in the collision detection 
+    # algorithm, where the Y plane is collidable (But X and Z are not).
     COLLIDABLE_FACES_PLANE_X = FACES_PLANE_X
     COLLIDABLE_FACES_PLANE_Y = FACES_PLANE_Y + [None]
     COLLIDABLE_FACES_PLANE_Z = FACES_PLANE_Z
 
-
-class Target(object):
+class EventData(object):
 
     @property
     def face(self):
         return self._face
+    @face.setter
+    def face(self, value):
+        self._face = value
 
     @property
-    def x(self):
-        return self._x
+    def world_x(self):
+        return self._world_x
+    @world_x.setter
+    def world_x(self, value):
+        self._world_x = value
 
     @property
-    def y(self):
-        return self._y
+    def world_y(self):
+        return self._world_y
+    @world_y.setter
+    def world_y(self, value):
+        self._world_y = value
 
     @property
-    def z(self):
-        return self._z
+    def world_z(self):
+        return self._world_z
+    @world_z.setter
+    def world_z(self, value):
+        self._world_z = value
 
     @property
     def voxels(self):
         return self._voxels
+    @voxels.setter
+    def voxels(self, value):
+        self._voxels = value
+
+    @property
+    def mouse_x(self):
+        return self._mouse_x
+    @mouse_x.setter
+    def mouse_x(self, value):
+        self._mouse_x = value
+
+    @property
+    def mouse_y(self):
+        return self._mouse_y
+    @mouse_y.setter
+    def mouse_y(self, value):
+        self._mouse_y = value
+
+    @property
+    def mouse_button(self):
+        return self._mouse_button
+    @mouse_button.setter
+    def mouse_button(self, value):
+        self._mouse_button = value
+
+    @property
+    def key_modifiers(self):
+        return self._key_modifiers
+    @key_modifiers.setter
+    def key_modifiers(self, value):
+        self._key_modifiers = value
 
     def __repr__(self):
-        return 'Target(face=%s,x=%d,y=%d,z=%d)' % (self._face, self._x, self._y, self._z)
+        return ('EventData(face={0},world_x={1},world_y={2},world_z={3},'
+                'mouse_x={4},mouse_y={5},mouse_button={6},key_modifiers={7})'.format( 
+                self._face, self._world_x, self._world_y, self._world_z,
+                   self._mouse_x, self._mouse_y, self._mouse_button, 
+                   self._key_modifiers))
 
-    def __init__(self, voxels, x, y, z, face = None):
-        self._face = face
-        self._x = x
-        self._y = y
-        self._z = z
-        self._voxels = voxels
+    def __init__(self):
+        self._face = None
+        self._world_x = 0
+        self._world_y = 0
+        self._world_z = 0
+        self._mouse_x = 0
+        self._mouse_y = 0
+        self._mouse_button = None
+        self._key_modifiers = None
+        self._voxels = None
 
     def __eq__(self, other):
         return ( (self._x == other._x) and
@@ -78,9 +140,9 @@ class Target(object):
     def get_neighbour(self):
         if self.face is None:
             return None
-        x = self.x
-        y = self.y
-        z = self.z
+        x = self._world_x
+        y = self._world_y
+        z = self._world_z
         if self.face == Face.TOP:
             y += 1
         elif self.face == Face.BOTTOM:
@@ -110,22 +172,27 @@ class Tool(object):
             "A Tool", None)
         self.action.setStatusTip("Unknown Tool")
 
-    # Called when the left mouse button is pressed
-    def on_activate(self, target, mouse_position):
+    # Mouse click - a mouse button has been pressed and released
+    def on_mouse_click(self, data):
+        pass
+    
+    # A mouse drag has started
+    def on_drag_start(self, data):
+        pass
+    
+    # Mouse is dragging
+    def on_drag(self, data):
+        pass
+    
+    # A mouse drag ended
+    def on_drag_end(self, data):
         pass
 
-    # Called when the right mouse button is pressed
-    def on_activate_alt(self, target, mouse_position):
+    # Signal to the tool to cancel whatever it's doing and reset it's state
+    # back to default
+    def on_cancel(self, data):
         pass
-
-    # Called when the left mouse button is held down and dragged
-    def on_drag(self, target, mouse_position):
-        pass
-
-    # Called when the left mouse button is released
-    def on_deactivate(self, target):
-        pass
-
+    
     # Should return the action for the tool
     def get_action(self):
         return self.action

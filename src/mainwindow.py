@@ -93,10 +93,10 @@ class MainWindow(QtGui.QMainWindow):
         # Connect some signals
         if self.display:
             self.display.voxels.notify = self.on_data_changed
-            self.display.tool_activated.connect(self.on_tool_activated)
-            self.display.tool_activated_alt.connect(self.on_tool_activated_alt)
-            self.display.tool_dragged.connect(self.on_tool_dragged)
-            self.display.tool_deactivated.connect(self.on_tool_deactivated)
+            self.display.mouse_click_event.connect(self.on_tool_mouse_click)
+            self.display.start_drag_event.connect(self.on_tool_drag_start)
+            self.display.end_drag_event.connect(self.on_tool_drag_end)
+            self.display.drag_event.connect(self.on_tool_drag)
         if self.colour_palette:
             self.colour_palette.changed.connect(self.on_colour_changed)
         # Initialise our tools
@@ -303,17 +303,33 @@ class MainWindow(QtGui.QMainWindow):
         # Save the PNG
         png.save(filename,filetype.split()[0])
 
-    def on_tool_activated(self):
-        self.activate_tool(self.display.target, self.display.mouse_position)
+    def on_tool_mouse_click(self):
+        tool = self.get_active_tool()
+        if not tool:
+            return
+        data = self.display.target
+        tool.on_mouse_click(data)
 
-    def on_tool_activated_alt(self):
-        self.activate_tool_alt(self.display.target, self.display.mouse_position)
+    def on_tool_drag_start(self):
+        tool = self.get_active_tool()
+        if not tool:
+            return
+        data = self.display.target
+        tool.on_drag_start(data)
 
-    def on_tool_dragged(self):
-        self.drag_tool(self.display.target, self.display.mouse_position)
+    def on_tool_drag(self):
+        tool = self.get_active_tool()
+        if not tool:
+            return
+        data = self.display.target
+        tool.on_drag(data)
 
-    def on_tool_deactivated(self):
-        self.deactivate_tool(self.display.target)
+    def on_tool_drag_end(self):
+        tool = self.get_active_tool()
+        if not tool:
+            return
+        data = self.display.target
+        tool.on_drag_end(data)
 
     # Confirm if user wants to save before doing something drastic.
     # returns True if we should continue
@@ -528,49 +544,16 @@ class MainWindow(QtGui.QMainWindow):
         if activate:
             tool.get_action().setChecked(True)
 
-    # Send an activation event to the currently selected drawing tool
-    def activate_tool(self, target, mouse_position):
+    # Return the active tool
+    def get_active_tool(self):
         action = self._tool_group.checkedAction()
         if not action:
-            return
+            return None
         # Find who owns this action and activate
         for tool in self._tools:
             if tool.get_action() is action:
-                tool.on_activate(target, mouse_position)
-                return
-
-    # Send an alternative activation event to the currently selected tool
-    def activate_tool_alt(self, target, mouse_position):
-        action = self._tool_group.checkedAction()
-        if not action:
-            return
-        # Find who owns this action and activate
-        for tool in self._tools:
-            if tool.get_action() is action:
-                tool.on_activate_alt(target, mouse_position)
-                return
-
-    # Send drag activation to the current selected drawing tool
-    def drag_tool(self, target, mouse_position):
-        action = self._tool_group.checkedAction()
-        if not action:
-            return
-        # Find who owns this action and activate
-        for tool in self._tools:
-            if tool.get_action() is action:
-                tool.on_drag(target, mouse_position)
-                return
-
-    # Send an deactivation event to the currently selected drawing tool
-    def deactivate_tool(self, target):
-        action = self._tool_group.checkedAction()
-        if not action:
-            return
-        # Find who owns this action and activate
-        for tool in self._tools:
-            if tool.get_action() is action:
-                tool.on_deactivate(target)
-                return
+                return tool
+        return None
 
     # Load and initialise all plugins
     def load_plugins(self):

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from PySide import QtGui
-from tool import Tool
+from tool import Tool, EventData, MouseButtons, KeyModifiers, Face
 from plugin_api import register_plugin
 
 class PaintingTool(Tool):
@@ -32,17 +32,14 @@ class PaintingTool(Tool):
         self.api.register_tool(self)
 
     # Colour the targeted voxel
-    def on_activate(self, target, mouse_position):
+    def on_mouse_click(self, data):
         # If we have a voxel at the target, colour it
-        voxel = target.voxels.get(target.x, target.y, target.z)
+        voxel = data.voxels.get(data.world_x, data.world_y, data.world_z)
         if voxel:
-            target.voxels.set(target.x, target.y, target.z, self.colour)
+            data.voxels.set(data.world_x, data.world_y, data.world_z, self.colour)
 
     # Colour when dragging also
-    def on_drag(self, target, mouse_position):
-        # If we have a voxel at the target, colour it
-        voxel = target.voxels.get(target.x, target.y, target.z)
-        if voxel:
-            target.voxels.set(target.x, target.y, target.z, self.colour)
+    def on_drag(self, data):
+        self.on_mouse_click(data)
 
 register_plugin(PaintingTool, "Painting Tool", "1.0")

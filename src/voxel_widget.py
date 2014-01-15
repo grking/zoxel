@@ -23,7 +23,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import gluUnProject, gluProject
 import voxel
 from euclid import LineSegment3, Plane, Point3, Vector3
-from tool import Target
+from tool import EventData, MouseButtons, KeyModifiers
 from voxel_grid import GridPlanes
 from voxel_grid import VoxelGrid
 import time
@@ -34,6 +34,11 @@ class GLWidget(QtOpenGL.QGLWidget):
     X_AXIS = 1
     Y_AXIS = 2
     Z_AXIS = 3
+    
+    # Drag types
+    DRAG_START = 1
+    DRAG_END = 2
+    DRAG = 3
 
     @property
     def axis_grids(self):
@@ -79,10 +84,10 @@ class GLWidget(QtOpenGL.QGLWidget):
         return self._grids
 
     # Our signals
-    tool_activated = QtCore.Signal()
-    tool_activated_alt = QtCore.Signal()
-    tool_dragged = QtCore.Signal()
-    tool_deactivated = QtCore.Signal()
+    mouse_click_event = QtCore.Signal()
+    start_drag_event = QtCore.Signal()
+    drag_event = QtCore.Signal()
+    end_drag_event = QtCore.Signal()
 
     def __init__(self, parent = None):
         glformat = QtOpenGL.QGLFormat()
@@ -125,6 +130,9 @@ class GLWidget(QtOpenGL.QGLWidget):
         self._depth_focus = 1
         # Keep track how long mouse buttons are down for
         self._mousedown_time = 0
+        self.button_down = None
+        self._dragging = False
+        self._key_modifiers = 0
 
     # Reset the control and clear all data
     def clear(self):
@@ -301,23 +309,20 @@ class GLWidget(QtOpenGL.QGLWidget):
 
     def mousePressEvent(self, event):
         
-        ctrl = event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier
+        self._key_modifiers = event.modifiers()
+        self._mousedown_time = time.time()
         
         self._mouse = QtCore.QPoint(event.pos())
         self._mouse_absolute = QtCore.QPoint(event.pos())
         self.mouse_position = (self._mouse.x(),self._mouse.y())
 
-        if event.buttons() & QtCore.Qt.LeftButton and not ctrl:
-            self._mousedown_time = time.time()
-            x, y, z, face = self.window_to_voxel(event.x(), event.y())
-            self.activate_tool(x, y, z, face)
-            self.refresh()
-
-        if event.buttons() & QtCore.Qt.RightButton and not ctrl:
-            self._mousedown_time = time.time()
-            x, y, z, face = self.window_to_voxel(event.x(), event.y())
-            self.activate_tool_alt(x, y, z, face)
-            self.refresh()
+        self._button_down = None
+        if event.buttons() & QtCore.Qt.LeftButton:
+            self._button_down = MouseButtons.LEFT
+        elif event.buttons() & QtCore.Qt.MiddleButton:
+            self._button_down = MouseButtons.MIDDLE
+        elif event.buttons() & QtCore.Qt.RightButton:
+            self._button_down = MouseButtons.RIGHT
 
         # Remember the 3d coordinates of this click
         mx, my, mz, d = self.window_to_world(event.x(), event.y())
@@ -345,8 +350,10 @@ class GLWidget(QtOpenGL.QGLWidget):
 
         self.mouse_position = (self._mouse.x(),self._mouse.y())
 
-        ctrl = event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier
-        shift = event.modifiers() & QtCore.Qt.KeyboardModifier.ShiftModifier
+        ctrl = (self._key_modifiers 
+                & QtCore.Qt.KeyboardModifier.ControlModifier) != 0
+        shift = (self._key_modifiers 
+                 & QtCore.Qt.KeyboardModifier.ShiftModifier) != 0
 
         # Screen units delta
         dx = event.x() - self._mouse.x()
@@ -357,6 +364,19 @@ class GLWidget(QtOpenGL.QGLWidget):
         self.mouse_delta_absolute = (event.x() - self._mouse_absolute.x(), 
             event.y() - self._mouse_absolute.y())
 
+        # Maybe we are dragging
+        if time.time() - self._mousedown_time > 0.3 and not self._dragging:
+            self._dragging = True
+            # Announce the start of a drag
+            x, y, z, face = self.window_to_voxel(event.x(), event.y())
+            self.send_drag(self.DRAG_START, x, y, z, event.x(), event.y(), face)
+            self.refresh()
+        elif time.time() - self._mousedown_time > 0.3 and self._dragging:
+            # Already dragging - send a drag event
+            x, y, z, face = self.window_to_voxel(event.x(), event.y())
+            self.send_drag(self.DRAG, x, y, z, event.x(), event.y(), face)
+            self.refresh()
+                        
         # Right mouse button held down with CTRL key - rotate
         # Or middle mouse button held 
         if ((event.buttons() & QtCore.Qt.RightButton and ctrl)
@@ -373,22 +393,18 @@ class GLWidget(QtOpenGL.QGLWidget):
             self._translate_y = self._translate_y + ((-dy) * self._vtranslate)
             self.refresh()
 
-        # Left mouse button held down
-        if event.buttons() & QtCore.Qt.LeftButton:
-            # How long have we been held down?
-            if time.time() - self._mousedown_time > 0.5:
-                x, y, z, face = self.window_to_voxel(event.x(), event.y())
-                self.drag_tool(x, y, z, face)
-                self.refresh()
-
         self._mouse = QtCore.QPoint(event.pos())
 
     def mouseReleaseEvent(self, event):
         self._mouse = QtCore.QPoint(event.pos())
-        if event.button() == QtCore.Qt.LeftButton:
-            x, y, z, face = self.window_to_voxel(event.x(), event.y())
-            self.deactivate_tool(x, y, z, face)
-            self.refresh()
+        x, y, z, face = self.window_to_voxel(event.x(), event.y())
+        # Send event depenand if this is a click or a drag
+        if self._dragging:
+            self._dragging = False
+            self.send_drag(self.DRAG_END, x, y, z, event.x(), event.y(), face)
+        else:
+            self.send_mouse_click(x, y, z, event.x(), event.y(), face)
+        self.refresh()
 
     def zoom_in(self):
         self._translate_z *= 1 - self._zoom_speed
@@ -507,18 +523,28 @@ class GLWidget(QtOpenGL.QGLWidget):
         y = self._height - y
         return x, y
 
-    def activate_tool(self, x, y, z, face):
-        self.target = Target(self.voxels, x, y, z, face)
-        self.tool_activated.emit()
+    def _build_event(self, x, y, z, mouse_x, mouse_y, face):
+        data = EventData()
+        data.world_x = x
+        data.world_y = y
+        data.world_z = z
+        data.face = face
+        data.mouse_x = mouse_x
+        data.mouse_y = mouse_y
+        data.mouse_button = self._button_down
+        data.key_modifiers = self._key_modifiers
+        data.voxels = self.voxels
+        return data
 
-    def activate_tool_alt(self, x, y, z, face):
-        self.target = Target(self.voxels, x, y, z, face)
-        self.tool_activated_alt.emit()
+    def send_mouse_click(self, x, y, z, mouse_x, mouse_y, face):
+        self.target = self._build_event(x, y, z, mouse_x, mouse_y, face)
+        self.mouse_click_event.emit()
 
-    def drag_tool(self, x, y, z, face):
-        self.target = Target(self.voxels, x, y, z, face)
-        self.tool_dragged.emit()
-
-    def deactivate_tool(self, x, y, z, face):
-        self.target = Target(self.voxels, x, y, z, face)
-        self.tool_deactivated.emit()
+    def send_drag(self, dragtype, x, y, z, mouse_x, mouse_y, face):
+        self.target = self._build_event(x, y, z, mouse_x, mouse_y, face)
+        if dragtype == self.DRAG_START:
+            self.start_drag_event.emit()
+        elif dragtype == self.DRAG_END:
+            self.end_drag_event.emit()
+        elif dragtype == self.DRAG:
+            self.drag_event.emit()
